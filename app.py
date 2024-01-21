@@ -11,8 +11,8 @@ import GPUtil
 class SystemInfoHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/system_info':
-            cpu_percent_per_core = psutil.cpu_percent(interval=None, percpu=False)
-            cpu_usage = [round(usage, 2) for usage in cpu_percent_per_core]  # Afrond de percentages tot 2 decimalen
+            cpu_percent_per_core = psutil.cpu_percent(interval=None, percpu=True)  # Verander percpu naar True
+            cpu_usage = [round(usage, 2) for usage in cpu_percent_per_core]
             # CPU cores hardcoded for now
             memory_usage = psutil.virtual_memory().percent
             disk_info = self.get_disk_info()
