@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+    body
+    {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f0f0f0;
+    }
+    h1
+    {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .logo
+    {
+        height: 200px;
+        left: 80%;
+        position: absolute;
+        top: 0vh;
+    }
+    .lijngrafiek {
+        display: block;
+        box-sizing: border-box;
+        margin: 20px;
+        height: 300px; 
+        width: 600px; 
+    }
+    .charts-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap; /* Zorgt ervoor dat grafieken naar de volgende regel gaan op kleinere schermen */
+    }
+    .gpu-info {
+        margin: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+    }
+    </style>
+    <meta charset="UTF-8">
+    <title>Systeem Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1 class="titel">Dualz system dashboard</h1>
+    <img class="logo" src="Dualz_logo.png" alt="Logo">
+    
+    <div class="charts-container">
+        <!-- CPU grafiek -->
+        <div class="lijngrafiek">
+            <p><span id="cpu_usage">-</span>%</p>
+            <canvas id="cpuChart"></canvas>
+        </div>
+    
+        <!-- Geheugen grafiek -->
+        <div class="lijngrafiek">
+            <p><span id="memory_usage">-</span></p>
+            <canvas id="memoryChart"></canvas>
+        </div>
+      <!-- Disk grafiek -->
+      <div class="lijngrafiek">
+        <p><span id="total_disk_gb">-</span></p>
+        <p><span id="used_disk_gb">-</span></p>
+        <p><span id="free_disk_gb">-</span></p>
+        <canvas id="diskChart"></canvas>
+    </div>
+        <!-- GPU-gebruik grafiek -->
+        <div class="lijngrafiek">
+            <p><span id="gpu_usage">-</span></p>
+            <canvas id="gpuUsageChart"></canvas>
+        </div>
+    
+        <!-- GPU-geheugen grafiek -->
+        <div class="lijngrafiek">
+            <p><span id="gpu_memory">-</span></p>
+            <canvas id="gpuMemoryChart"></canvas>
+        </div>
+    
+    
+        <!-- GPU-informatie -->
+        <div class="gpu-info">
+            <h2>GPU Information</h2>
+            <p><span id="gpu_name">-</span></p>
+            <p><span id="gpu_driver">-</span></p>
+            <p><span id="gpu_temperature">-</span></p>
+            
+        </div>
+    </div>
+
+    <script>
+        const maxDataPoints = 30; // Aantal datapunten om te bewaren
+        let cpuChart;
+        let memoryChart;
+        let gpuUsageChart;
+        let gpuMemoryChart;
+        let diskChart;
+
+        const ctxCpu = document.getElementById('cpuChart').getContext('2d');
+        const ctxMemory = document.getElementById('memoryChart').getContext('2d');
+        const ctxGpuUsage = document.getElementById('gpuUsageChart').getContext('2d');
+        const ctxGpuMemory = document.getElementById('gpuMemoryChart').getContext('2d');
+        const ctxDisk = document.getElementById('diskChart').getContext('2d');
+
+        function initializeCharts() {
+            cpuChart = new Chart(ctxCpu, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU Usage (%)',
+                        data: [],
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category',
+                            beginAtZero: false,
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            memoryChart = new Chart(ctxMemory, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Memory Usage (%)',
+                        data: [],
+                        fill: false,
+                        borderColor: 'rgb(153, 102, 255)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category',
+                            beginAtZero: false,
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            gpuUsageChart = new Chart(ctxGpuUsage, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'GPU Usage (%)',
+                        data: [],
+                        fill: false,
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category',
+                            beginAtZero: false,
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            gpuMemoryChart = new Chart(ctxGpuMemory, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'GPU Memory (MB)',
+                        data: [],
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category',
+                            beginAtZero: false,
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 2048
+                            // hardcoded for now
+                        }
+                    }
+                }
+            });
+
+            diskChart = new Chart(ctxDisk, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Used Space (GB) ', 'Free Space (GB)'],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#F9B94B', '#6FF36F'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateData() {
+            fetch('/system_info')
+                .then(response => response.json())
+                .then(data => {
+                    const now = new Date();
+                    const timestamp = now.toLocaleTimeString();
+
+                    // Voeg het tijdstempel toe aan de labels
+                    cpuChart.data.labels.push(timestamp);
+                    memoryChart.data.labels.push(timestamp);
+                    gpuUsageChart.data.labels.push(timestamp);
+                    gpuMemoryChart.data.labels.push(timestamp);
+
+                    // Houd het aantal datapunten beperkt tot maxDataPoints
+                    if (cpuChart.data.labels.length > maxDataPoints) {
+                        cpuChart.data.labels.shift();
+                        memoryChart.data.labels.shift();
+                        gpuUsageChart.data.labels.shift();
+                        gpuMemoryChart.data.labels.shift();
+                        cpuChart.data.datasets[0].data.shift();
+                        memoryChart.data.datasets[0].data.shift();
+                        gpuUsageChart.data.datasets[0].data.shift();
+                        gpuMemoryChart.data.datasets[0].data.shift();
+                    }
+
+                    // Update de CPU- en geheugengebruikstekst
+                    const cpuUsageText = `CPU: ${data.cpu}%`;
+                    const memoryUsageText = `Memory: ${data.memory}%`;
+                    const gpuUsageText = `GPU Usage: ${data.gpu.gpu_usage}%`;
+                    const gpuMemoryText = `GPU Memory: ${data.gpu.memory_used}MB / ${data.gpu.memory_total}MB`;
+                    const diskusedtext = `Used: ${data.disk_usage.used_space_gb}GB`;
+                    const disktotaltext = `Total: ${data.disk_usage.total_space_gb}GB`;
+                    const diskfreetext = `Free: ${data.disk_usage.available_space_gb}GB`;
+                    const gpuname = `Name: ${data.gpu.name}`;
+                    const gpudriver = `Driver version: ${data.gpu.driver}`;
+                    const gputemp = `Temperature: ${data.gpu.temperature}°C`;
+                    
+                
+
+                    document.getElementById('cpu_usage').textContent = cpuUsageText;
+                    document.getElementById('memory_usage').textContent = memoryUsageText;
+                    document.getElementById('gpu_usage').textContent = gpuUsageText;
+                    document.getElementById('gpu_memory').textContent = gpuMemoryText;
+                    document.getElementById('used_disk_gb').textContent = diskusedtext;
+                    document.getElementById('total_disk_gb').textContent = disktotaltext;
+                    document.getElementById('free_disk_gb').textContent = diskfreetext;
+                    document.getElementById('gpu_name').textContent = gpuname;
+                    document.getElementById('gpu_driver').textContent = gpudriver;
+                    document.getElementById('gpu_temperature').textContent = gputemp;
+             
+                    
+
+                    // Voeg de CPU- en geheugengebruikgegevens toe aan de datasets
+                    cpuChart.data.datasets[0].data.push(data.cpu);
+                    memoryChart.data.datasets[0].data.push(data.memory);
+                    gpuUsageChart.data.datasets[0].data.push(data.gpu.gpu_usage);
+                    gpuMemoryChart.data.datasets[0].data.push(data.gpu.memory_used);
+
+                    if (cpuChart.data.datasets[0].data.length > maxDataPoints) {
+                        cpuChart.data.datasets[0].data.shift();
+                        memoryChart.data.datasets[0].data.shift();
+                        gpuUsageChart.data.datasets[0].data.shift();
+                        gpuMemoryChart.data.datasets[0].data.shift();
+                    }
+
+                    // Update het taartdiagram van de schijfruimte
+                    diskChart.data.datasets[0].data = [data.disk_usage.used_space_gb, data.disk_usage.available_space_gb];
+                    diskChart.update();
+                    
+                    // Bijwerk de grafieken
+                    cpuChart.update();
+                    memoryChart.update();
+                    gpuUsageChart.update();
+                    gpuMemoryChart.update();
+                })
+                .catch(error => {
+                    console.error('Fout bij het ophalen van systeeminformatie:', error);
+                });
+        }
+
+        initializeCharts();
+        updateData();
+        setInterval(updateData, 1000);
+    </script>
+</body>
+</html>
