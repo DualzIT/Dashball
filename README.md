@@ -1,5 +1,5 @@
 # Dashball
-As in a dashboar for all devices.
+As in a dashboard for all devices.
 
-## It is a work in progress
-## Stay tuned for the first official release
+It is a work in progress
+ Stay tuned for the first official release
