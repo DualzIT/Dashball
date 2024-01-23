@@ -2,6 +2,7 @@
 As in a dashboard for all devices.
 
 It is a work in progress.
+
 Stay tuned for the first official release.
 ## Use case
 Dashball is not one of those cloud monitoring software. 
