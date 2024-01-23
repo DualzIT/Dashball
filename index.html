@@ -256,16 +256,16 @@
                     }
 
                    
-                    const cpuUsageText = `CPU: ${data.cpu}%`;
-                    const memoryUsageText = `Memory: ${data.memory}%`;
-                    const gpuUsageText = `GPU Usage: ${data.gpu.gpu_usage}%`;
-                    const gpuMemoryText = `GPU Memory: ${data.gpu.memory_used}MB / ${data.gpu.memory_total}MB`;
-                    const diskusedtext = `Used: ${data.disk_usage.used_space_gb}GB`;
-                    const disktotaltext = `Total: ${data.disk_usage.total_space_gb}GB`;
-                    const diskfreetext = `Free: ${data.disk_usage.available_space_gb}GB`;
-                    const gpuname = `Name: ${data.gpu.name}`;
-                    const gpudriver = `Driver version: ${data.gpu.driver}`;
-                    const gputemp = `Temperature: ${data.gpu.temperature}°C`;
+                    const cpuUsageText = `CPU: ${data.cpu_usage}%`;
+                    const memoryUsageText = `Memory: ${data.memory_usage}%`;
+                    const gpuUsageText = `GPU Usage: ${data.gpu_usage}%`;
+                    const gpuMemoryText = `GPU Memory: ${data.gpu_memory_used}MB / ${data.gpu_memory_total}MB`;
+                    const diskusedtext = `Used: ${data.used_space_gb}GB`;
+                    const disktotaltext = `Total: ${data.total_space_gb}GB`;
+                    const diskfreetext = `Free: ${data.available_space_gb}GB`;
+                    const gpuname = `Name: ${data.gpu_name}`;
+                    const gpudriver = `Driver version: ${data.gpu_driver}`;
+                    const gputemp = `Temperature: ${data.gpu_temperature}°C`;
                     
                 
 
@@ -283,10 +283,10 @@
                     
 
                     
-                    cpuChart.data.datasets[0].data.push(data.cpu);
-                    memoryChart.data.datasets[0].data.push(data.memory);
-                    gpuUsageChart.data.datasets[0].data.push(data.gpu.gpu_usage);
-                    gpuMemoryChart.data.datasets[0].data.push(data.gpu.memory_used);
+                    cpuChart.data.datasets[0].data.push(data.cpu_usage);
+                    memoryChart.data.datasets[0].data.push(data.memory_usage);
+                    gpuUsageChart.data.datasets[0].data.push(data.gpu_usage);
+                    gpuMemoryChart.data.datasets[0].data.push(data.gpu_memory_used);
 
                     if (cpuChart.data.datasets[0].data.length > maxDataPoints) {
                         cpuChart.data.datasets[0].data.shift();
@@ -296,7 +296,7 @@
                     }
 
                    
-                    diskChart.data.datasets[0].data = [data.disk_usage.used_space_gb, data.disk_usage.available_space_gb];
+                    diskChart.data.datasets[0].data = [data.used_space_gb, data.available_space_gb];
                     diskChart.update();
                     
                  

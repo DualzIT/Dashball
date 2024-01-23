@@ -11,43 +11,45 @@ import GPUtil
 class SystemInfoHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/system_info':
+            py3nvml.nvmlInit()
+            handle = py3nvml.nvmlDeviceGetHandleByIndex(0)
+            # CPU
             cpu_percent_per_core = psutil.cpu_percent(interval=None, percpu=True)  
             cpu_usage = [round(usage, 2) for usage in cpu_percent_per_core]
-            # CPU cores hardcoded for now
+            # Disk
+            disk_usage = psutil.disk_usage('/')
+            used_space_gb = round(disk_usage.used / (1024 ** 3), 2)  
+            total_space_gb = round(disk_usage.total / (1024 ** 3), 2)  
+            available_disk_gb = round(disk_usage.free / (1024 ** 3), 2)
+            # GPU        
+            gpu = GPUtil.getGPUs()[0]
+            gpu_usage = round(gpu.load * 100, 2)
+            temperature = py3nvml.nvmlDeviceGetTemperature(handle, py3nvml.NVML_TEMPERATURE_GPU)
+            memory_info = py3nvml.nvmlDeviceGetMemoryInfo(handle)
+            GPU_memory_total = round(memory_info.total / (1024 ** 2))  # Transform to  MB
+            GPU_memory_free = round(memory_info.free / (1024 ** 2))    # Transform to  MB
+            GPU_memory_used = round(memory_info.used / (1024 ** 2))    # Transform to  MB    
+            # memory
             memory_usage = psutil.virtual_memory().percent
-            disk_info = self.get_disk_info()
-            gpu_info = self.get_gpu_info()
-    
-            # Calculate the availalbe disk space
-            available_disk_gb = disk_info["total_space_gb"] - disk_info["used_space_gb"]
-        
-            # Round up to 2 decimal
-            gpu_usage = round(gpu_info["gpu_usage"], 2)
-            # round up to 0 decimal
-            memory_used = round(gpu_info["memory_used"])
-            memory_total = round(gpu_info["memory_total"])
-            memory_free = round(gpu_info["memory_free"])
-
+            
+            # JSON data
             data = {
-                "cpu": cpu_usage,
-                "memory": memory_usage,
-                "disk_usage": {
-                    "used_space_gb": "{:.2f}".format(disk_info["used_space_gb"]),
-                    "total_space_gb": "{:.2f}".format(disk_info["total_space_gb"]),
-                    "disk_usage": "{:.2f}".format(disk_info["disk_usage"]),
-                    "available_space_gb": "{:.2f}".format(available_disk_gb)
-                },
-                "gpu": {
-                    "name": gpu_info["name"],
-                    "driver": gpu_info["driver"],
-                    "temperature": gpu_info["temperature"],
-                    "memory_total": memory_total,
-                    "memory_free": memory_free,
-                    "memory_used": memory_used,
+                    "cpu_usage": cpu_usage,
+                    "memory_usage": memory_usage,
+                    "used_space_gb": used_space_gb,
+                    "total_space_gb": total_space_gb,
+                    "available_space_gb": available_disk_gb,
+                    "gpu_name": gpu.name,
+                    "gpu_driver": gpu.driver,
+                    "gpu_temperature": temperature,
+                    "gpu_memory_total": GPU_memory_total,
+                    "gpu_memory_free": GPU_memory_free,
+                    "gpu_memory_used": GPU_memory_used,
                     "gpu_usage": gpu_usage
-                }
+                
             }
 
+            # Send JSON
             response = json.dumps(data)
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -56,63 +58,7 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
         else:
             super().do_GET()
 
-    def get_disk_info(self):
-        try:
-            disk_usage = psutil.disk_usage('/')
-
-            # Calculates the disk space to GB
-            used_space_gb = round(disk_usage.used / (1024 ** 3), 2)
-            total_space_gb = round(disk_usage.total / (1024 ** 3), 2)
-
-            # Round up to 2 decimal
-            disk_usage = round(disk_usage.percent, 2)
-
-            # Get the read and write speed to MB/s
-            read_speed = round(psutil.disk_io_counters().read_bytes / (1024 ** 2), 2)
-            write_speed = round(psutil.disk_io_counters().write_bytes / (1024 ** 2), 2)
-
-            disk_info = {
-                "used_space_gb": used_space_gb,
-                "total_space_gb": total_space_gb,
-                "disk_usage": disk_usage,
-                "read_speed_mb": read_speed,
-                "write_speed_mb": write_speed,
-            }
-
-            return disk_info
-        except Exception as e:
-            print(f"Fout bij het ophalen van schijfgegevens: {e}")
-            return None
-
-    def get_gpu_info(self):
-        try:
-            py3nvml.nvmlInit()
-            handle = py3nvml.nvmlDeviceGetHandleByIndex(0)
-
-            gpu = GPUtil.getGPUs()[0]
-            gpu_usage = round(gpu.load * 100, 2)
-            temperature = py3nvml.nvmlDeviceGetTemperature(handle, py3nvml.NVML_TEMPERATURE_GPU)
-            memory_info = py3nvml.nvmlDeviceGetMemoryInfo(handle)
-            memory_total = round(memory_info.total / (1024 ** 2))  # Transform to  MB
-            memory_free = round(memory_info.free / (1024 ** 2))    # Transform to  MB
-            memory_used = round(memory_info.used / (1024 ** 2))    # Transform to  MB
-            gpu_info = {
-                "name": gpu.name,
-                "driver": gpu.driver,
-                "temperature": temperature,
-                "memory_total": memory_total,
-                "memory_free": memory_free,
-                "memory_used": memory_used,
-                "gpu_usage": gpu_usage
-            }
-            py3nvml.nvmlShutdown()
-        except ImportError:
-            gpu_info = None
-        
-        return gpu_info
-
-   
-
+# webserver          
 def run_server():
     with TCPServer(('0.0.0.0', 80), SystemInfoHandler) as httpd:
         print('Server started on http://localhost:80')
