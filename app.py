@@ -11,18 +11,19 @@ import GPUtil
 class SystemInfoHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/system_info':
-            cpu_percent_per_core = psutil.cpu_percent(interval=None, percpu=True)  # Verander percpu naar True
+            cpu_percent_per_core = psutil.cpu_percent(interval=None, percpu=True)  
             cpu_usage = [round(usage, 2) for usage in cpu_percent_per_core]
             # CPU cores hardcoded for now
             memory_usage = psutil.virtual_memory().percent
             disk_info = self.get_disk_info()
             gpu_info = self.get_gpu_info()
     
-            # Bereken de beschikbare schijfruimte
+            # Calculate the availalbe disk space
             available_disk_gb = disk_info["total_space_gb"] - disk_info["used_space_gb"]
         
-            # Afronden tot 2 decimalen
+            # Round up to 2 decimal
             gpu_usage = round(gpu_info["gpu_usage"], 2)
+            # round up to 0 decimal
             memory_used = round(gpu_info["memory_used"])
             memory_total = round(gpu_info["memory_total"])
             memory_free = round(gpu_info["memory_free"])
@@ -59,14 +60,14 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
         try:
             disk_usage = psutil.disk_usage('/')
 
-            # Bereken de gebruikte ruimte in GB en de totale ruimte in GB
+            # Calculates the disk space to GB
             used_space_gb = round(disk_usage.used / (1024 ** 3), 2)
             total_space_gb = round(disk_usage.total / (1024 ** 3), 2)
 
-            # Bereken de schijfgebruikpercentage
+            # Round up to 2 decimal
             disk_usage = round(disk_usage.percent, 2)
 
-            # Haal de lees- en schrijfsnelheid op in MB/s
+            # Get the read and write speed to MB/s
             read_speed = round(psutil.disk_io_counters().read_bytes / (1024 ** 2), 2)
             write_speed = round(psutil.disk_io_counters().write_bytes / (1024 ** 2), 2)
 
@@ -92,9 +93,9 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
             gpu_usage = round(gpu.load * 100, 2)
             temperature = py3nvml.nvmlDeviceGetTemperature(handle, py3nvml.NVML_TEMPERATURE_GPU)
             memory_info = py3nvml.nvmlDeviceGetMemoryInfo(handle)
-            memory_total = round(memory_info.total / (1024 ** 2))  # Omzetten naar MB
-            memory_free = round(memory_info.free / (1024 ** 2))    # Omzetten naar MB
-            memory_used = round(memory_info.used / (1024 ** 2))    # Omzetten naar MB
+            memory_total = round(memory_info.total / (1024 ** 2))  # Transform to  MB
+            memory_free = round(memory_info.free / (1024 ** 2))    # Transform to  MB
+            memory_used = round(memory_info.used / (1024 ** 2))    # Transform to  MB
             gpu_info = {
                 "name": gpu.name,
                 "driver": gpu.driver,
@@ -114,7 +115,7 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
 
 def run_server():
     with TCPServer(('0.0.0.0', 80), SystemInfoHandler) as httpd:
-        print('Server gestart op http://localhost:80')
+        print('Server started on http://localhost:80')
         httpd.serve_forever()
 
 if __name__ == '__main__':
@@ -124,4 +125,4 @@ if __name__ == '__main__':
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print('Server gestopt')
+        print('Server has been stopt')

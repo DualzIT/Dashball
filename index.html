@@ -19,7 +19,7 @@
         position: absolute;
         top: 0vh;
     }
-    .lijngrafiek {
+    .linegraph {
         display: block;
         box-sizing: border-box;
         margin: 20px;
@@ -29,7 +29,7 @@
     .charts-container {
         display: flex;
         justify-content: space-around;
-        flex-wrap: wrap; /* Zorgt ervoor dat grafieken naar de volgende regel gaan op kleinere schermen */
+        flex-wrap: wrap;
     }
     .gpu-info {
         margin: 20px;
@@ -38,7 +38,7 @@
     }
     </style>
     <meta charset="UTF-8">
-    <title>Systeem Dashboard</title>
+    <title>System Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -47,38 +47,38 @@
     <img class="logo" src="Dualz_logo.png" alt="Logo">
     
     <div class="charts-container">
-        <!-- CPU grafiek -->
-        <div class="lijngrafiek">
+        <!-- CPU Graph -->
+        <div class="linegraph">
             <p><span id="cpu_usage">-</span>%</p>
             <canvas id="cpuChart"></canvas>
         </div>
     
-        <!-- Geheugen grafiek -->
-        <div class="lijngrafiek">
+        <!-- memory graph -->
+        <div class="linegraph">
             <p><span id="memory_usage">-</span></p>
             <canvas id="memoryChart"></canvas>
         </div>
-      <!-- Disk grafiek -->
-      <div class="lijngrafiek">
+      <!-- Disk graph -->
+      <div class="linegraph">
         <p><span id="total_disk_gb">-</span></p>
         <p><span id="used_disk_gb">-</span></p>
         <p><span id="free_disk_gb">-</span></p>
         <canvas id="diskChart"></canvas>
     </div>
-        <!-- GPU-gebruik grafiek -->
-        <div class="lijngrafiek">
+        <!-- GPU-usage graph -->
+        <div class="linegraph">
             <p><span id="gpu_usage">-</span></p>
             <canvas id="gpuUsageChart"></canvas>
         </div>
     
-        <!-- GPU-geheugen grafiek -->
-        <div class="lijngrafiek">
+        <!-- GPU-memory graph -->
+        <div class="linegraph">
             <p><span id="gpu_memory">-</span></p>
             <canvas id="gpuMemoryChart"></canvas>
         </div>
     
     
-        <!-- GPU-informatie -->
+        <!-- GPU-information -->
         <div class="gpu-info">
             <h2>GPU Information</h2>
             <p><span id="gpu_name">-</span></p>
@@ -89,7 +89,7 @@
     </div>
 
     <script>
-        const maxDataPoints = 30; // Aantal datapunten om te bewaren
+        const maxDataPoints = 30; // Data points
         let cpuChart;
         let memoryChart;
         let gpuUsageChart;
@@ -237,13 +237,13 @@
                     const now = new Date();
                     const timestamp = now.toLocaleTimeString();
 
-                    // Voeg het tijdstempel toe aan de labels
+                   
                     cpuChart.data.labels.push(timestamp);
                     memoryChart.data.labels.push(timestamp);
                     gpuUsageChart.data.labels.push(timestamp);
                     gpuMemoryChart.data.labels.push(timestamp);
 
-                    // Houd het aantal datapunten beperkt tot maxDataPoints
+               
                     if (cpuChart.data.labels.length > maxDataPoints) {
                         cpuChart.data.labels.shift();
                         memoryChart.data.labels.shift();
@@ -255,7 +255,7 @@
                         gpuMemoryChart.data.datasets[0].data.shift();
                     }
 
-                    // Update de CPU- en geheugengebruikstekst
+                   
                     const cpuUsageText = `CPU: ${data.cpu}%`;
                     const memoryUsageText = `Memory: ${data.memory}%`;
                     const gpuUsageText = `GPU Usage: ${data.gpu.gpu_usage}%`;
@@ -282,7 +282,7 @@
              
                     
 
-                    // Voeg de CPU- en geheugengebruikgegevens toe aan de datasets
+                    
                     cpuChart.data.datasets[0].data.push(data.cpu);
                     memoryChart.data.datasets[0].data.push(data.memory);
                     gpuUsageChart.data.datasets[0].data.push(data.gpu.gpu_usage);
@@ -295,11 +295,11 @@
                         gpuMemoryChart.data.datasets[0].data.shift();
                     }
 
-                    // Update het taartdiagram van de schijfruimte
+                   
                     diskChart.data.datasets[0].data = [data.disk_usage.used_space_gb, data.disk_usage.available_space_gb];
                     diskChart.update();
                     
-                    // Bijwerk de grafieken
+                 
                     cpuChart.update();
                     memoryChart.update();
                     gpuUsageChart.update();
