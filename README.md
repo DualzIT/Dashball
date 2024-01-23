@@ -1,5 +1,5 @@
 # Dashball
-As in a dashboard for all devices
+As in a dashboard for all devices.
 
 It is a work in progress.
 
