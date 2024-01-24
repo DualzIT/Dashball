@@ -3,8 +3,11 @@ import requests
 
 class TestSystemInfoJSON(unittest.TestCase):
     def test_json_data(self):
-        # Haal JSON-gegevens op van /system_info
-        response = requests.get('http://localhost/system_info')  # Pas de URL aan als dat nodig is
+        # Pas de URL aan om naar poort 8000 te verwijzen
+        url = 'http://localhost:8000/system_info'
+        
+        # Haal JSON-gegevens op van de aangepaste URL
+        response = requests.get(url)
         self.assertEqual(response.status_code, 200, "Fout bij het ophalen van JSON-gegevens")
 
         # Valideer de JSON-gegevens
