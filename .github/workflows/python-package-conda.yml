@@ -36,4 +36,4 @@ jobs:
     - name: Run app.py tests
       run: |
         # Voer de tests uit voor app.py
-        python -m pytest app.py
+        python -m pytest test.py
