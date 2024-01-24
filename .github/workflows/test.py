@@ -4,7 +4,7 @@ import requests
 class TestSystemInfoJSON(unittest.TestCase):
     def test_json_data(self):
         # Pas de URL aan om naar poort 8000 te verwijzen
-        url = 'http://localhost:8000/system_info'
+        url = 'https://localhost:8000/system_info'
         
         # Haal JSON-gegevens op van de aangepaste URL
         response = requests.get(url)
