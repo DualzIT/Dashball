@@ -5,7 +5,7 @@ import threading
 import time
 import json
 import psutil
-import GPUtil
+
 
 
 class SystemInfoHandler(SimpleHTTPRequestHandler):
