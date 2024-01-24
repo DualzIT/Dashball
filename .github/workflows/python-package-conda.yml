@@ -23,7 +23,7 @@ jobs:
         pip install GPUtil
         pip install psutil
         pip install py3nvml
-        conda env update --file environment.yml --name base
+        
     - name: Lint with flake8
       run: |
         conda install flake8
