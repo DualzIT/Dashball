@@ -37,5 +37,5 @@ jobs:
     - name: Run test.py tests
       run: |
         # Voer de tests uit voor app.py
-        python3 app.py
+        python3 app.py &
         python -m pytest .github/workflows/test.py
