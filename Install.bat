@@ -19,7 +19,7 @@ xcopy /e /i /y .\* "%install_dir%"
 > "%vbscript%" echo Set oWS = WScript.CreateObject("WScript.Shell") 
 >> "%vbscript%" echo sLinkFile = "%startup_dir%\DashballApp.lnk"
 >> "%vbscript%" echo Set oLink = oWS.CreateShortcut(sLinkFile)
->> "%vbscript%" echo oLink.TargetPath = "%install_dir%\app.exe" 
+>> "%vbscript%" echo oLink.TargetPath = "%install_dir%\app.py" 
 >> "%vbscript%" echo oLink.Save
 
 :: Voer het VBScript uit om de snelkoppeling te maken
