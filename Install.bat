@@ -15,17 +15,17 @@ if not exist "%install_dir%" (
 :: Copy all files to the installation dir
 xcopy /e /i /y .\* "%install_dir%"
 
-:: Maak een VBScript bestand om de snelkoppeling te maken
+:: Make a VBScript file to create a shortcut
 > "%vbscript%" echo Set oWS = WScript.CreateObject("WScript.Shell") 
 >> "%vbscript%" echo sLinkFile = "%startup_dir%\DashballApp.lnk"
 >> "%vbscript%" echo Set oLink = oWS.CreateShortcut(sLinkFile)
 >> "%vbscript%" echo oLink.TargetPath = "%install_dir%\app.py" 
 >> "%vbscript%" echo oLink.Save
 
-:: Voer het VBScript uit om de snelkoppeling te maken
+:: Create a shortcut with vbscript
 cscript //nologo "%vbscript%"
 
-:: Ruim het VBScript bestand op
+:: delete vbscript
 del "%vbscript%"
 
 echo Instalation Finished. Now go monitor your things.
