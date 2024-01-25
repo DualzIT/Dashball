@@ -7,32 +7,6 @@ import json
 import psutil
 import GPUtil
 import os
-import sys
-import shutil
-
-def add_to_startup():
-    # Path to executable
-    exe_path = sys.executable
-
-    # Path to startup dir
-    startup_dir = os.path.join(os.environ['APPDATA'], 'Microsoft\\Windows\\Start Menu\\Programs\\Startup')
-
-    # File name for the startup
-    shortcut_path = os.path.join(startup_dir, 'dashball.lnk')
-
-    # Check if file is on startup
-    if not os.path.isfile(shortcut_path):
-        # Import only when there is no strartup
-        import winshell
-
-        # Make a shortcut
-        with winshell.shortcut(shortcut_path) as shortcut:
-            shortcut.path = exe_path
-            shortcut.working_directory = os.path.dirname(exe_path)
-            shortcut.description = "Mijn Python Programma"
-
-
-add_to_startup()
 
 class SystemInfoHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
