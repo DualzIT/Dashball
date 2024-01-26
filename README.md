@@ -9,7 +9,7 @@ WARNING: The development is still in alpha.
 
 Download an unzip the .zip file.
 
-Execute 'install.bat'
+Execute `install.bat`
 
 That is it!
 
