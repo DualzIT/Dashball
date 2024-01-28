@@ -1,7 +1,7 @@
-app.py
-charts.js
-Dualz_logo.png
-index.html
+src\app.py
+src\charts.js
+public\img\Dualz_logo.png
+public\index.html
 README.md
 startup.bat
-styles/styles.css
+src\styles\styles.css

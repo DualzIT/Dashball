@@ -8,59 +8,6 @@ SET "startup_dir=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 
 echo Installation for Dashball.
 
-:: Check if Chocolatey is insalled
-where /q choco
-if %errorlevel% neq 0 (
-    echo Chocolatey is installing...
-    :: Download and install Chocolatey
-    @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
-)
-
-:: Check again if Chocolatey is installed
-where /q choco
-if %errorlevel% neq 0 (
-    echo Chocolatey installation failed.
-    exit /b
-)
-
-:: Install wget with Chocolatey
-echo wget is installing...
-choco install wget -y
-
-:: CHeck if wget is installed
-where /q wget
-if %errorlevel% neq 0 (
-    echo wget installation failed.
-    exit /b
-)
-
-echo wget is Installed
-
-:: Check if python is installed
-python --version 2>NUL
-if %ERRORLEVEL% NEQ 0 goto installPython
-exit /b
-
-:installPython
-echo Python is not found on your computer. Installing...
-
-:: Download the Python installer with wget 
-wget https://www.python.org/ftp/python/3.12.1/python-3.12.1-amd64.exe -OutFile python-installer.exe
-
-:: Execute the python installer
-start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
-
-:: Delete the installer
-del python-installer.exe
-
-:: Check if python is installed
-python --version
-if %ERRORLEVEL% NEQ 0 (
-    echo Python installation failed.
-    exit /b
-)
-
-echo Python succesvol geïnstalleerd.
 :: install all requirements
 pip install -r requirements.txt
 
