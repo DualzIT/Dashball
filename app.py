@@ -15,8 +15,8 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
             py3nvml.nvmlInit()
             handle = py3nvml.nvmlDeviceGetHandleByIndex(0)
             # CPU
-            cpu_percent_per_core = psutil.cpu_percent(interval=None, percpu=True)  
-            cpu_usage = [round(usage, 2) for usage in cpu_percent_per_core]
+            cpu_percent_per_core = psutil.cpu_percent() 
+            cpu_usage = (cpu_percent_per_core * 2)
             # Disk
             disk_usage = psutil.disk_usage('/')
             used_space_gb = round(disk_usage.used / (1024 ** 3), 2)  
