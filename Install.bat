@@ -9,13 +9,13 @@ SET "startup_dir=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 echo Installation for Dashball.
 
 :: install all requirements
-pip install -r requirements.txt
+pip install -r src\install\requirements.txt
 
 :: Create the installation folder
  mkdir "%install_dir%"
 
 :: Copy all files from files-to-copy.txt to the installation dir
-for /f "tokens=*" %%i in (files-to-copy.txt) do (
+for /f "tokens=*" %%i in (src\install\files-to-copy.txt) do (
     if not "%%i"=="" (
         if exist "%~dp0%%i" (
             xcopy /s /y "%~dp0%%i" "%install_dir%\%%i"
@@ -27,10 +27,10 @@ for /f "tokens=*" %%i in (files-to-copy.txt) do (
 
 
 :: Create a shortcut with vbscript
-copy "%~dp0\startup.bat" "%startup_dir%" /Y
+copy "%~dp0src\install\startup.bat" "%startup_dir%" /Y
 
 :: Start the program
-call startup.bat 
+call src\install\startup.bat 
 
 echo Instalation Finished. Now go monitor your things.
 pause
