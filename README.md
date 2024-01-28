@@ -4,9 +4,9 @@ As in a dashboard for all devices
 It is a work in progress.
 
 Stay tuned for the first official release.
-
+## Demo
 <img width="1684" alt="image" src="https://github.com/DualzIT/Dashball/assets/125699393/0c88e49e-89f7-46fc-8e49-8f51f3918ddb">
-
+Unfortinatly the demo pc does not have a GPU but you can still check out the demo [here](http://alexvanzoggel.nl/public)
 
 ## Setup
 WARNING: The development is still in alpha. 
