@@ -6,8 +6,7 @@ import time
 import json
 import psutil
 import GPUtil
-
-
+import os
 
 class SystemInfoHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -61,12 +60,13 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
 
 # webserver          
 def run_server():
-    with TCPServer(('0.0.0.0', 8000), SystemInfoHandler) as httpd:
-        print('Server started on http://localhost:8000')
+    with TCPServer(('0.0.0.0', 80), SystemInfoHandler) as httpd:
+        print('Server started on http://localhost:80')
         httpd.serve_forever()
 
 if __name__ == '__main__':
     server_thread = threading.Thread(target=run_server)
+    server_thread.daemon = True
     server_thread.start()
     try:
         while True:
