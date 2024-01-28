@@ -60,7 +60,6 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
 
 # webserver          
 def run_server():
-    os.chdir(os.path.abspath(os.path.dirname(__file__)))
     with TCPServer(('0.0.0.0', 80), SystemInfoHandler) as httpd:
         print('Server started on http://localhost:80')
         httpd.serve_forever()
