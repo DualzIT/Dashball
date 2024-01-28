@@ -11,7 +11,7 @@ Unfortinatly the demo pc does not have a GPU but you can still check out the dem
 ## Setup
 WARNING: The development is still in alpha. 
 
-Install Python3.12 with the [Microsft Store](https://www.microsoft.com/store/productId/9NCVDN91XZQP?ocid=pdpshare)
+Install Python3.12 with the [Microsft Store](https://www.microsoft.com/store/productId/9NCVDN91XZQP?ocid=pdpshare){:target="_blank"}
 
 Download and unzip the .zip file.
 
