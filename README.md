@@ -5,7 +5,8 @@ It is a work in progress.
 
 Stay tuned for the first official release.
 
-<img width="1693" alt="image" src="https://github.com/DualzIT/Dashball/assets/125699393/506c727b-0a46-4538-91f9-5bcead4c7af7">
+<img width="1684" alt="image" src="https://github.com/DualzIT/Dashball/assets/125699393/0c88e49e-89f7-46fc-8e49-8f51f3918ddb">
+
 
 ## Setup
 WARNING: The development is still in alpha. 
