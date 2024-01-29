@@ -93,7 +93,7 @@
                         y: {
                             beginAtZero: true,
                             max: 2048
-                            // hardcoded for now
+                            // hardcoded but will be overwritten
                         }
                     }
                 }
@@ -120,6 +120,9 @@
                     const now = new Date();
                     const timestamp = now.toLocaleTimeString();
                     
+                    // Ads the y scale for gpu memory
+                    gpuMemoryChart.options.scales.y.max = data.gpu_memory_total;
+
                     // Add timestamp as a label
                     cpuChart.data.labels.push(timestamp);
                     memoryChart.data.labels.push(timestamp);
