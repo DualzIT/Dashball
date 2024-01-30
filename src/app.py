@@ -6,6 +6,7 @@ import json
 import psutil
 import os
 import platform
+import socket
 
 if platform.system() == 'Windows':
     parent_directory = '..\\'
@@ -59,6 +60,11 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
             # Memory
             memory_usage = psutil.virtual_memory().percent
 
+            # System info
+            os_version = platform.platform()
+            hostname = socket.gethostname()
+            ip_addresses = socket.gethostbyname_ex(hostname)[2]
+
             # JSON data
             data = {
                 "cpu_usage": cpu_usage,
@@ -72,7 +78,10 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
                 "gpu_memory_total": GPU_memory_total,
                 "gpu_memory_free": GPU_memory_free,
                 "gpu_memory_used": GPU_memory_used,
-                "gpu_usage": gpu_usage
+                "gpu_usage": gpu_usage,
+                "hostname": hostname,
+                "ip_address": ip_addresses,
+                "os_version": os_version,
             }
 
             # Send JSON
@@ -91,7 +100,6 @@ def run_server():
         print('Server started on http://localhost:80')
         httpd.serve_forever()
 
-# ...
 
 if __name__ == '__main__':
     server_thread = threading.Thread(target=run_server)
