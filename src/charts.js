@@ -141,16 +141,19 @@
                         gpuMemoryChart.data.datasets[0].data.shift();
                     }
 
-                    document.getElementById('cpu_usage').textContent = `CPU: ${data.cpu_usage}%`;
+                    document.getElementById('cpu_usage').textContent = `CPU: ${data.cpu_usage}`;
                     document.getElementById('memory_usage').textContent = `Memory: ${data.memory_usage}%`;
                     document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_usage}%`;
                     document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_memory_used}MB / ${data.gpu_memory_total}MB`;
                     document.getElementById('used_disk_gb').textContent = `Used: ${data.used_space_gb}GB`;
                     document.getElementById('total_disk_gb').textContent = `Total: ${data.total_space_gb}GB`;
                     document.getElementById('free_disk_gb').textContent = `Free: ${data.available_space_gb}GB`;
-                    document.getElementById('gpu_name').textContent = `Name: ${data.gpu_name}`;
-                    document.getElementById('gpu_driver').textContent = `Driver version: ${data.gpu_driver}`;
-                    document.getElementById('gpu_temperature').textContent = `Temperature: ${data.gpu_temperature}°C`;
+                    document.getElementById('gpu_name').textContent = `${data.gpu_name}`;
+                    document.getElementById('gpu_driver').textContent = `${data.gpu_driver}`;
+                    document.getElementById('gpu_temperature').textContent = `${data.gpu_temperature}°C`;
+                    document.getElementById('computer_name').textContent = `${data.hostname}`;
+                    document.getElementById('ip_address').textContent = `${data.ip_address}`;
+                    document.getElementById('os_version').textContent = `${data.os_version}`;
              
 
                     cpuChart.data.datasets[0].data.push(data.cpu_usage);
