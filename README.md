@@ -14,7 +14,7 @@ WARNING: The development is still in alpha.
 
 Install Python3.12 with the [Microsft Store](https://www.microsoft.com/store/productId/9NCVDN91XZQP?ocid=pdpshare)
 
-Download and unzip the .zip file.
+Download and unzip the dashball .zip file.
 
 Execute `install.bat`
 
