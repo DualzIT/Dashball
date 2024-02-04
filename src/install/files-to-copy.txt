@@ -1,7 +1,0 @@
-src\app.py
-src\charts.js
-public\img\Dualz_logo.png
-public\index.html
-README.md
-startup.bat
-src\styles\styles.css

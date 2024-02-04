@@ -1,4 +1,0 @@
-GPUtil
-psutil
-py3nvml
-setuptools

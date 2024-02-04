@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles/styles.css">
+    <script src="charts.js"></script>
+    <title>Dashball</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1 class="titel">Dashball</h1>
+    <img class="logo" src="img/Dualz_logo.png" alt="Logo">
+    
+    <div class="charts-container">
+        <!-- CPU Graph -->
+        <div class="linegraph">
+            <p><span id="cpu_usage">-</span>%</p>
+            <canvas id="cpuChart"></canvas>
+        </div>
+    
+        <!-- memory graph -->
+        <div class="linegraph">
+            <p><span id="memory_usage">-</span></p>
+            <canvas id="memoryChart"></canvas>
+        </div>
+        <div class="computer-info">
+            <h2>Computer information</h2>
+            <p>Hostname: <strong><span id="computer_name">-</span></strong></p>
+            <p>OS:<strong><span id="os">-</span></strong></p>
+            <p>OS version:<strong><span id="os_version">-</span></strong></p>
+        </div>
+</div>
+    <div class="charts-container">
+        <!-- GPU-usage graph -->
+        <div class="linegraph">
+            <p><span id="gpu_usage">-</span></p>
+            <canvas id="gpuUsageChart"></canvas>
+        </div>
+    
+        <!-- GPU-memory graph -->
+        <div class="linegraph">
+            <p><span id="gpu_memory">-</span></p>
+            <canvas id="gpuMemoryChart"></canvas>
+        </div>
+    
+    
+        <!-- GPU-information -->
+        <div class="gpu-info">
+            <h2>GPU information</h2>
+            <p>Name: <strong><span id="gpu_name">-</span></strong></p>
+            <p>Temperature: <strong><span id="gpu_temperature">-</span></strong></p>
+        </div>
+    </div>
+    <div class="disk-container">
+      <!-- Disk graph -->
+      <div class="diskgraph">
+        <canvas id="diskChart"></canvas>
+        <p><span id="total_disk_gb">-</span></p>
+        <p><span id="used_disk_gb">-</span></p>
+        <p><span id="free_disk_gb">-</span></p>
+    </div>
+    </div>
+</body>
+</html>
