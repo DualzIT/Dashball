@@ -12,16 +12,6 @@ Unfortinatly the demo pc does not have a GPU but you can still check out the dem
 ## Setup
 WARNING: The development is still in alpha. 
 
-Install Python3.12 with the [Microsft Store](https://www.microsoft.com/store/productId/9NCVDN91XZQP?ocid=pdpshare)
-
-Download and unzip the dashball .zip file.
-
-Execute `install.bat`
-
-That is it!
-
-To update the program you can do these 2 steps again, the install.bat file is designed to work many times.
-
 ## Use case
 Dashball is not one of those cloud monitoring software. 
 
