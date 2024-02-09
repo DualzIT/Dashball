@@ -7,9 +7,9 @@ Stay tuned for the first official release.
 ## Demo
 <img width="1686" alt="image" src="https://github.com/DualzIT/Dashball/assets/125699393/d294956e-139b-4e19-8142-07604d84f98f">
 
-Unfortinatly the demo pc does not have a GPU but you can still check out the demo at http://alexvanzoggel.nl/website
+Unfortinatly the demo pc does not have a GPU but you can still check out the demo at http://alexvanzoggel.nl/Website
 
-## Setup
+# Setup
 WARNING: The development is in beta. 
 
 There are multiple ways to install and run Dashball
@@ -62,11 +62,11 @@ And run dashball.go using go
 ```
 sudo go run dashball.go
 ```
-## Use case
+# Use case
 Dashball is not one of those cloud monitoring software. 
 
 We create a webserver with all the information you need to remotely check in on your system.
-## Supported operating systems
+# Supported operating systems
 
  operating system | Using            | status|
 | -------------   |:-------------:   | -----:|
