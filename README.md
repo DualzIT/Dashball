@@ -13,7 +13,7 @@ Unfortinatly the demo pc does not have a GPU but you can still check out the dem
 WARNING: The development is in beta. 
 
 There are multiple ways to install and run Dashball
-### .exe file (Only for windows) 
+## .exe file (Only for windows) 
 Download dashball.exe from the latest release and run it.
 
 Windows will give some security warnings that you need to ignore
@@ -44,7 +44,7 @@ And run dashball.py using python3
 ```
 sudo python3 Dashball.py
 ```
-### go
+## go
 if you don't have already you need to install python3
 ```
 sudo apt update
