@@ -62,6 +62,9 @@ And run dashball.go using go
 ```
 sudo go run dashball.go
 ```
+# uninstall
+## Windows
+for windows you can uninstall Dashball using either the normal windows settings or with appwiz.cpl
 # Use case
 Dashball is not one of those cloud monitoring software. 
 
