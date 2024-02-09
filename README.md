@@ -71,6 +71,5 @@ We create a webserver with all the information you need to remotely check in on 
  operating system | Using            | status|
 | -------------   |:-------------:   | -----:|
 | Windows 11      | exe, go, python3 | :white_check_mark:   |
-| windows 10      |                  | :interrobang:      |
 | Ubuntu          | go, python3      | :white_check_mark: |
 
