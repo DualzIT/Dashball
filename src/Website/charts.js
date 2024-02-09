@@ -119,7 +119,8 @@
                     const timestamp = now.toLocaleTimeString();
                     
                     // Ads the y scale for gpu memory
-                    gpuMemoryChart.options.scales.y.max = parseFloat(data.gpu_info.gpu0.memory_total.replace(/,/g, '')),
+                    gpuMemoryChart.options.scales.y.max = parseFloat(data.gpu_info.gpu0.memory_total);
+
 
                     // Add timestamp as a label
                     cpuChart.data.labels.push(timestamp);

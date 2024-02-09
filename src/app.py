@@ -8,80 +8,59 @@ import os
 import platform
 import socket
 
-if platform.system() == 'Windows':
-    parent_directory = '..\\'
-else:
-    parent_directory = '../'
-    os.chdir(parent_directory)
-
 class SystemInfoHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/system_info':
             # CPU
             cpu_percent_per_core = psutil.cpu_percent()
-            cpu_usage = (cpu_percent_per_core * 2)
+            cpu_usage = round(cpu_percent_per_core * 10, 0)  # Round to 1 decimal place
             # Disk
             disk_usage = psutil.disk_usage('/')
             used_space_gb = round(disk_usage.used / (1024 ** 3), 2)
             total_space_gb = round(disk_usage.total / (1024 ** 3), 2)
             available_disk_gb = round(disk_usage.free / (1024 ** 3), 2)
-            # Initialize GPU values as None
-            gpu = None
-            gpu_driver = None
-            gpu_temperature = None
-            GPU_memory_total = None
-            GPU_memory_free = None
-            GPU_memory_used = None
-            gpu_usage = None
+            # GPU
+            gpu_info = {}
             try:
                 from py3nvml import py3nvml
                 py3nvml.nvmlInit()
                 handle = py3nvml.nvmlDeviceGetHandleByIndex(0)
-                gpu = py3nvml.nvmlDeviceGetName(handle)
-                gpu_driver = py3nvml.nvmlSystemGetDriverVersion()
-                gpu_temperature = py3nvml.nvmlDeviceGetTemperature(handle, py3nvml.NVML_TEMPERATURE_GPU)
-                memory_info = py3nvml.nvmlDeviceGetMemoryInfo(handle)
-                GPU_memory_total = round(memory_info.total / (1024 ** 2))  # Transform to MB
-                GPU_memory_free = round(memory_info.free / (1024 ** 2))    # Transform to MB
-                GPU_memory_used = round(memory_info.used / (1024 ** 2))    # Transform to MB
-                gpu_usage = py3nvml.nvmlDeviceGetUtilizationRates(handle).gpu
+                gpu_name = py3nvml.nvmlDeviceGetName(handle)
+                gpu_memory_info = py3nvml.nvmlDeviceGetMemoryInfo(handle)
+                gpu_info['gpu0'] = {
+                    "memory_free": round(gpu_memory_info.free / (1024 ** 2)),   # Convert bytes to MB
+                    "memory_total": round(gpu_memory_info.total / (1024 ** 2)),  # Convert bytes to MB
+                    "memory_used": round(gpu_memory_info.used / (1024 ** 2)),    # Convert bytes to MB
+                    "name": gpu_name.decode("utf-8") if isinstance(gpu_name, bytes) else gpu_name,
+                    "temperature_gpu": py3nvml.nvmlDeviceGetTemperature(handle, py3nvml.NVML_TEMPERATURE_GPU),
+                    "utilization_gpu": py3nvml.nvmlDeviceGetUtilizationRates(handle).gpu,
+                    "utilization_mem": py3nvml.nvmlDeviceGetUtilizationRates(handle).memory,
+                    "uuid": py3nvml.nvmlDeviceGetUUID(handle).decode("utf-8") if isinstance(py3nvml.nvmlDeviceGetUUID(handle), bytes) else py3nvml.nvmlDeviceGetUUID(handle)
+                }
                 py3nvml.nvmlShutdown()
             except ImportError:
-                gpu = "N/A"
-                gpu_driver = "N/A"
-                gpu_temperature = "N/A"
-                GPU_memory_total = "N/A"
-                GPU_memory_free = "N/A"
-                GPU_memory_used = "N/A"
-                gpu_usage = "N/A"
+                pass
             except Exception as e:
                 print(f"Error getting GPU info: {e}")
 
             # Memory
-            memory_usage = psutil.virtual_memory().percent
-
-            # System info
-            os_version = platform.platform()
-            hostname = socket.gethostname()
-            ip_addresses = socket.gethostbyname_ex(hostname)[2]
+            memory_usage_raw = psutil.virtual_memory().percent
+            memory_usage = round(memory_usage_raw, 0)
 
             # JSON data
             data = {
+                "available_disk_space_gb": available_disk_gb,
                 "cpu_usage": cpu_usage,
+                "disk_usage_percent": round((used_space_gb / total_space_gb) * 100, 1),  # Calculate disk usage percentage
+                "gpu_info": gpu_info,
+                "hostname": socket.gethostname(),
                 "memory_usage": memory_usage,
-                "used_space_gb": used_space_gb,
-                "total_space_gb": total_space_gb,
-                "available_space_gb": available_disk_gb,
-                "gpu_name": gpu,
-                "gpu_driver": gpu_driver,
-                "gpu_temperature": gpu_temperature,
-                "gpu_memory_total": GPU_memory_total,
-                "gpu_memory_free": GPU_memory_free,
-                "gpu_memory_used": GPU_memory_used,
-                "gpu_usage": gpu_usage,
-                "hostname": hostname,
-                "ip_address": ip_addresses,
-                "os_version": os_version,
+                "platform": platform.platform(),
+                "platform_version": platform.version(),
+                "total_disk_space_gb": total_space_gb,
+                "total_memory": psutil.virtual_memory().total,
+                "used_disk_space_gb": used_space_gb,
+                "used_memory": psutil.virtual_memory().used
             }
 
             # Send JSON
@@ -93,9 +72,9 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
         else:
             super().do_GET()
 
+
 # webserver
 def run_server():
-   
     with TCPServer(('0.0.0.0', 80), SystemInfoHandler) as httpd:
         print('Server started on http://localhost:80')
         httpd.serve_forever()
