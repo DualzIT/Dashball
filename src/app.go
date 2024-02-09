@@ -30,7 +30,7 @@ func main() {
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// CPU Usage
 	cpuUsage, _ := cpu.Percent(0, false)
-	cpuUsageX10 := cpuUsage[0] * 10 
+	cpuUsageX10 := cpuUsage[0] * 2
 	roundedCPUUsage := fmt.Sprintf("%.0f", cpuUsageX10)
 
 	// Memory Usage
@@ -72,32 +72,45 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGPUInfo() (map[string]interface{}, error) {
-	cmd := exec.Command("nvidia-smi", "--query-gpu=uuid,name,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.used,memory.free", "--format=csv,noheader,nounits")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
+    cmd := exec.Command("nvidia-smi", "--query-gpu=uuid,name,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.used,memory.free", "--format=csv,noheader,nounits")
+    output, err := cmd.CombinedOutput()
+    if err != nil {
+        // Als er een fout optreedt, retourneer dan een lege GPU-info met null-waarden
+        return map[string]interface{}{
+            "gpu0": map[string]interface{}{
+                "uuid":            "null",
+                "name":            "null",
+                "temperature_gpu": "null",
+                "utilization_gpu": "null",
+                "utilization_mem": "null",
+                "memory_total":    "null",
+                "memory_used":     "null",
+                "memory_free":     "null",
+            },
+        }, nil
+    }
 
-	gpuInfo := make(map[string]interface{})
+    gpuInfo := make(map[string]interface{})
 
-	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-	for i, line := range lines {
-		fields := strings.Split(line, ",")
-		gpu := map[string]interface{}{
-			"uuid":            fields[0],
-			"name":            fields[1],
-			"temperature_gpu": fields[2],
-			"utilization_gpu": fields[3],
-			"utilization_mem": fields[4],
-			"memory_total":    fields[5],
-			"memory_used":     fields[6],
-			"memory_free":     fields[7],
-		}
-		gpuInfo[fmt.Sprintf("gpu%d", i)] = gpu
-	}
+    lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+    for i, line := range lines {
+        fields := strings.Split(line, ",")
+        gpu := map[string]interface{}{
+            "uuid":            fields[0],
+            "name":            fields[1],
+            "temperature_gpu": fields[2],
+            "utilization_gpu": fields[3],
+            "utilization_mem": fields[4],
+            "memory_total":    fields[5],
+            "memory_used":     fields[6],
+            "memory_free":     fields[7],
+        }
+        gpuInfo[fmt.Sprintf("gpu%d", i)] = gpu
+    }
 
-	return gpuInfo, nil
+    return gpuInfo, nil
 }
+
 
 func checkErr(err error) {
 	if err != nil {
