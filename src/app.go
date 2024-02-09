@@ -18,7 +18,7 @@ import (
 
 func main() {
 	// Webserver
-	websiteDir := filepath.Join(".", "src", "Website")
+	websiteDir := filepath.Join(".", "Website")
 	fs := http.FileServer(http.Dir(websiteDir))
 	http.Handle("/", fs)
 	// Sends json to /system_info
