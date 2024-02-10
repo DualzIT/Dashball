@@ -2,11 +2,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Dashball"
-#define MyAppVersion "Alpha 0.2"
+#define MyAppVersion "beta 0.2"
 #define MyAppPublisher "Dualz IT"
 #define MyAppURL "dualzit.nl"
-#define MyAppExeName "app.exe"
-#define MyAppAssocName MyAppName + ""
+#define MyAppExeName "dashball.exe"
+#define MyAppAssocName "Dashball"
 #define MyAppAssocExt ".exe"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
@@ -53,5 +53,13 @@ Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runhidden
 
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
+  end;
+end;
