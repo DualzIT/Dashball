@@ -28,9 +28,8 @@ sudo apt install pip
 install depedencies
 ```
 pip install GPUtil
-pip install psutil
+sudo pip install psutil
 pip install py3nvml
-pip install setuptools
 ```
 download the zip file or clone using
 ```
