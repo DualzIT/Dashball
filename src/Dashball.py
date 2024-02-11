@@ -13,7 +13,7 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
         if self.path == '/system_info':
             # CPU
             cpu_percent_per_core = psutil.cpu_percent()
-            cpu_usage = round(cpu_percent_per_core, 0)  # Round to 1 decimal place
+            cpu_usage = round(cpu_percent_per_core, 0)  # Round to 0 decimal place
             # Disk
             disk_usage = psutil.disk_usage('/')
             used_space_gb = round(disk_usage.used / (1024 ** 3), 2)
