@@ -1,3 +1,4 @@
+// go build -ldflags -H=windowsgui dashball.go
 package main
 import (
 	"encoding/json"
@@ -8,7 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
+	"syscall"
 
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
@@ -64,7 +65,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"platform":                hostInfo.Platform,
 		"platform_version":        hostInfo.PlatformVersion,
 		"hostname":                hostInfo.Hostname,
-		"gpu_info":                gpuInfo, // GPU-informatie toevoegen
+		"gpu_info":                gpuInfo, 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -73,9 +74,10 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 func getGPUInfo() (map[string]interface{}, error) {
     cmd := exec.Command("nvidia-smi", "--query-gpu=uuid,name,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.used,memory.free", "--format=csv,noheader,nounits")
-    output, err := cmd.CombinedOutput()
+    cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	output, err := cmd.CombinedOutput()
     if err != nil {
-        // Als er een fout optreedt, retourneer dan een lege GPU-info met null-waarden
+        // If there is no gpu found it will display null
         return map[string]interface{}{
             "gpu0": map[string]interface{}{
                 "uuid":            "null",
