@@ -10,10 +10,7 @@ fi
 cd "$(dirname "$0")"
 
 # Make the application executable
-chmod +x dashball/src/dashball
-
-# Run the application
-./dashball/src/dashball
+chmod +x dashball
 
 # Create a systemd service file
 cat > /etc/systemd/system/dashball.service <<EOF
@@ -21,7 +18,8 @@ cat > /etc/systemd/system/dashball.service <<EOF
 Description=Dashball Service
 
 [Service]
-ExecStart=$(pwd)/dashball/src/dashball
+ExecStart=$(pwd)/dashball
+WorkingDirectory=$(pwd)
 Restart=always
 
 [Install]
