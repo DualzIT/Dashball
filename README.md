@@ -9,6 +9,11 @@ Stay tuned for the first official release.
 
 Unfortinatly the demo pc does not have a GPU but you can still check out the demo at http://alexvanzoggel.nl/Website
 
+# Use case
+Dashball is not one of those cloud monitoring software. 
+
+We create a webserver with all the information you need to remotely check in on your system.
+
 # Setup
 WARNING: The development is in beta. 
 
@@ -41,7 +46,26 @@ chmod +x install-dashball.sh
 ```
 sudo install-dashball.sh
 ```
+## go
+if you don't have already you need to install python3
+```
+sudo apt update
+sudo apt install golang
+```
+download the zip file or clone using
+```
+git clone https://github.com/DualzIT/Dashball.git
+```
+go to the dashball/src directory
+```
+cd dashball/src
+```
+And run dashball.go using go
+```
+sudo go run dashball.go
+```
 ## python3
+Warning: python3 is currently not supported. We want to focus on Go for now.
 if you don't have already you need to install python3
 ```
 sudo apt update
@@ -66,35 +90,8 @@ And run dashball.py using python3
 ```
 sudo python3 Dashball.py
 ```
-## go
-if you don't have already you need to install python3
-```
-sudo apt update
-sudo apt install golang
-```
-download the zip file or clone using
-```
-git clone https://github.com/DualzIT/Dashball.git
-```
-go to the dashball/src directory
-```
-cd dashball/src
-```
-And run dashball.go using go
-```
-sudo go run dashball.go
-```
 # uninstall
 ## Windows
 for windows you can uninstall Dashball using either the normal windows settings or with appwiz.cpl
-# Use case
-Dashball is not one of those cloud monitoring software. 
 
-We create a webserver with all the information you need to remotely check in on your system.
-# Supported operating systems
-
- operating system | Using            | status|
-| -------------   |:-------------:   | -----:|
-| Windows 11      | exe, go, python3 | :white_check_mark:   |
-| Ubuntu          | go, python3      | :white_check_mark: |
 
