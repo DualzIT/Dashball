@@ -13,7 +13,7 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
         if self.path == '/system_info':
             # CPU
             cpu_percent_per_core = psutil.cpu_percent()
-            cpu_usage = round(cpu_percent_per_core * 10, 0)  # Round to 1 decimal place
+            cpu_usage = round(cpu_percent_per_core, 0)  # Round to 0 decimal place
             # Disk
             disk_usage = psutil.disk_usage('/')
             used_space_gb = round(disk_usage.used / (1024 ** 3), 2)
@@ -42,6 +42,19 @@ class SystemInfoHandler(SimpleHTTPRequestHandler):
                 pass
             except Exception as e:
                 print(f"Error getting GPU info: {e}")
+
+            # If no GPU information found, set default values to null
+            if not gpu_info:
+                gpu_info['gpu0'] = {
+                    "memory_free": None,
+                    "memory_total": None,
+                    "memory_used": None,
+                    "name": None,
+                    "temperature_gpu": None,
+                    "utilization_gpu": None,
+                    "utilization_mem": None,
+                    "uuid": None
+                }
 
             # Memory
             memory_usage_raw = psutil.virtual_memory().percent
