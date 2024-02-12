@@ -36,6 +36,9 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Memory Usage
 	vMem, _ := mem.VirtualMemory()
+	totalMemoryGB := float64(vMem.Total) / (1024 * 1024 * 1024)
+	usedMemoryGB := float64(vMem.Used) / (1024 * 1024 * 1024)
+
 
 	// Disk Usage
 	diskUsage, _ := disk.Usage("/")
@@ -54,8 +57,8 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// Send data as JSON
 	data := map[string]interface{}{
 		"cpu_usage":               roundedCPUUsage,
-		"total_memory":            vMem.Total,
-		"used_memory":             vMem.Used,
+		"total_memory":            totalMemoryGB,
+		"used_memory":             usedMemoryGB,
 		"memory_usage":            vMem.UsedPercent,
 		"total_disk_space_gb":     totalDiskSpaceGB,
 		"used_disk_space_gb":      usedDiskSpaceGB,
