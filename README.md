@@ -24,7 +24,7 @@ Download dashball.exe from the latest release and run it.
 Windows will give some security warnings that you need to ignore
 
 ## .sh installer (Only for linux) 
-you can download install-dashball.sh from the latest release. and chmod and run it. or,
+you can download install-dashball.sh from the latest release.
 
 ```
 cd Dashball/src
