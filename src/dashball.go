@@ -9,26 +9,59 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
+	"syscall" 
+	"time"
 
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 )
+type Config struct {
+	ServerPort            int `json:"port"`
+	UpdateIntervalSeconds int `json:"update_interval_seconds"`
+}
 
 func main() {
+	// Get the config file
+	configFile, err := os.Open("config.json")
+	if err != nil {
+		fmt.Println("Can't open config file:", err)
+		return
+	}
+	defer configFile.Close()
+
+	var config Config
+	err = json.NewDecoder(configFile).Decode(&config)
+	if err != nil {
+		fmt.Println("Can't open config file:", err)
+		return
+	}
 	// Webserver
 	websiteDir := filepath.Join(".", "Website")
 	fs := http.FileServer(http.Dir(websiteDir))
 	http.Handle("/", fs)
 	// Sends json to /system_info
 	http.HandleFunc("/system_info", systemInfoHandler)
-	fmt.Println("Server started on http://localhost:80")
-	http.ListenAndServe(":80", nil)
+	fmt.Printf("Server gestart op http://localhost:%d\n", config.ServerPort)
+	http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
 }
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the config file
+	configFile, err := os.Open("config.json")
+	if err != nil {
+		fmt.Println("Can't open config file:", err)
+		return
+	}
+	defer configFile.Close()
+
+	var config Config
+	err = json.NewDecoder(configFile).Decode(&config)
+	if err != nil {
+		fmt.Println("Can't open config file:", err)
+		return
+	}
 	// CPU Usage
 	cpuUsage, _ := cpu.Percent(0, false)
 	cpuUsageX10 := cpuUsage[0] * 2
@@ -73,6 +106,9 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
+
+	// wait for the interval in config.json
+	time.Sleep(time.Duration(config.UpdateIntervalSeconds) * time.Second)
 }
 
 func getGPUInfo() (map[string]interface{}, error) {

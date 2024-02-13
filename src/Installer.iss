@@ -63,10 +63,24 @@ Name: "{commonstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runhidden
 
 [Code]
+var
+  PortInputPage: TInputQueryWizardPage;
+
+procedure InitializeWizard;
+begin
+  PortInputPage := CreateInputQueryPage(wpWelcome,
+    'Port Configuration', 'Wich port needs the website to be?',
+    'Choose a port for the website and click on next.');
+  PortInputPage.Add('Poort:', False);
+  PortInputPage.Values[0] := '80';
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
   begin
-    MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
+    SaveStringToFile(ExpandConstant('{app}\config.json'), Format('{ "port": %s, "update_interval_seconds": 1 }', [PortInputPage.Values[0]]), False);
+     MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
   end;
 end;
+
