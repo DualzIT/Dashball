@@ -12,12 +12,12 @@ $contextMenu = New-Object System.Windows.Forms.ContextMenuStrip
 
 # Voeg menu-items toe
 $item1 = New-Object System.Windows.Forms.ToolStripMenuItem
-$item1.Text = "Open Config"
+$item1.Text = "Config"
 $item1.Add_Click({ Start-Process "config.json" })
 $contextMenu.Items.Add($item1)
 
 $item2 = New-Object System.Windows.Forms.ToolStripMenuItem
-$item2.Text = "Open Website"
+$item2.Text = "Website"
 $item2.Add_Click({ Start-Process "http://127.0.0.1" })
 $contextMenu.Items.Add($item2)
 
