@@ -29,6 +29,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rafacas/sysstats v0.0.0-20150414182805-21d5ac1731f7 // indirect
 	github.com/sam-kamerer/go-plister v1.2.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tklauser/go-sysconf v0.3.13 // indirect

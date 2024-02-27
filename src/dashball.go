@@ -1,4 +1,3 @@
-// go build -ldflags -H=windowsgui dashball.go
 package main
 
 import (
@@ -13,12 +12,13 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/shirou/gopsutil/cpu"
+	
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
+	"github.com/shirou/gopsutil/cpu"
 )
+
 type Config struct {
 	ServerPort            int `json:"port"`
 	UpdateIntervalSeconds int `json:"update_interval_seconds"`
@@ -26,14 +26,14 @@ type Config struct {
 
 func startTrayIcon() {
 	cmd := exec.Command("powershell.exe", "-File", "trayicon.ps1")
-cmd.Stderr = os.Stderr // Vang standaard fouten op
-cmd.Stdout = os.Stdout // Vang standaard uitvoer op
-err := cmd.Start()
-if err != nil {
-    log.Fatalf("Failed to start tray icon script: %v", err)
+	cmd.Stderr = os.Stderr // Vang standaard fouten op
+	cmd.Stdout = os.Stdout // Vang standaard uitvoer op
+	err := cmd.Start()
+	if err != nil {
+		log.Fatalf("Failed to start tray icon script: %v", err)
+	}
 }
 
-}
 func main() {
 	startTrayIcon()
 	// Get the config file
@@ -47,7 +47,7 @@ func main() {
 	var config Config
 	err = json.NewDecoder(configFile).Decode(&config)
 	if err != nil {
-		fmt.Println("Can't open config file:", err)
+		fmt.Println("Can't decode config file:", err)
 		return
 	}
 	// Webserver
@@ -61,24 +61,21 @@ func main() {
 }
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
-	// Get the config file
-	configFile, err := os.Open("config.json")
+	// Verkrijg CPU-gebruikspercentages voor elke core
+	cpuPercentages, err := cpu.Percent(time.Second, true) // true voor per-CPU statistieken
 	if err != nil {
-		fmt.Println("Can't open config file:", err)
+		log.Printf("Fout bij het ophalen van CPU percentages: %s\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer configFile.Close()
 
-	var config Config
-	err = json.NewDecoder(configFile).Decode(&config)
-	if err != nil {
-		fmt.Println("Can't open config file:", err)
-		return
+	// Bereken het gemiddelde CPU-gebruik
+	var total float64
+	for _, cp := range cpuPercentages {
+		total += cp
 	}
-	// CPU Usage
-	cpuUsage, _ := cpu.Percent(0, false)
-	cpuUsageX10 := cpuUsage[0] * 2
-	roundedCPUUsage := fmt.Sprintf("%.0f", cpuUsageX10)
+	average := total / float64(len(cpuPercentages))
+	roundedAverageCPUUsage := fmt.Sprintf("%.2f%%", average)
 
 	// Memory Usage
 	vMem, _ := mem.VirtualMemory()
@@ -100,7 +97,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send data as JSON
 	data := map[string]interface{}{
-		"cpu_usage":               roundedCPUUsage,
+		"cpu_usage":               roundedAverageCPUUsage,
 		"total_memory":            totalMemoryGB,
 		"used_memory":             usedMemoryGB,
 		"memory_usage":            vMem.UsedPercent,
@@ -117,9 +114,6 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
-
-	// wait for the interval in config.json
-	time.Sleep(time.Duration(config.UpdateIntervalSeconds) * time.Second)
 }
 
 func getGPUInfo() (map[string]interface{}, error) {
@@ -127,7 +121,6 @@ func getGPUInfo() (map[string]interface{}, error) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		// If there is no gpu found it will display null
 		return map[string]interface{}{
 			"gpu0": map[string]interface{}{
 				"uuid":            "null",
@@ -143,7 +136,6 @@ func getGPUInfo() (map[string]interface{}, error) {
 	}
 
 	gpuInfo := make(map[string]interface{})
-
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 	for i, line := range lines {
 		fields := strings.Split(line, ",")
@@ -159,13 +151,5 @@ func getGPUInfo() (map[string]interface{}, error) {
 		}
 		gpuInfo[fmt.Sprintf("gpu%d", i)] = gpu
 	}
-
 	return gpuInfo, nil
-}
-
-func checkErr(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatale fout: %s\n", err.Error())
-		os.Exit(1)
-	}
 }
