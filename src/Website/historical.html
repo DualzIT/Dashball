@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles/history_styles.css">
+    <script src="charts.js"></script>
+    <title>Dashball history</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+
+<body>
+    <h1 class="title">Dashball history</h1>
+    <img class="logo" src="img/Dualz_logo.png" alt="Logo">
+    <a href="index.html"> <button>Home</button></a>
+    <a href="historical.html"> <button>History</button></a>
+   
+    <!-- CPU Graph -->
+    <div class="chart-container">
+        <canvas id="cpuChart"></canvas>
+    </div>
+  
+    <!-- Memory Graph -->
+    <div class="chart-container">
+        <canvas id="memoryChart"></canvas>
+    </div>
+
+    <!-- Time Selector -->
+    <div class="time-selector">
+        <input type="range" id="timeSlider" min="0" max="100" step="1">
+        <input type="text" id="timeInput" value="">
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctxCpu = document.getElementById('cpuChart').getContext('2d');
+            const ctxMemory = document.getElementById('memoryChart').getContext('2d');
+
+            fetch('/history') // Change '/historical' to '/history'
+                .then(response => response.json())
+                .then(data => {
+                    // Extract historical data
+                    const timestamps = data.timestamps;
+                    const cpuHistory = data.cpu_history;
+                    const memoryHistory = data.memory_history;
+
+                    // CPU Chart
+                    const cpuChart = new Chart(ctxCpu, {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{
+                                label: 'CPU Usage (%)',
+                                data: cpuHistory,
+                                borderColor: 'rgb(75, 192, 192)',
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'minute' // Adjust this based on the data granularity
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+
+                    // Memory Chart
+                    const memoryChart = new Chart(ctxMemory, {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{
+                                label: 'Memory Usage (%)',
+                                data: memoryHistory,
+                                borderColor: 'rgb(153, 102, 255)',
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'minute' // Adjust this based on the data granularity
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+
+                    // Time Slider
+                    const timeSlider = document.getElementById('timeSlider');
+                    const timeInput = document.getElementById('timeInput');
+
+                    timeSlider.min = 0;
+                    timeSlider.max = timestamps.length - 1;
+
+                    timeSlider.addEventListener('input', function () {
+                        const index = parseInt(this.value);
+                        const time = timestamps[index];
+                        timeInput.value = time;
+                        updateCharts(cpuChart, memoryChart, index);
+                    });
+
+                    timeInput.addEventListener('input', function () {
+                        const time = this.value;
+                        const index = timestamps.findIndex(timestamp => timestamp === time);
+                        if (index !== -1) {
+                            timeSlider.value = index;
+                            updateCharts(cpuChart, memoryChart, index);
+                        }
+                    });
+
+                    // Initialize input field with first timestamp
+                    timeInput.value = timestamps[0];
+                })
+                .catch(error => console.error('Error fetching historical data:', error));
+
+            // Function to update charts based on selected time
+            function updateCharts(cpuChart, memoryChart, index) {
+                const time = cpuChart.data.labels[index];
+                const timeRange = 20; // Adjust this based on the desired time range
+                const startIndex = Math.max(0, index - timeRange);
+                const endIndex = Math.min(cpuChart.data.labels.length - 1, index + timeRange);
+                const visibleLabels = cpuChart.data.labels.slice(startIndex, endIndex + 1);
+                cpuChart.data.labels = visibleLabels;
+                memoryChart.data.labels = visibleLabels;
+                cpuChart.update();
+                memoryChart.update();
+            }
+        });
+    </script>
+</body>
+</html>
