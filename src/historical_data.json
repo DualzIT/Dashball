@@ -1,26 +1,154 @@
 {
-  "timestamps": [
-    "10:00:00", "10:00:10", "10:00:20", "10:00:30", "10:00:40", "10:00:50",
-    "10:01:00", "10:01:10", "10:01:20", "10:01:30", "10:01:40", "10:01:50",
-    "10:02:00", "10:02:10", "10:02:20", "10:02:30", "10:02:40", "10:02:50",
-    "10:03:00", "10:03:10", "10:03:20", "10:03:30", "10:03:40", "10:03:50",
-    "10:04:00", "10:04:10", "10:04:20", "10:04:30", "10:04:40", "10:04:50",
-    "10:05:00", "10:05:10", "10:05:20", "10:05:30", "10:05:40", "10:05:50"
-  ],
-  "cpu_history": [
-    20, 40, 60, 80, 100, 60,
-    60, 60, 80, 20, 20, 40,
-    60, 28, 20, 32, 30, 30,
-    80, 40, 42, 40, 46, 80,
-    80, 40, 42, 40, 46, 80,
-    80, 40, 42, 40, 46, 80
-  ],
-  "memory_history": [
-    20, 40, 60, 80, 100, 60,
-    60, 60, 80, 20, 20, 40,
-    60, 28, 20, 32, 30, 30,
-    80, 40, 42, 40, 46, 80,
-    80, 40, 42, 40, 46, 80,
-    80, 40, 42, 40, 46, 80
+  "historical_data": [
+    {
+      "timestamp": "04/09/2024 23:58:00",
+      "cpu_history": 70,
+      "memory_history": 20
+    },
+    {
+      "timestamp": "04/09/2024 23:58:10",
+      "cpu_history": 40,
+      "memory_history": 40
+    },
+    {
+      "timestamp": "04/09/2024 23:58:20",
+      "cpu_history": 60,
+      "memory_history": 60
+    },
+    {
+      "timestamp": "04/09/2024 23:58:30",
+      "cpu_history": 80,
+      "memory_history": 80
+    },
+    {
+      "timestamp": "04/09/2024 23:58:40",
+      "cpu_history": 100,
+      "memory_history": 100
+    },
+    {
+      "timestamp": "04/09/2024 23:58:50",
+      "cpu_history": 60,
+      "memory_history": 60
+    },
+    {
+      "timestamp": "04/09/2024 23:59:00",
+      "cpu_history": 60,
+      "memory_history": 60
+    },
+    {
+      "timestamp": "04/09/2024 23:59:10",
+      "cpu_history": 60,
+      "memory_history": 60
+    },
+    {
+      "timestamp": "04/09/2024 23:59:20",
+      "cpu_history": 80,
+      "memory_history": 80
+    },
+    {
+      "timestamp": "04/09/2024 23:59:30",
+      "cpu_history": 20,
+      "memory_history": 20
+    },
+    {
+      "timestamp": "04/09/2024 23:59:40",
+      "cpu_history": 20,
+      "memory_history": 20
+    },
+    {
+      "timestamp": "04/09/2024 23:59:50",
+      "cpu_history": 40,
+      "memory_history": 40
+    },
+    {
+      "timestamp": "04/10/2024 00:00:00",
+      "cpu_history": 60,
+      "memory_history": 60
+    },
+    {
+      "timestamp": "04/10/2024 00:00:10",
+      "cpu_history": 28,
+      "memory_history": 28
+    },
+    {
+      "timestamp": "04/10/2024 00:00:20",
+      "cpu_history": 20,
+      "memory_history": 20
+    },
+    {
+      "timestamp": "04/10/2024 00:00:30",
+      "cpu_history": 32,
+      "memory_history": 32
+    },
+    {
+      "timestamp": "04/10/2024 00:00:40",
+      "cpu_history": 30,
+      "memory_history": 30
+    },
+    {
+      "timestamp": "04/10/2024 00:00:50",
+      "cpu_history": 30,
+      "memory_history": 30
+    },
+    {
+      "timestamp": "04/10/2024 00:01:00",
+      "cpu_history": 80,
+      "memory_history": 80
+    },
+    {
+      "timestamp": "04/10/2024 00:01:10",
+      "cpu_history": 40,
+      "memory_history": 40
+    },
+    {
+      "timestamp": "04/10/2024 00:01:20",
+      "cpu_history": 42,
+      "memory_history": 42
+    },
+    {
+      "timestamp": "04/10/2024 00:01:30",
+      "cpu_history": 40,
+      "memory_history": 40
+    },
+    {
+      "timestamp": "04/10/2024 00:01:40",
+      "cpu_history": 46,
+      "memory_history": 46
+    },
+    {
+      "timestamp": "04/10/2024 00:01:50",
+      "cpu_history": 80,
+      "memory_history": 80
+    },
+    {
+      "timestamp": "04/10/2024 00:02:00",
+      "cpu_history": 80,
+      "memory_history": 80
+    },
+    {
+      "timestamp": "04/10/2024 00:02:10",
+      "cpu_history": 40,
+      "memory_history": 40
+    },
+    {
+      "timestamp": "04/10/2024 00:02:20",
+      "cpu_history": 42,
+      "memory_history": 42
+    },
+    {
+      "timestamp": "04/10/2024 00:02:30",
+      "cpu_history": 40,
+      "memory_history": 40
+    },
+    {
+      "timestamp": "04/10/2024 00:02:40",
+      "cpu_history": 46,
+      "memory_history": 46
+    },
+    {
+      "timestamp": "04/10/2024 00:02:50",
+      "cpu_history": 80,
+      "memory_history": 80
+    }
   ]
 }

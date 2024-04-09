@@ -25,11 +25,14 @@ type Config struct {
 }
 
 type HistoricalData struct {
-    Timestamps []string  `json:"timestamps"`
-    CPUHistory []float64 `json:"cpu_history"`
-    MEMORYHistory []float64 `json:"memory_history"`
-    // Add more fields for other parameters if needed
+    HistoricalData []struct {
+        Timestamp     string    `json:"timestamp"`
+        CPUHistory    float64   `json:"cpu_history"`
+        MemoryHistory float64   `json:"memory_history"`
+        // Voeg meer velden toe voor andere parameters indien nodig
+    } `json:"historical_data"`
 }
+
 
 var historicalData HistoricalData // Declare a global variable to store historical data
 
