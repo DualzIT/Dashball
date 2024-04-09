@@ -12,6 +12,7 @@ import (
     "strings"
     "syscall"
     "time"
+    "runtime"
 
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/disk"
@@ -43,13 +44,18 @@ type HistoricalData struct {
 var historicalData HistoricalData // Declare a global variable to store historical data
 
 func startTrayIcon() {
-    cmd := exec.Command("powershell.exe", "-File", "trayicon.ps1")
+    if runtime.GOOS == "windows" {
+        cmd := exec.Command("powershell.exe", "-File", "trayicon.ps1")
     cmd.Stderr = os.Stderr // Capture standard errors
     cmd.Stdout = os.Stdout // Capture standard output
     err := cmd.Start()
     if err != nil {
         log.Fatalf("Failed to start tray icon script: %v", err)
     }
+    } else {
+        log.Println("Tray icon script is not supported on non-Windows platforms.")
+    }
+   
 }
 
 // Function to load historical data from a file
@@ -257,8 +263,15 @@ func saveHistoricalDataToFile() error {
 
 func getGPUInfo() (map[string]interface{}, error) {
     cmd := exec.Command("nvidia-smi", "--query-gpu=uuid,name,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.used,memory.free", "--format=csv,noheader,nounits")
-    cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+
+    if runtime.GOOS == "windows" {
+        cmd.SysProcAttr = &syscall.SysProcAttr{
+            
+        }
+    }
+
     output, err := cmd.CombinedOutput()
+
     if err != nil {
         // If there is no gpu found it will display null
         return map[string]interface{}{

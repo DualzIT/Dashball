@@ -52,6 +52,13 @@
                             beginAtZero: true,
                             max: 100
                         }
+                    },
+                    tooltips: { // Deze optie is verouderd in de nieuwere versies van Chart.js. Voor v3 of hoger, gebruik 'plugins: { tooltip: {'
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return `${tooltipItem.yLabel.toFixed(1)}%`;
+                            }
+                        }
                     }
                 }
             });
@@ -141,9 +148,9 @@
                     }
 
                     document.getElementById('cpu_usage').textContent = `CPU: ${data.cpu_usage}`;
-                    document.getElementById('memory_usage').textContent = `Memory: ${data.memory_usage}%`;
-                    document.getElementById('total_memory').textContent = ` ${data.total_memory.toFixed(2)} GB`;
-                    document.getElementById('used_memory').textContent = ` ${data.used_memory.toFixed(2)} GB`;
+                    document.getElementById('memory_usage').textContent = `Memory: ${data.memory_usage.toFixed(1)}%`;
+                    document.getElementById('total_memory').textContent = ` ${data.total_memory.toFixed(1)} GB`;
+                    document.getElementById('used_memory').textContent = ` ${data.used_memory.toFixed(1)} GB`;  
                     document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
                     document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
                     document.getElementById('used_disk_gb').textContent = `Used: ${data.used_disk_space_gb}GB`;
