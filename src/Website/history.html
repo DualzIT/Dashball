@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles/history_styles.css">
+    <script src="js/history_charts.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <title>Dashball history</title>
+</head>
+
+<body>
+    <h1 class="title">Dashball history</h1>
+    <img class="logo" src="img/Dualz_logo.png" alt="Logo">
+    <a href="index.html"> <button>Home</button></a>
+    <a href="history.html"> <button>History</button></a>
+   
+     <!-- Time Slider -->
+    <div class="time">
+    <div id="timeSlider"></div>
+    <div id="currentTime"></div>
+    </div>
+
+
+<!-- Charts Flex Container -->
+<div class="charts-flex-container">
+    <!-- CPU Graph -->
+    <div class="chart-container">
+        <canvas id="cpuChart"></canvas>
+    </div>
+  
+    <!-- Memory Graph -->
+    <div class="chart-container">
+        <canvas id="memoryChart"></canvas>
+    </div>
+</div>
+</body>
+</html>

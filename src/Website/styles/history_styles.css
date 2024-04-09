@@ -1,0 +1,47 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 20px; 
+}
+
+.logo {
+    height: 230px; 
+    position: absolute;
+    right: 20px;
+    top: -30px;
+}
+
+.chart-container {
+    width: 50%; /* Adjusted to 50% to fit two charts side by side */
+    height: auto; /* You can set a fixed height if necessary */
+    margin-bottom: 20px; /* Added some space below each chart */
+}
+
+/* Flex container to hold charts */
+.charts-flex-container {
+    display: flex;
+    gap: 20px; /* This adds space between your chart containers */
+    flex-direction: row; /* Aligns children (charts) in a row */
+    justify-content: center; /* Centers the charts in the container */
+    align-items: flex-start; /* Aligns charts to the start of the cross axis */
+}
+
+.time {
+    position: relative;
+    margin-top: 50px;
+}
+
+@media screen and (max-width: 1000px) {
+    .chart-container {
+        width: 100%; /* Full width on smaller screens */
+    }
+    
+    .charts-flex-container {
+        flex-direction: column; /* Stack charts on top of each other */
+    }
+}
