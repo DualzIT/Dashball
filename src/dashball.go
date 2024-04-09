@@ -27,6 +27,7 @@ type Config struct {
 type HistoricalData struct {
     Timestamps []string  `json:"timestamps"`
     CPUHistory []float64 `json:"cpu_history"`
+    MEMORYHistory []float64 `json:"memory_history"`
     // Add more fields for other parameters if needed
 }
 
