@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch('/history')
         .then(response => response.json())
         .then(data => {
-            const historicalData = data.historical_data; // Gebruik de nieuwe historische gegevens
+            const historicalData = data.historical_data; // Use the new historical data
 
             if (!historicalData || historicalData.length === 0) {
                 throw new Error('No historical data available');
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         x: {
                             type: 'time',
                             time: {
-                                parser: 'MM/dd/yyyy HH:mm:ss', // Aangepaste notatie
+                                parser: 'MM/dd/yyyy HH:mm:ss', // Custom format
                                 tooltipFormat: 'MM/dd/yyyy HH:mm:ss',
                                 unit: 'second'
                             },
@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         x: {
                             type: 'time',
                             time: {
-                                parser: 'MM/dd/yyyy HH:mm:ss', // Aangepaste notatie
+                                parser: 'MM/dd/yyyy HH:mm:ss', // Custom format
                                 tooltipFormat: 'MM/dd/yyyy HH:mm:ss',
                                 unit: 'second'
                             },
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Initialize noUiSlider
             noUiSlider.create(timeSlider, {
-                start: timestamps.length - 10, // Beginwaarde om de laatste 30 datapunten weer te geven
+                start: timestamps.length - 10, // Start value to display the last 30 data points
                 connect: [true, false],
                 range: {
                     'min': 0,

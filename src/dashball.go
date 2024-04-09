@@ -19,6 +19,13 @@ import (
     "github.com/shirou/gopsutil/mem"
 )
 
+func removeHistoricalDataFile() {
+    err := os.Remove("historical_data.json")
+    if err != nil && !os.IsNotExist(err) {
+        log.Printf("Failed to remove historical data file: %v\n", err)
+    }
+}
+
 type Config struct {
     ServerPort            int `json:"port"`
     UpdateIntervalSeconds int `json:"update_interval_seconds"`
@@ -26,40 +33,23 @@ type Config struct {
 
 type HistoricalData struct {
     HistoricalData []struct {
-        Timestamp     string    `json:"timestamp"`
-        CPUHistory    float64   `json:"cpu_history"`
-        MemoryHistory float64   `json:"memory_history"`
-        // Voeg meer velden toe voor andere parameters indien nodig
+        Timestamp     string  `json:"timestamp"`
+        CPUHistory    float64 `json:"cpu_history"`
+        MemoryHistory float64 `json:"memory_history"`
+        // Add more fields for other parameters if needed
     } `json:"historical_data"`
 }
-
 
 var historicalData HistoricalData // Declare a global variable to store historical data
 
 func startTrayIcon() {
     cmd := exec.Command("powershell.exe", "-File", "trayicon.ps1")
-    cmd.Stderr = os.Stderr // Vang standaard fouten op
-    cmd.Stdout = os.Stdout // Vang standaard uitvoer op
+    cmd.Stderr = os.Stderr // Capture standard errors
+    cmd.Stdout = os.Stdout // Capture standard output
     err := cmd.Start()
     if err != nil {
         log.Fatalf("Failed to start tray icon script: %v", err)
     }
-}
-
-// Function to save historical data to a file
-func saveHistoricalDataToFile() error {
-    file, err := os.Create("historical_data.json")
-    if err != nil {
-        return err
-    }
-    defer file.Close()
-
-    encoder := json.NewEncoder(file)
-    if err := encoder.Encode(historicalData); err != nil {
-        return err
-    }
-
-    return nil
 }
 
 // Function to load historical data from a file
@@ -115,6 +105,10 @@ func serveHistoricalData(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+    removeHistoricalDataFile()
+    // Start a goroutine to collect and store historical data periodically
+    go saveHistoricalDataPeriodically()
+
     // Register endpoint handlers
     http.HandleFunc("/save_historical_data", saveHistoricalData)
     http.HandleFunc("/history", serveHistoricalData)
@@ -136,14 +130,51 @@ func main() {
         return
     }
 
-    // Webserver
+    // Web server
     websiteDir := filepath.Join(".", "Website")
     fs := http.FileServer(http.Dir(websiteDir))
     http.Handle("/", fs)
     // Sends json to /system_info
     http.HandleFunc("/system_info", systemInfoHandler)
-    fmt.Printf("Server gestart op http://localhost:%d\n", config.ServerPort)
+    fmt.Printf("Server started at http://localhost:%d\n", config.ServerPort)
     http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
+}
+
+// Function to collect and store historical data periodically
+func saveHistoricalDataPeriodically() {
+    ticker := time.NewTicker(10 * time.Second) // Ticker to collect data every 10 seconds
+    defer ticker.Stop()
+
+    for {
+        <-ticker.C // Wait for the ticker to tick (every 10 seconds)
+
+        // Collect current CPU and memory data
+        cpuUsage, _ := cpu.Percent(0, false)
+        memoryUsage, _ := mem.VirtualMemory()
+
+        // Create a timestamp in the format "MM/dd/yyyy HH:mm:ss"
+        timestamp := time.Now().Format("01/02/2006 15:04:05")
+
+        // Add the new historical data to the list
+        newData := struct {
+            Timestamp     string  `json:"timestamp"`
+            CPUHistory    float64 `json:"cpu_history"`
+            MemoryHistory float64 `json:"memory_history"`
+        }{
+            Timestamp:     timestamp,
+            CPUHistory:    cpuUsage[0],
+            MemoryHistory: memoryUsage.UsedPercent,
+        }
+        historicalData.HistoricalData = append(historicalData.HistoricalData, newData)
+
+        // Save the historical data to a file
+        if err := saveHistoricalDataToFile(); err != nil {
+            log.Printf("Failed to save historical data: %v\n", err)
+            continue // Continue to the next iteration if there's an error saving the data
+        }
+
+        log.Println("Historical data saved successfully")
+    }
 }
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
@@ -208,21 +239,20 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     time.Sleep(time.Duration(config.UpdateIntervalSeconds) * time.Second)
 }
 
-func historicalDataHandler(w http.ResponseWriter, r *http.Request) {
-    // Here you would fetch historical data from your data source
-    // For example, assume historical CPU and memory data
-    cpuHistory := []float64{10, 20, 30, 40, 50}       // Example data, replace with real historical data
-    memoryHistory := []float64{20, 30, 40, 50, 60}   // Example data, replace with real historical data
-    timestamps := []string{"10:00", "10:10", "10:20", "10:30", "10:40"} // Example timestamps, replace with real timestamps
+// Function to save historical data to a file
+func saveHistoricalDataToFile() error {
+    file, err := os.Create("historical_data.json")
+    if err != nil {
+        return err
+    }
+    defer file.Close()
 
-    historicalData := map[string]interface{}{
-        "cpu_history":     cpuHistory,
-        "memory_history":  memoryHistory,
-        "timestamps":      timestamps,
+    encoder := json.NewEncoder(file)
+    if err := encoder.Encode(historicalData); err != nil {
+        return err
     }
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(historicalData)
+    return nil
 }
 
 func getGPUInfo() (map[string]interface{}, error) {
@@ -268,7 +298,7 @@ func getGPUInfo() (map[string]interface{}, error) {
 
 func checkErr(err error) {
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Fatale fout: %s\n", err.Error())
+        fmt.Fprintf(os.Stderr, "Fatal error: %s\n", err.Error())
         os.Exit(1)
     }
 }
