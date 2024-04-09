@@ -50,6 +50,37 @@ body
         margin-top: 40px;
     }
 
+nav, ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+nav {
+    background-color: #f2f2f2;
+}
+ul {
+    display: flex; 
+}
+li {
+    margin-right: 10px; 
+}
+a {
+    text-decoration: none;
+    color: black;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+a.active {
+    background-color: #f5b865; 
+    color: white; 
+}
+a:hover:not(.active) {
+    background-color: #f5b865; 
+    color: white;
+}
+
+    
    @media screen and (max-width: 1000px) {
     .diskgraph{
         box-sizing: border-box;
