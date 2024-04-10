@@ -21,7 +21,7 @@ import (
 )
 
 func removeHistoricalDataFile() {
-    err := os.Remove("historical_data.json")
+    err := os.Remove("json/historical_data.json")
     if err != nil && !os.IsNotExist(err) {
         log.Printf("Failed to remove historical data file: %v\n", err)
     }
@@ -45,7 +45,7 @@ var historicalData HistoricalData // Declare a global variable to store historic
 
 func startTrayIcon() {
     if runtime.GOOS == "windows" {
-        cmd := exec.Command("powershell.exe", "-File", "trayicon.ps1")
+        cmd := exec.Command("powershell.exe", "-File", "Trayicon\trayicon.ps1")
     cmd.Stderr = os.Stderr // Capture standard errors
     cmd.Stdout = os.Stdout // Capture standard output
     err := cmd.Start()
@@ -60,7 +60,7 @@ func startTrayIcon() {
 
 // Function to load historical data from a file
 func loadHistoricalDataFromFile() error {
-    file, err := os.Open("historical_data.json")
+    file, err := os.Open("json/historical_data.json")
     if err != nil {
         return err
     }
@@ -122,7 +122,7 @@ func main() {
     startTrayIcon()
 
     // Get the config file
-    configFile, err := os.Open("config.json")
+    configFile, err := os.Open("json/config.json")
     if err != nil {
         fmt.Println("Can't open config file:", err)
         return
@@ -185,7 +185,7 @@ func saveHistoricalDataPeriodically() {
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     // Get the config file
-    configFile, err := os.Open("config.json")
+    configFile, err := os.Open("json/config.json")
     if err != nil {
         fmt.Println("Can't open config file:", err)
         return
@@ -247,7 +247,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 // Function to save historical data to a file
 func saveHistoricalDataToFile() error {
-    file, err := os.Create("historical_data.json")
+    file, err := os.Create("json/historical_data.json")
     if err != nil {
         return err
     }
