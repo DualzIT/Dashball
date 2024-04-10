@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const ctxCpu = document.getElementById('cpuChart').getContext('2d');
     const ctxMemory = document.getElementById('memoryChart').getContext('2d');
     const currentTimeField = document.getElementById('currentTime');
+    const timeSlider = document.getElementById('timeSlider');
+    const updateButton = document.getElementById('updateButton');
+    const datapointsInput = document.getElementById('datapointsInput');
+
+    let pointsToShow = 10; // Default value
 
     fetch('/history')
         .then(response => response.json())
@@ -83,12 +88,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
-            // Time Slider
-            const timeSlider = document.getElementById('timeSlider');
-
             // Initialize noUiSlider
             noUiSlider.create(timeSlider, {
-                start: timestamps.length - 10, // Start value to display the last 30 data points
+                start: timestamps.length - pointsToShow,
                 connect: [true, false],
                 range: {
                     'min': 0,
@@ -111,12 +113,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const currentTimeIndex = timestamps.length - 1;
             currentTimeField.textContent = `Current Time: ${timestamps[currentTimeIndex]}`;
+
+            // Update button click event
+            updateButton.addEventListener('click', function() {
+                pointsToShow = parseInt(datapointsInput.value);
+                updateCharts(cpuChart, memoryChart, timeSlider.noUiSlider.get(), historicalData);
+            });
         })
         .catch(error => console.error('Error fetching historical data:', error));
 
     function updateCharts(cpuChart, memoryChart, index, historicalData) {
         const totalPoints = historicalData.length;
-        const pointsToShow = 10;
 
         let startIndex = index;
         let endIndex = startIndex + pointsToShow;
