@@ -1,6 +1,6 @@
 {
-    "port": 80,
+    "port": 80, 
     "update_interval_seconds": 1,
-    "save_history_seconds": 1
+    "save_history_seconds": 10
   }
   
