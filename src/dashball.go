@@ -30,7 +30,9 @@ func removeHistoricalDataFile() {
 type Config struct {
     ServerPort            int `json:"port"`
     UpdateIntervalSeconds int `json:"update_interval_seconds"`
+    TickerIntervalSeconds int `json:"save_history_seconds"`
 }
+
 
 type HistoricalData struct {
     HistoricalData []struct {
@@ -112,17 +114,9 @@ func serveHistoricalData(w http.ResponseWriter, r *http.Request) {
 
 func main() {
     removeHistoricalDataFile()
-    // Start a goroutine to collect and store historical data periodically
-    go saveHistoricalDataPeriodically()
-
-    // Register endpoint handlers
-    http.HandleFunc("/save_historical_data", saveHistoricalData)
-    http.HandleFunc("/history", serveHistoricalData)
-
-    startTrayIcon()
 
     // Get the config file
-    configFile, err := os.Open("json/config.json")
+    configFile, err := os.Open("json/config.json") // Assuming config.json is in the same directory as the executable
     if err != nil {
         fmt.Println("Can't open config file:", err)
         return
@@ -136,23 +130,35 @@ func main() {
         return
     }
 
+    // Start a goroutine to collect and store historical data periodically
+    go saveHistoricalDataPeriodically(config)
+
+    // Register endpoint handlers
+    http.HandleFunc("/save_historical_data", saveHistoricalData)
+    http.HandleFunc("/history", serveHistoricalData)
+
+    startTrayIcon()
+
     // Web server
     websiteDir := filepath.Join(".", "Website")
     fs := http.FileServer(http.Dir(websiteDir))
     http.Handle("/", fs)
+
     // Sends json to /system_info
     http.HandleFunc("/system_info", systemInfoHandler)
+
     fmt.Printf("Server started at http://localhost:%d\n", config.ServerPort)
     http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
 }
 
+
 // Function to collect and store historical data periodically
-func saveHistoricalDataPeriodically() {
-    ticker := time.NewTicker(10 * time.Second) // Ticker to collect data every 10 seconds
+func saveHistoricalDataPeriodically(config Config) {
+    ticker := time.NewTicker(time.Duration(config.TickerIntervalSeconds) * time.Second) // Ticker to collect data every specified interval
     defer ticker.Stop()
 
     for {
-        <-ticker.C // Wait for the ticker to tick (every 10 seconds)
+        <-ticker.C // Wait for the ticker to tick (every specified interval)
 
         // Collect current CPU and memory data
         cpuUsage, _ := cpu.Percent(0, false)
@@ -182,6 +188,7 @@ func saveHistoricalDataPeriodically() {
         log.Println("Historical data saved successfully")
     }
 }
+
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     // Get the config file
