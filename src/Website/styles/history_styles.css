@@ -63,7 +63,18 @@ a:hover:not(.active) {
     position: relative;
     margin-top: 50px;
 }
-
+.datapoints {
+    margin-top: 40px;
+}
+button{
+    background-color: #f5b865;
+    text-decoration: none;
+    color: white; 
+    padding: 5px 10px;
+    border-radius: 5px;
+    border-color: #f5b865;
+    list-style-type: none;
+}
 @media screen and (max-width: 1000px) {
     .chart-container {
         width: 100%; /* Full width on smaller screens */

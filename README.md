@@ -37,10 +37,16 @@ chmod +x install-dashball.sh
 sudo install-dashball.sh
 ```
 ## go
-if you don't have already you need to install python3
+if you don't have already you need to install golang
+For Ubuntu/Debian
 ```
 sudo apt update
 sudo apt install golang
+```
+or for red-hat based distro's
+```
+sudo yum update
+sudo yum install golang
 ```
 download the zip file or clone using
 ```
