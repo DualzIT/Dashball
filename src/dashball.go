@@ -185,7 +185,7 @@ func saveHistoricalDataPeriodically(config Config) {
             continue // Continue to the next iteration if there's an error saving the data
         }
 
-        log.Println("Historical data saved successfully")
+      
     }
 }
 
@@ -207,7 +207,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     }
     // CPU Usage
     cpuUsage, _ := cpu.Percent(0, false)
-    cpuUsageX10 := cpuUsage[0] * 2
+    cpuUsageX10 := cpuUsage[0] * 1
     roundedCPUUsage := fmt.Sprintf("%.0f", cpuUsageX10)
 
     // Memory Usage

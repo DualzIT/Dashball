@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles/styles.css">
-    <script src="JS/charts.js"></script>
+    <script src="JS/gpu_charts.js"></script>
     <title>Dashball</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -13,31 +13,12 @@
     <img class="logo" src="img/Dualz_logo.png" alt="Logo">
     <nav>
         <ul>
-            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="index.html">Home</a></li>
             <li><a href="history.html">History</a></li>
-            <li><a href="gpu.html">GPU</a></li>
+            <li><a href="gpu.html" class="active">GPU</a></li>
         </ul>
     </nav>
 
-    <div class="charts-container">
-        <!-- CPU Graph -->
-        <div class="linegraph">
-            <p><span id="cpu_usage">-</span>%</p>
-            <canvas id="cpuChart"></canvas>
-        </div>
-    
-        <!-- memory graph -->
-        <div class="linegraph">
-            <p><span id="memory_usage">-</span> or<span id="used_memory"></span> / <span id="total_memory">-</span></p>
-            <canvas id="memoryChart"></canvas>
-        </div>
-        <div class="computer-info">
-            <h2>Computer information</h2>
-            <p>Hostname: <strong><span id="computer_name">-</span></strong></p>
-            <p>OS:<strong><span id="os">-</span></strong></p>
-            <p>OS version:<strong><span id="os_version">-</span></strong></p>
-        </div>
-</div>
     <div class="charts-container">
         <!-- GPU-usage graph -->
         <div class="linegraph">
