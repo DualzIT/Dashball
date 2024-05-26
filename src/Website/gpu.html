@@ -31,23 +31,37 @@
             <p><span id="gpu_memory">-</span></p>
             <canvas id="gpuMemoryChart"></canvas>
         </div>
-    
-    
-        <!-- GPU-information -->
-        <div class="gpu-info">
-            <h2>GPU information</h2>
-            <p>Name: <strong><span id="gpu_name">-</span></strong></p>
-            <p>Temperature: <strong><span id="gpu_temperature">-</span></strong></p>
+      <!-- GPU-information -->
+      <div class="gpu-info">
+        <h2>GPU information</h2>
+        <p>Name: <strong><span id="gpu_name">-</span></strong></p>
+        <p>Temperature: <strong><span id="gpu_temperature">-</span></strong></p>
+        <p>Fan Speed: <strong><span id="gpu_fan_speed">-</span></strong></p>
+    </div>
+    </div>
+    <div class="charts-container">
+        <!-- GPU clock speed graph -->
+        <div class="linegraph">
+            <p><span id="gpu_clock_speed">-</span></p>
+            <canvas id="gpuClockSpeedChart"></canvas>
         </div>
-    </div>
-    <div class="disk-container">
-      <!-- Disk graph -->
-      <div class="diskgraph">
-        <canvas id="diskChart"></canvas>
-        <p><span id="total_disk_gb">-</span></p>
-        <p><span id="used_disk_gb">-</span></p>
-        <p><span id="free_disk_gb">-</span></p>
-    </div>
-    </div>
+    
+        <!-- GPU memory clock speed graph -->
+        <div class="linegraph">
+            <p><span id="gpu_memory_clock_speed">-</span></p>
+            <canvas id="gpuMemoryClockSpeedChart"></canvas>
+        </div>
+
+        <!-- GPU encoder utilization graph -->
+        <div class="linegraph">
+            <p><span id="gpu_encoder">-</span></p>
+            <canvas id="gpuEncoderChart"></canvas>
+        </div>
+    
+        <!-- GPU decoder utilization graph -->
+        <div class="linegraph">
+            <p><span id="gpu_decoder">-</span></p>
+            <canvas id="gpuDecoderChart"></canvas>
+        </div>
 </body>
 </html>

@@ -3,21 +3,22 @@ package main
 import (
     "encoding/json"
     "fmt"
+    "io/ioutil"
     "log"
     "math"
     "net/http"
     "os"
     "os/exec"
     "path/filepath"
-    "strings"
-    "syscall"
-    "time"
     "runtime"
+    "strings"
+    "time"
 
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/disk"
     "github.com/shirou/gopsutil/host"
     "github.com/shirou/gopsutil/mem"
+    nvml "github.com/mindprince/gonvml"
 )
 
 func removeHistoricalDataFile() {
@@ -33,7 +34,6 @@ type Config struct {
     TickerIntervalSeconds int `json:"save_history_seconds"`
 }
 
-
 type HistoricalData struct {
     HistoricalData []struct {
         Timestamp     string  `json:"timestamp"`
@@ -47,17 +47,16 @@ var historicalData HistoricalData // Declare a global variable to store historic
 
 func startTrayIcon() {
     if runtime.GOOS == "windows" {
-        cmd := exec.Command("powershell.exe", "-File", "Trayicon\trayicon.ps1")
-    cmd.Stderr = os.Stderr // Capture standard errors
-    cmd.Stdout = os.Stdout // Capture standard output
-    err := cmd.Start()
-    if err != nil {
-        log.Fatalf("Failed to start tray icon script: %v", err)
-    }
+        cmd := exec.Command("powershell.exe", "-File", "Trayicon/trayicon.ps1")
+        cmd.Stderr = os.Stderr // Capture standard errors
+        cmd.Stdout = os.Stdout // Capture standard output
+        err := cmd.Start()
+        if err != nil {
+            log.Fatalf("Failed to start tray icon script: %v", err)
+        }
     } else {
         log.Println("Tray icon script is not supported on non-Windows platforms.")
     }
-   
 }
 
 // Function to load historical data from a file
@@ -151,7 +150,6 @@ func main() {
     http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
 }
 
-
 // Function to collect and store historical data periodically
 func saveHistoricalDataPeriodically(config Config) {
     ticker := time.NewTicker(time.Duration(config.TickerIntervalSeconds) * time.Second) // Ticker to collect data every specified interval
@@ -184,11 +182,8 @@ func saveHistoricalDataPeriodically(config Config) {
             log.Printf("Failed to save historical data: %v\n", err)
             continue // Continue to the next iteration if there's an error saving the data
         }
-
-      
     }
 }
-
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     // Get the config file
@@ -207,7 +202,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     }
     // CPU Usage
     cpuUsage, _ := cpu.Percent(0, false)
-    cpuUsageX10 := cpuUsage[0] * 1
+    cpuUsageX10 := cpuUsage[0] * 2
     roundedCPUUsage := fmt.Sprintf("%.0f", cpuUsageX10)
 
     // Memory Usage
@@ -226,7 +221,10 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     hostInfo, _ := host.Info()
 
     // GPU Info
-    gpuInfo, _ := getGPUInfo()
+    gpuInfo, err := getGPUInfo()
+    if err != nil {
+        fmt.Printf("Error retrieving GPU info: %v\n", err)
+    }
 
     // Send data as JSON
     data := map[string]interface{}{
@@ -269,48 +267,192 @@ func saveHistoricalDataToFile() error {
 }
 
 func getGPUInfo() (map[string]interface{}, error) {
-    cmd := exec.Command("nvidia-smi", "--query-gpu=uuid,name,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.used,memory.free", "--format=csv,noheader,nounits")
+    gpuInfo := make(map[string]interface{})
 
-    if runtime.GOOS == "windows" {
-        cmd.SysProcAttr = &syscall.SysProcAttr{
-            
+    nvidiaInfo, err := getNvidiaGPUInfo()
+    if err == nil {
+        for k, v := range nvidiaInfo {
+            gpuInfo[k] = v
         }
+    } else {
+        log.Printf("Failed to get NVIDIA GPU info: %v\n", err)
     }
 
-    output, err := cmd.CombinedOutput()
+    amdInfo, err := getAmdGPUInfo()
+    if err == nil {
+        for k, v := range amdInfo {
+            gpuInfo[k] = v
+        }
+    } else {
+        log.Printf("Failed to get AMD GPU info: %v\n", err)
+    }
 
+    integratedInfo, err := getIntegratedGPUInfo()
+    if err == nil {
+        for k, v := range integratedInfo {
+            gpuInfo[k] = v
+        }
+    } else {
+        log.Printf("Failed to get integrated GPU info: %v\n", err)
+    }
+
+    return gpuInfo, nil
+}
+
+func getNvidiaGPUInfo() (map[string]interface{}, error) {
+    err := nvml.Initialize()
     if err != nil {
-        // If there is no gpu found it will display null
-        return map[string]interface{}{
-            "gpu0": map[string]interface{}{
-                "uuid":            "null",
-                "name":            "null",
-                "temperature_gpu": "null",
-                "utilization_gpu": "null",
-                "utilization_mem": "null",
-                "memory_total":    "null",
-                "memory_used":     "null",
-                "memory_free":     "null",
-            },
-        }, nil
+        return nil, fmt.Errorf("Failed to initialize NVML: %v", err)
+    }
+    defer nvml.Shutdown()
+
+    deviceCount, err := nvml.DeviceCount()
+    if err != nil {
+        return nil, fmt.Errorf("Failed to get device count: %v", err)
     }
 
     gpuInfo := make(map[string]interface{})
 
-    lines := strings.Split(strings.TrimSpace(string(output)), "\n")
-    for i, line := range lines {
-        fields := strings.Split(line, ",")
-        gpu := map[string]interface{}{
-            "uuid":            fields[0],
-            "name":            fields[1],
-            "temperature_gpu": fields[2],
-            "utilization_gpu": fields[3],
-            "utilization_mem": fields[4],
-            "memory_total":    fields[5],
-            "memory_used":     fields[6],
-            "memory_free":     fields[7],
+    for i := uint(0); i < deviceCount; i++ {
+        device, err := nvml.DeviceHandleByIndex(i)
+        if err != nil {
+            return nil, fmt.Errorf("Failed to get device handle: %v", err)
         }
+
+        name, err := device.Name()
+        if err != nil {
+            return nil, fmt.Errorf("Failed to get device name: %v", err)
+        }
+
+        uuid, err := device.UUID()
+        if err != nil {
+            return nil, fmt.Errorf("Failed to get device UUID: %v", err)
+        }
+
+        temperature, err := device.Temperature()
+        if err != nil {
+            return nil, fmt.Errorf("Failed to get device temperature: %v", err)
+        }
+
+        utilization, _, err := device.UtilizationRates()
+        if err != nil {
+            return nil, fmt.Errorf("Failed to get device utilization rates: %v", err)
+        }
+
+        totalMemory, usedMemory, err := device.MemoryInfo()
+        if err != nil {
+            return nil, fmt.Errorf("Failed to get device memory info: %v", err)
+        }
+        freeMemory := totalMemory - usedMemory
+
+        encoderUtilization := uint(0)
+        if encUtil, _, err := device.EncoderUtilization(); err == nil {
+            encoderUtilization = encUtil
+        } else {
+            log.Printf("Failed to get encoder utilization: %v\n", err)
+        }
+
+        decoderUtilization := uint(0)
+        if decUtil, _, err := device.DecoderUtilization(); err == nil {
+            decoderUtilization = decUtil
+        } else {
+            log.Printf("Failed to get decoder utilization: %v\n", err)
+        }
+
+        fanSpeed := uint(0)
+        if fanSpeedVal, err := device.FanSpeed(); err == nil {
+            fanSpeed = fanSpeedVal
+        } else {
+            log.Printf("Failed to get fan speed: %v\n", err)
+        }
+
+      
+
+        clockSpeed, memoryClockSpeed := getClockSpeeds()
+
+        gpu := map[string]interface{}{
+            "name":                 name,
+            "uuid":                 uuid,
+            "temperature_gpu":      temperature,
+            "utilization_gpu":      utilization,
+            "utilization_mem":      float64(usedMemory) / float64(totalMemory) * 100,
+            "memory_total":         totalMemory / 1024 / 1024, // Convert to MB
+            "memory_used":          usedMemory / 1024 / 1024,  // Convert to MB
+            "memory_free":          freeMemory / 1024 / 1024,  // Convert to MB
+            "encoder_utilization":  encoderUtilization,
+            "decoder_utilization":  decoderUtilization,
+            "fan_speed":            fanSpeed,
+            "clock_speed":          clockSpeed, // in MHz
+            "memory_clock_speed":   memoryClockSpeed, // in MHz
+        }
+
         gpuInfo[fmt.Sprintf("gpu%d", i)] = gpu
+    }
+
+    return gpuInfo, nil
+}
+
+
+func getClockSpeeds() (clockSpeed int, memoryClockSpeed int) {
+    clockSpeed = -1
+    memoryClockSpeed = -1
+
+    cmd := exec.Command("nvidia-smi", "--query-gpu=clocks.gr,clocks.mem", "--format=csv,noheader,nounits")
+    output, err := cmd.Output()
+    if err != nil {
+        log.Printf("Failed to execute nvidia-smi: %v\n", err)
+        return
+    }
+
+    lines := strings.Split(string(output), "\n")
+    if len(lines) > 0 {
+        parts := strings.Split(lines[0], ",")
+        if len(parts) == 2 {
+            fmt.Sscanf(strings.TrimSpace(parts[0]), "%d", &clockSpeed)
+            fmt.Sscanf(strings.TrimSpace(parts[1]), "%d", &memoryClockSpeed)
+        }
+    }
+
+    return
+}
+
+func getAmdGPUInfo() (map[string]interface{}, error) {
+    cmd := exec.Command("rocm-smi", "--showallinfo")
+    output, err := cmd.CombinedOutput()
+    if err != nil {
+        return nil, fmt.Errorf("Failed to run rocm-smi: %v", err)
+    }
+
+    lines := strings.Split(string(output), "\n")
+    gpuInfo := make(map[string]interface{})
+    for i, line := range lines {
+        gpuInfo[fmt.Sprintf("amd_gpu%d_info%d", i, i)] = line
+    }
+
+    return gpuInfo, nil
+}
+
+func getIntegratedGPUInfo() (map[string]interface{}, error) {
+    drmPath := "/sys/class/drm/card0/device/"
+    tempPath := drmPath + "hwmon/hwmon0/temp1_input"
+    utilPath := drmPath + "gpu_busy_percent"
+
+    temperature, err := ioutil.ReadFile(tempPath)
+    if err != nil {
+        return nil, fmt.Errorf("Failed to read temperature: %v", err)
+    }
+
+    utilization, err := ioutil.ReadFile(utilPath)
+    if err != nil {
+        return nil, fmt.Errorf("Failed to read utilization: %v", err)
+    }
+
+    temp := strings.TrimSpace(string(temperature))
+    util := strings.TrimSpace(string(utilization))
+
+    gpuInfo := map[string]interface{}{
+        "temperature":    temp,
+        "gpu_utilization": util,
     }
 
     return gpuInfo, nil
