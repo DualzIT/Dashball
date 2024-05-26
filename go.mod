@@ -1,6 +1,6 @@
 module github.com/dualzit/Dashball
 
-go 1.21.6
+go 1.23
 
 require github.com/shirou/gopsutil v3.21.11+incompatible
 
@@ -26,6 +26,7 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/jaypipes/ghw v0.12.0 // indirect
 	github.com/jaypipes/pcidb v1.0.0 // indirect
+	github.com/mindprince/gonvml v0.0.0-20211002210717-ac0b66419a41 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pkg/errors v0.9.1 // indirect

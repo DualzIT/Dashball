@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles/styles.css">
+    <script src="JS/gpu_charts.js"></script>
+    <title>Dashball</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1 class="titel">Dashball</h1>
+    <img class="logo" src="img/Dualz_logo.png" alt="Logo">
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="history.html">History</a></li>
+            <li><a href="gpu.html" class="active">GPU</a></li>
+        </ul>
+    </nav>
+
+    <div class="charts-container">
+        <!-- GPU-usage graph -->
+        <div class="linegraph">
+            <p><span id="gpu_usage">-</span></p>
+            <canvas id="gpuUsageChart"></canvas>
+        </div>
+    
+        <!-- GPU-memory graph -->
+        <div class="linegraph">
+            <p><span id="gpu_memory">-</span></p>
+            <canvas id="gpuMemoryChart"></canvas>
+        </div>
+      <!-- GPU-information -->
+      <div class="gpu-info">
+        <h2>GPU information</h2>
+        <p>Name: <strong><span id="gpu_name">-</span></strong></p>
+        <p>Temperature: <strong><span id="gpu_temperature">-</span></strong></p>
+        <p>Fan Speed: <strong><span id="gpu_fan_speed">-</span></strong></p>
+    </div>
+    </div>
+    <div class="charts-container">
+        <!-- GPU clock speed graph -->
+        <div class="linegraph">
+            <p><span id="gpu_clock_speed">-</span></p>
+            <canvas id="gpuClockSpeedChart"></canvas>
+        </div>
+    
+        <!-- GPU memory clock speed graph -->
+        <div class="linegraph">
+            <p><span id="gpu_memory_clock_speed">-</span></p>
+            <canvas id="gpuMemoryClockSpeedChart"></canvas>
+        </div>
+
+        <!-- GPU encoder utilization graph -->
+        <div class="linegraph">
+            <p><span id="gpu_encoder">-</span></p>
+            <canvas id="gpuEncoderChart"></canvas>
+        </div>
+    
+        <!-- GPU decoder utilization graph -->
+        <div class="linegraph">
+            <p><span id="gpu_decoder">-</span></p>
+            <canvas id="gpuDecoderChart"></canvas>
+        </div>
+</body>
+</html>
