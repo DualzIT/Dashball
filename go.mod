@@ -1,6 +1,6 @@
 module github.com/dualzit/Dashball
 
-go 1.23
+go 1.21.6
 
 require github.com/shirou/gopsutil v3.21.11+incompatible
 
