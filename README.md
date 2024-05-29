@@ -25,7 +25,8 @@ Windows will give some security warnings that you need to ignore
 
 ## .sh installer (Only for linux) 
 
-```curl -s -L alexvanzoggel.nl/install_dashball.sh | sudo bash
+```
+curl -s -L alexvanzoggel.nl/install_dashball.sh | sudo bash
 ```
 Default the website is at localhost:8080
 
