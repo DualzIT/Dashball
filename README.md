@@ -25,17 +25,10 @@ Windows will give some security warnings that you need to ignore
 
 ## .sh installer (Only for linux) 
 
+```curl -s -L alexvanzoggel.nl/install_dashball.sh | sudo bash
 ```
-git clone https://github.com/DualzIT/Dashball.git
-```
-```
-cd Dashball/src
-chmod +x install-dashball.sh
-```
+Default the website is at localhost:8080
 
-```
-sudo install-dashball.sh
-```
 ## go
 if you don't have already you need to install golang
 For Ubuntu/Debian
