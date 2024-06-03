@@ -7,7 +7,7 @@ Stay tuned for the first official release.
 ## Demo
 <img width="1686" alt="image" src="https://github.com/DualzIT/Dashball/assets/125699393/d294956e-139b-4e19-8142-07604d84f98f">
 
-Unfortinatly the demo pc does not have a GPU but you can still check out the demo at http://alexvanzoggel.nl
+Unfortinatly the demo pc does not have a GPU but you can still check out the demo at http://dualzit.nl
 
 # Use case
 Dashball is not one of those cloud monitoring software. 
@@ -26,7 +26,7 @@ Windows will give some security warnings that you need to ignore
 ## .sh installer (Only for linux) 
 
 ```
-curl -s -L alexvanzoggel.nl/install_dashball.sh | sudo bash
+curl -s -L dualzit.nl/install_dashball.sh | sudo bash
 ```
 Default the website is at localhost:8080
 
