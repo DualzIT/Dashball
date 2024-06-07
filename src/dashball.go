@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
@@ -19,6 +18,7 @@ import (
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
+	"github.com/StackExchange/wmi"
 )
 
 func removeHistoricalDataFile() {
@@ -473,30 +473,72 @@ func getAmdGPUInfo() (map[string]interface{}, error) {
 	return gpuInfo, nil
 }
 
+type Win32_VideoController struct {
+	Name          string
+	AdapterRAM    uint32
+	DriverVersion string
+}
+
 func getIntegratedGPUInfo() (map[string]interface{}, error) {
-	drmPath := "/sys/class/drm/card0/device/"
-	tempPath := drmPath + "hwmon/hwmon0/temp1_input"
-	utilPath := drmPath + "gpu_busy_percent"
-
-	temperature, err := ioutil.ReadFile(tempPath)
+	var videoControllers []Win32_VideoController
+	query := "SELECT Name, AdapterRAM, DriverVersion FROM Win32_VideoController"
+	err := wmi.Query(query, &videoControllers)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read temperature: %v", err)
+		return nil, fmt.Errorf("Failed to query WMI: %v", err)
 	}
 
-	utilization, err := ioutil.ReadFile(utilPath)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read utilization: %v", err)
-	}
-
-	temp := strings.TrimSpace(string(temperature))
-	util := strings.TrimSpace(string(utilization))
-
-	gpuInfo := map[string]interface{}{
-		"temperature":     temp,
-		"gpu_utilization": util,
+	gpuInfo := make(map[string]interface{})
+	for i, controller := range videoControllers {
+		gpu := map[string]interface{}{
+			"name":                controller.Name,
+			"uuid":                "N/A",
+			"temperature_gpu":     "N/A",
+			"utilization_gpu":     "N/A",
+			"utilization_mem":     "N/A",
+			"memory_total":        "N/A",
+			"memory_used":         "N/A",
+			"memory_free":         "N/A",
+			"encoder_utilization": "N/A",
+			"decoder_utilization": "N/A",
+			"fan_speed":           "N/A",
+			"clock_speed":         "N/A",
+			"memory_clock_speed":  "N/A",
+			"driver_version":      controller.DriverVersion,
+		}
+		gpuInfo[fmt.Sprintf("gpu%d", i)] = gpu
 	}
 
 	return gpuInfo, nil
+}
+
+func getDxDiagInfo() (map[string]interface{}, error) {
+	cmd := exec.Command("dxdiag", "/t", "dxdiag_output.txt", "/whql:off")
+	err := cmd.Run()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to execute dxdiag: %v", err)
+	}
+
+	data, err := os.ReadFile("dxdiag_output.txt")
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read dxdiag output: %v", err)
+	}
+
+	dxdiagInfo := make(map[string]interface{})
+	var currentGPU string
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "Card name:") {
+			currentGPU = strings.TrimPrefix(line, "Card name:")
+			dxdiagInfo[currentGPU] = make(map[string]string)
+		} else if strings.Contains(line, ":") && currentGPU != "" {
+			parts := strings.SplitN(line, ":", 2)
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			dxdiagInfo[currentGPU].(map[string]string)[key] = value
+		}
+	}
+
+	return dxdiagInfo, nil
 }
 
 func checkErr(err error) {
