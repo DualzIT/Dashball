@@ -1,69 +1,90 @@
-body
-    {
-        font-family: Arial, sans-serif;
-        padding: 20px 20px 0 20px;
-        background-color: #f0f0f0;
-    }
-    h1
-    {
-        font-family: Arial, Helvetica, sans-serif;
-        margin-top: 20px; 
-    }
-    .logo
-    {
-        height: 200px;
-        position: absolute;
-        right: 20px;
-        top: 20px;
-    }
-    .linegraph {
-        box-sizing: border-box;
-        margin: 20px;
-        width: 150%;
-        height: auto;
-    }
-    .charts-container {
-        display: flex;
-        gap: 20px;
-        width: 90%;
-    }
-    .diskgraph{
-        box-sizing: border-box;
-        margin: 20px;
-        width: 20%;
-        height: auto;
-    }
-    .disk-container{
-        display: flex;
-        gap: 20px;
-        width: 90%;
-    }
-    .gpu-info {
-        margin-left: 20px;
-        width: 100%;
-        margin-top: 40px;
-        
-    }
-    .computer-info{
-        margin-left: 20px;
-        width: 100%;
-        margin-top: 40px;
-    }
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px 20px 0 20px;
+    background-color: #f0f0f0;
+    color: black;
+}
+
+body.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 20px; 
+}
+
+.logo {
+    height: 200px;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
+.linegraph {
+    box-sizing: border-box;
+    margin: 20px;
+    width: 150%;
+    height: auto;
+}
+
+.charts-container {
+    display: flex;
+    gap: 20px;
+    width: 90%;
+}
+
+.diskgraph {
+    box-sizing: border-box;
+    margin: 20px;
+    width: 20%;
+    height: auto;
+}
+
+.disk-container {
+    display: flex;
+    gap: 20px;
+    width: 90%;
+}
+
+.gpu-info {
+    margin-left: 20px;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.computer-info {
+    margin-left: 20px;
+    width: 100%;
+    margin-top: 40px;
+}
 
 nav, ul {
     margin: 0;
     padding: 0;
     list-style-type: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
 nav {
     background-color: #f2f2f2;
 }
+
+body.dark-mode nav {
+    background-color: #121212;
+}
+
 ul {
     display: flex; 
 }
+
 li {
     margin-right: 10px; 
 }
+
 a {
     text-decoration: none;
     color: black;
@@ -71,34 +92,123 @@ a {
     border-radius: 5px;
 }
 
+body.dark-mode a {
+    color: white;
+}
+
 a.active {
     background-color: #f5b865; 
     color: white; 
 }
+
 a:hover:not(.active) {
     background-color: #f5b865; 
     color: white;
 }
 
-    
-   @media screen and (max-width: 1000px) {
-    .diskgraph{
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    right: 50vh;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Icon Styles */
+.icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+}
+
+.sun {
+    left: 8px;
+    display: block;
+}
+
+.moon {
+    right: 8px;
+    display: none;
+}
+
+input:checked + .slider .sun {
+    display: none;
+}
+
+input:checked + .slider .moon {
+    display: block;
+}
+
+/* Dark Mode Colors */
+body.dark-mode .slider {
+    background-color: #555;
+}
+
+body.dark-mode .slider:before {
+    background-color: #f1c40f;
+}
+
+@media screen and (max-width: 1000px) {
+    .diskgraph {
         box-sizing: border-box;
         margin: 20px;
         width: 40%;
         height: auto;
     }
-    .disk-container{
+
+    .disk-container {
         display: flex;
         gap: 20px;
         width: 90%;
     }
+
     .linegraph {
         box-sizing: border-box;
         margin: 20px;
         width: 150%;
         height: auto;
     }
+
     .charts-container {
         display: flex;
         gap: 20px;

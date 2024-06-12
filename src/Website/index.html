@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles/styles.css">
-    <script src="JS/charts.js"></script>
     <title>Dashball</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="JS/charts.js" defer></script>
 </head>
 
 <body>
@@ -17,6 +17,13 @@
             <li><a href="history.html">History</a></li>
             <li><a href="gpu.html">GPU</a></li>
         </ul>
+        <label class="switch">
+            <input type="checkbox" id="dark-mode-toggle">
+            <span class="slider round">
+                <span class="icon sun">🌞</span>
+                <span class="icon moon">🌜</span>
+            </span>
+        </label>
     </nav>
 
     <div class="charts-container">
@@ -37,7 +44,8 @@
             <p>OS:<strong><span id="os">-</span></strong></p>
             <p>OS version:<strong><span id="os_version">-</span></strong></p>
         </div>
-</div>
+    </div>
+
     <div class="charts-container">
         <!-- GPU-usage graph -->
         <div class="linegraph">
@@ -51,7 +59,6 @@
             <canvas id="gpuMemoryChart"></canvas>
         </div>
     
-    
         <!-- GPU-information -->
         <div class="gpu-info">
             <h2>GPU information</h2>
@@ -59,6 +66,7 @@
             <p>Temperature: <strong><span id="gpu_temperature">-</span></strong></p>
         </div>
     </div>
+
     <div class="disk-container">
       <!-- Disk graph -->
       <div class="diskgraph">
@@ -66,7 +74,31 @@
         <p><span id="total_disk_gb">-</span></p>
         <p><span id="used_disk_gb">-</span></p>
         <p><span id="free_disk_gb">-</span></p>
+      </div>
     </div>
-    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Dark mode toggle function
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+                let theme = 'light';
+                if (document.body.classList.contains('dark-mode')) {
+                    theme = 'dark';
+                }
+                localStorage.setItem('theme', theme);
+            }
+
+            // Initialize dark mode if previously set
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme && currentTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-toggle').checked = true;
+            }
+
+            // Add event listener to the dark mode toggle button
+            document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+        });
+    </script>
 </body>
 </html>

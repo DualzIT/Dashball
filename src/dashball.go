@@ -18,7 +18,6 @@ import (
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
-	"github.com/StackExchange/wmi"
 )
 
 func removeHistoricalDataFile() {
@@ -287,15 +286,6 @@ func getGPUInfo() (map[string]interface{}, error) {
 		log.Printf("Failed to get AMD GPU info: %v\n", err)
 	}
 
-	integratedInfo, err := getIntegratedGPUInfo()
-	if err == nil {
-		for k, v := range integratedInfo {
-			gpuInfo[k] = v
-		}
-	} else {
-		log.Printf("Failed to get integrated GPU info: %v\n", err)
-	}
-
 	// Als er geen GPU-informatie is gevonden, vul deze met nulwaarden
 	if len(gpuInfo) == 0 {
 		gpuInfo["gpu0"] = map[string]interface{}{
@@ -471,74 +461,6 @@ func getAmdGPUInfo() (map[string]interface{}, error) {
 	}
 
 	return gpuInfo, nil
-}
-
-type Win32_VideoController struct {
-	Name          string
-	AdapterRAM    uint32
-	DriverVersion string
-}
-
-func getIntegratedGPUInfo() (map[string]interface{}, error) {
-	var videoControllers []Win32_VideoController
-	query := "SELECT Name, AdapterRAM, DriverVersion FROM Win32_VideoController"
-	err := wmi.Query(query, &videoControllers)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to query WMI: %v", err)
-	}
-
-	gpuInfo := make(map[string]interface{})
-	for i, controller := range videoControllers {
-		gpu := map[string]interface{}{
-			"name":                controller.Name,
-			"uuid":                "N/A",
-			"temperature_gpu":     "N/A",
-			"utilization_gpu":     "N/A",
-			"utilization_mem":     "N/A",
-			"memory_total":        "N/A",
-			"memory_used":         "N/A",
-			"memory_free":         "N/A",
-			"encoder_utilization": "N/A",
-			"decoder_utilization": "N/A",
-			"fan_speed":           "N/A",
-			"clock_speed":         "N/A",
-			"memory_clock_speed":  "N/A",
-			"driver_version":      controller.DriverVersion,
-		}
-		gpuInfo[fmt.Sprintf("gpu%d", i)] = gpu
-	}
-
-	return gpuInfo, nil
-}
-
-func getDxDiagInfo() (map[string]interface{}, error) {
-	cmd := exec.Command("dxdiag", "/t", "dxdiag_output.txt", "/whql:off")
-	err := cmd.Run()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to execute dxdiag: %v", err)
-	}
-
-	data, err := os.ReadFile("dxdiag_output.txt")
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read dxdiag output: %v", err)
-	}
-
-	dxdiagInfo := make(map[string]interface{})
-	var currentGPU string
-	for _, line := range strings.Split(string(data), "\n") {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "Card name:") {
-			currentGPU = strings.TrimPrefix(line, "Card name:")
-			dxdiagInfo[currentGPU] = make(map[string]string)
-		} else if strings.Contains(line, ":") && currentGPU != "" {
-			parts := strings.SplitN(line, ":", 2)
-			key := strings.TrimSpace(parts[0])
-			value := strings.TrimSpace(parts[1])
-			dxdiagInfo[currentGPU].(map[string]string)[key] = value
-		}
-	}
-
-	return dxdiagInfo, nil
 }
 
 func checkErr(err error) {
