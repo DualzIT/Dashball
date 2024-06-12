@@ -1,86 +1,201 @@
 body {
     font-family: Arial, sans-serif;
-    padding: 20px;
+    padding: 20px 20px 0 20px;
     background-color: #f0f0f0;
+    color: black;
+}
+
+body.dark-mode {
+    background-color: #121212;
+    color: white;
 }
 
 h1 {
     font-family: Arial, Helvetica, sans-serif;
     margin-top: 20px; 
 }
+
 nav, ul {
     margin: 0;
     padding: 0;
     list-style-type: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
 nav {
     background-color: #f2f2f2;
+    position: relative;
+    padding: 10px;
 }
+
+body.dark-mode nav {
+    background-color: #121212;
+}
+
 ul {
-    display: flex; 
+    display: flex;
 }
+
 li {
-    margin-right: 10px; 
+    margin-right: 10px;
 }
+
 a {
     text-decoration: none;
     color: black;
     padding: 5px 10px;
-    border-radius: 5px; 
+    border-radius: 5px;
 }
+
+body.dark-mode a {
+    color: white;
+}
+
 a.active {
-    background-color: #f5b865; 
-    color: white; 
+    background-color: #f5b865;
+    color: white;
 }
+
 a:hover:not(.active) {
     background-color: #f5b865;
-    color: white; 
+    color: white;
 }
 
 .logo {
-    height: 230px; 
+    height: 200px;
     position: absolute;
     right: 20px;
-    top: -30px;
+    top: 20px;
+    z-index: 1; 
 }
 
 .chart-container {
-    width: 50%; /* Adjusted to 50% to fit two charts side by side */
-    height: auto; /* You can set a fixed height if necessary */
-    margin-bottom: 20px; /* Added some space below each chart */
+    width: 50%; 
+    height: auto; 
+    margin-bottom: 20px;
 }
 
-/* Flex container to hold charts */
+
 .charts-flex-container {
     display: flex;
-    gap: 20px; /* This adds space between your chart containers */
-    flex-direction: row; /* Aligns children (charts) in a row */
-    justify-content: center; /* Centers the charts in the container */
-    align-items: flex-start; /* Aligns charts to the start of the cross axis */
+    gap: 20px; 
+    flex-direction: row; 
+    justify-content: center; 
+    align-items: flex-start; 
 }
 
 .time {
     position: relative;
     margin-top: 50px;
 }
+
 .datapoints {
     margin-top: 40px;
 }
-button{
+
+button {
     background-color: #f5b865;
     text-decoration: none;
-    color: white; 
+    color: white;
     padding: 5px 10px;
     border-radius: 5px;
     border-color: #f5b865;
     list-style-type: none;
 }
+
+/* Toggle Switch */
+.switch {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    width: 60px;
+    height: 34px;
+    z-index: 2; 
+    right: 50vh;
+
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Icon Styles */
+.icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+}
+
+.sun {
+    left: 8px;
+    display: block;
+}
+
+.moon {
+    right: 8px;
+    display: none;
+}
+
+input:checked + .slider .sun {
+    display: none;
+}
+
+input:checked + .slider .moon {
+    display: block;
+}
+
+/* Dark Mode Colors */
+body.dark-mode .slider {
+    background-color: #555;
+}
+
+body.dark-mode .slider:before {
+    background-color: #f1c40f;
+}
+
 @media screen and (max-width: 1000px) {
     .chart-container {
-        width: 100%; /* Full width on smaller screens */
+        width: 100%; 
     }
     
     .charts-flex-container {
-        flex-direction: column; /* Stack charts on top of each other */
+        flex-direction: column; 
     }
 }
