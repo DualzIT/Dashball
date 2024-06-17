@@ -16,7 +16,7 @@ h1 {
 }
 
 .logo {
-    height: 200px;
+    height: 160px;
     position: absolute;
     right: 20px;
     top: 20px;
@@ -140,7 +140,7 @@ a:hover:not(.active) {
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
+    background-color: #888888;
     transition: .4s;
     border-radius: 50%;
 }
@@ -181,11 +181,11 @@ input:checked + .slider .moon {
 
 /* Dark Mode Colors */
 body.dark-mode .slider {
-    background-color: #555;
+    background-color: #888888;
 }
 
 body.dark-mode .slider:before {
-    background-color: #f1c40f;
+    background-color: #ccc;
 }
 
 @media screen and (max-width: 1000px) {
