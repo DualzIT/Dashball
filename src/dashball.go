@@ -134,6 +134,7 @@ func main() {
 	// Register endpoint handlers
 	http.HandleFunc("/save_historical_data", saveHistoricalData)
 	http.HandleFunc("/history", serveHistoricalData)
+	http.HandleFunc("/system_info", systemInfoHandler)
 
 	startTrayIcon()
 
@@ -141,9 +142,7 @@ func main() {
 	websiteDir := filepath.Join(".", "Website")
 	fs := http.FileServer(http.Dir(websiteDir))
 	http.Handle("/", fs)
-
-	// Sends json to /system_info
-	http.HandleFunc("/system_info", systemInfoHandler)
+	http.Handle("/cpu", http.FileServer(http.Dir(filepath.Join(websiteDir, "cpu.html")))) // Serve the new CPU page
 
 	fmt.Printf("Server started at http://localhost:%d\n", config.ServerPort)
 	http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
@@ -185,7 +184,6 @@ func saveHistoricalDataPeriodically(config Config) {
 }
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
-	// Get the config file
 	configFile, err := os.Open("json/config.json")
 	if err != nil {
 		fmt.Println("Can't open config file:", err)
@@ -199,10 +197,15 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Can't open config file:", err)
 		return
 	}
-	// CPU Usage
-	cpuUsage, _ := cpu.Percent(0, false)
-	cpuUsageX10 := cpuUsage[0] * 2
-	roundedCPUUsage := fmt.Sprintf("%.0f", cpuUsageX10)
+
+	// CPU Usage per core
+	cpuUsagePerCore, _ := cpu.Percent(0, true)
+	// Average CPU usage
+	cpuUsageAvg, _ := cpu.Percent(0, false)
+	cpuUsageAvgRounded := math.Round(cpuUsageAvg[0]*10) / 10 // Rond af op één decimaal
+
+	// CPU Frequencies
+	cpuFrequencies, _ := cpu.Info()
 
 	// Memory Usage
 	vMem, _ := mem.VirtualMemory()
@@ -225,9 +228,21 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Error retrieving GPU info: %v\n", err)
 	}
 
-	// Send data as JSON
+	// Uptime
+	uptime, _ := host.Uptime()
+	uptimeStr := formatUptime(uptime)
+
+	// Thread Count
+	threadCount := runtime.NumGoroutine()
+
+	// CPU Temperature (dummy value, replace with actual retrieval if available)
+	cpuTemperature := "N/A"
+
+	// Prepare the data to be sent
 	data := map[string]interface{}{
-		"cpu_usage":               roundedCPUUsage,
+		"cpu_usage_per_core":      cpuUsagePerCore,
+		"cpu_usage":               cpuUsageAvgRounded,
+		"cpu_frequencies":         cpuFrequencies,
 		"total_memory":            totalMemoryGB,
 		"used_memory":             usedMemoryGB,
 		"memory_usage":            vMem.UsedPercent,
@@ -240,6 +255,15 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"platform_version":        hostInfo.PlatformVersion,
 		"hostname":                hostInfo.Hostname,
 		"gpu_info":                gpuInfo,
+		"update_interval_seconds": config.UpdateIntervalSeconds, // Add update interval to the response
+		"cpu_info": map[string]interface{}{
+			"name":       cpuFrequencies[0].ModelName,
+			"temperature": cpuTemperature,
+			"frequency":  cpuFrequencies[0].Mhz,
+			"cores":      runtime.NumCPU(),
+			"uptime":     uptimeStr,
+			"threads":    threadCount,
+		},
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -263,6 +287,13 @@ func saveHistoricalDataToFile() error {
 	}
 
 	return nil
+}
+
+func formatUptime(seconds uint64) string {
+	days := seconds / 86400
+	hours := (seconds % 86400) / 3600
+	minutes := (seconds % 3600) / 60
+	return fmt.Sprintf("%dd %dh %dm", days, hours, minutes)
 }
 
 func getGPUInfo() (map[string]interface{}, error) {

@@ -16,7 +16,7 @@ h1 {
 }
 
 .logo {
-    height: 200px;
+    height: 160px;
     position: absolute;
     right: 20px;
     top: 20px;
@@ -49,15 +49,15 @@ h1 {
 }
 
 .gpu-info {
-    margin-left: 20px;
-    width: 100%;
-    margin-top: 40px;
+    width: 60%;
+    margin-top: 5vh;
+    margin-right: -10%;
 }
 
 .computer-info {
-    margin-left: 20px;
-    width: 100%;
-    margin-top: 40px;
+    width: 60%;
+    margin-top: 5vh;
+    margin-right: -10%;
 }
 
 nav, ul {
@@ -140,7 +140,7 @@ a:hover:not(.active) {
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
+    background-color: #888888;
     transition: .4s;
     border-radius: 50%;
 }
@@ -181,11 +181,36 @@ input:checked + .slider .moon {
 
 /* Dark Mode Colors */
 body.dark-mode .slider {
-    background-color: #555;
+    background-color: #888888;
 }
 
 body.dark-mode .slider:before {
-    background-color: #f1c40f;
+    background-color: #ccc;
+}
+
+.cpu-charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; 
+    margin-top: 70px;
+}
+
+.cpu-linegraph {
+    
+    flex: 1 1 calc(20% - 20px); /* 4 items per row */
+    margin: 10px;
+    box-sizing: border-box;
+    max-width: calc(25% - 20px);
+}
+
+.cpu-linegraph canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+.cpu-info{
+    width: 60%;
+    margin-top: 5vh;
+    margin-right: -10%;
 }
 
 @media screen and (max-width: 1000px) {
