@@ -204,6 +204,9 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	cpuUsageAvg, _ := cpu.Percent(0, false)
 	cpuUsageAvgRounded := math.Round(cpuUsageAvg[0]*10) / 10 // Rond af op één decimaal
 
+	// CPU Frequencies
+	cpuFrequencies, _ := cpu.Info()
+
 	// Memory Usage
 	vMem, _ := mem.VirtualMemory()
 	totalMemoryGB := float64(vMem.Total) / (1024 * 1024 * 1024)
@@ -225,10 +228,21 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Error retrieving GPU info: %v\n", err)
 	}
 
+	// Uptime
+	uptime, _ := host.Uptime()
+	uptimeStr := formatUptime(uptime)
+
+	// Thread Count
+	threadCount := runtime.NumGoroutine()
+
+	// CPU Temperature (dummy value, replace with actual retrieval if available)
+	cpuTemperature := 45.0
+
 	// Prepare the data to be sent
 	data := map[string]interface{}{
 		"cpu_usage_per_core":      cpuUsagePerCore,
 		"cpu_usage":               cpuUsageAvgRounded,
+		"cpu_frequencies":         cpuFrequencies,
 		"total_memory":            totalMemoryGB,
 		"used_memory":             usedMemoryGB,
 		"memory_usage":            vMem.UsedPercent,
@@ -242,6 +256,14 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"hostname":                hostInfo.Hostname,
 		"gpu_info":                gpuInfo,
 		"update_interval_seconds": config.UpdateIntervalSeconds, // Add update interval to the response
+		"cpu_info": map[string]interface{}{
+			"name":       cpuFrequencies[0].ModelName,
+			"temperature": cpuTemperature,
+			"frequency":  cpuFrequencies[0].Mhz,
+			"cores":      runtime.NumCPU(),
+			"uptime":     uptimeStr,
+			"threads":    threadCount,
+		},
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -265,6 +287,13 @@ func saveHistoricalDataToFile() error {
 	}
 
 	return nil
+}
+
+func formatUptime(seconds uint64) string {
+	days := seconds / 86400
+	hours := (seconds % 86400) / 3600
+	minutes := (seconds % 3600) / 60
+	return fmt.Sprintf("%dd %dh %dm", days, hours, minutes)
 }
 
 func getGPUInfo() (map[string]interface{}, error) {

@@ -207,6 +207,11 @@ body.dark-mode .slider:before {
     width: 100% !important;
     height: auto !important;
 }
+.cpu-info{
+    width: 60%;
+    margin-top: 5vh;
+    margin-right: -10%;
+}
 
 @media screen and (max-width: 1000px) {
     .diskgraph {
