@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles/styles.css">
-    <script src="JS/gpu_charts.js"></script>
-    <title>Dashball</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="JS/cpu_charts.js" defer></script>
+    <title>Dashball</title>
 </head>
 
 <body>
@@ -27,7 +27,8 @@
         </label>
     </nav>
 
-   
+    <div id="chartsContainer" class="cpu-charts-container"></div>
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

@@ -184,9 +184,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Update text elements
                 document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
                 document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
-                document.getElementById('gpu_name').textContent = `Name: ${data.gpu_info.gpu0.name}`;
-                document.getElementById('gpu_temperature').textContent = `Temperature: ${data.gpu_info.gpu0.temperature_gpu}°C`;
-                document.getElementById('gpu_fan_speed').textContent = `Fan Speed: ${data.gpu_info.gpu0.fan_speed}%`;
+                document.getElementById('gpu_name').textContent = ` ${data.gpu_info.gpu0.name}`;
+                document.getElementById('gpu_temperature').textContent = ` ${data.gpu_info.gpu0.temperature_gpu}°C`;
+                document.getElementById('gpu_fan_speed').textContent = ` ${data.gpu_info.gpu0.fan_speed}%`;
                 document.getElementById('gpu_clock_speed').textContent = `GPU Clock Speed: ${data.gpu_info.gpu0.clock_speed} MHz`;
                 document.getElementById('gpu_memory_clock_speed').textContent = `GPU Memory Clock Speed: ${data.gpu_info.gpu0.memory_clock_speed} MHz`;
                 document.getElementById('gpu_encoder').textContent = `GPU Encoder Utilization: ${data.gpu_info.gpu0.encoder_utilization}%`;

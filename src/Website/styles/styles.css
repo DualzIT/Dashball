@@ -188,6 +188,26 @@ body.dark-mode .slider:before {
     background-color: #ccc;
 }
 
+.cpu-charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; 
+    margin-top: 70px;
+}
+
+.cpu-linegraph {
+    
+    flex: 1 1 calc(20% - 20px); /* 4 items per row */
+    margin: 10px;
+    box-sizing: border-box;
+    max-width: calc(25% - 20px);
+}
+
+.cpu-linegraph canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
 @media screen and (max-width: 1000px) {
     .diskgraph {
         box-sizing: border-box;
