@@ -1,4 +1,4 @@
-const maxDataPoints = 20; // Stel hier het maximum aantal datapunten in
+const maxDataPoints = 20; 
 
 async function fetchCpuData() {
     const response = await fetch('/system_info');
@@ -22,7 +22,7 @@ async function createCpuCharts() {
         new Chart(canvas, {
             type: 'line',
             data: {
-                labels: [new Date().toLocaleTimeString()], // Initially only one data point
+                labels: [new Date().toLocaleTimeString()], 
                 datasets: [{
                     label: `Core ${index} Usage`,
                     data: [usage],
@@ -56,7 +56,7 @@ async function createCpuCharts() {
     const averageCpuChart = new Chart(averageCpuCanvas, {
         type: 'line',
         data: {
-            labels: [new Date().toLocaleTimeString()], // Initially only one data point
+            labels: [new Date().toLocaleTimeString()], 
             datasets: [{
                 label: 'Average CPU Usage',
                 data: [data.cpu_usage_avg],
@@ -85,7 +85,9 @@ async function createCpuCharts() {
         }
     });
 
-    setInterval(updateData, 5000, averageCpuChart); // Update elke 5 seconden
+    // Start updating data with interval from config
+    const updateInterval = data.update_interval_seconds * 1000; 
+    setInterval(() => updateData(averageCpuChart), updateInterval);
 }
 
 function updateData(averageCpuChart) {
@@ -107,14 +109,11 @@ function updateData(averageCpuChart) {
             chart.update();
         });
 
-        // Update gemiddelde CPU gebruik
         document.getElementById('cpu_usage').textContent = data.cpu_usage_avg.toFixed(1);
 
-        // Voeg timestamp en data toe aan average CPU chart
         averageCpuChart.data.labels.push(timestamp);
         averageCpuChart.data.datasets[0].data.push(data.cpu_usage_avg);
 
-        // Verschuif grafiek als deze maxdatapoints bereikt
         if (averageCpuChart.data.labels.length > maxDataPoints) {
             averageCpuChart.data.labels.shift();
             averageCpuChart.data.datasets[0].data.shift();

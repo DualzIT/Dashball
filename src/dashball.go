@@ -202,7 +202,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	cpuUsagePerCore, _ := cpu.Percent(0, true)
 	// Average CPU usage
 	cpuUsageAvg, _ := cpu.Percent(0, false)
-	cpuUsageAvgRounded := math.Round(cpuUsageAvg[0]*10) / 10 
+	cpuUsageAvgRounded := math.Round(cpuUsageAvg[0]*10) / 10 // Rond af op één decimaal
 
 	// Memory Usage
 	vMem, _ := mem.VirtualMemory()
@@ -228,7 +228,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// Prepare the data to be sent
 	data := map[string]interface{}{
 		"cpu_usage_per_core":      cpuUsagePerCore,
-		"cpu_usage":           		 cpuUsageAvgRounded,
+		"cpu_usage":               cpuUsageAvgRounded,
 		"total_memory":            totalMemoryGB,
 		"used_memory":             usedMemoryGB,
 		"memory_usage":            vMem.UsedPercent,
@@ -241,6 +241,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"platform_version":        hostInfo.PlatformVersion,
 		"hostname":                hostInfo.Hostname,
 		"gpu_info":                gpuInfo,
+		"update_interval_seconds": config.UpdateIntervalSeconds, // Add update interval to the response
 	}
 
 	w.Header().Set("Content-Type", "application/json")
