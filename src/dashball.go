@@ -236,7 +236,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	threadCount := runtime.NumGoroutine()
 
 	// CPU Temperature (dummy value, replace with actual retrieval if available)
-	cpuTemperature := 45.0
+	cpuTemperature := "N/A"
 
 	// Prepare the data to be sent
 	data := map[string]interface{}{

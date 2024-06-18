@@ -1,4 +1,4 @@
-const maxDataPoints = 20;  // Zorg ervoor dat maxDataPoints is gedefinieerd
+const maxDataPoints = 20;  
 
 async function fetchCpuData() {
     const response = await fetch('/system_info');

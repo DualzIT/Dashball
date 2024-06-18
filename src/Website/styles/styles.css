@@ -49,15 +49,15 @@ h1 {
 }
 
 .gpu-info {
-    margin-left: 20px;
-    width: 100%;
-    margin-top: 40px;
+    width: 60%;
+    margin-top: 5vh;
+    margin-right: -10%;
 }
 
 .computer-info {
-    margin-left: 20px;
-    width: 100%;
-    margin-top: 40px;
+    width: 60%;
+    margin-top: 5vh;
+    margin-right: -10%;
 }
 
 nav, ul {
