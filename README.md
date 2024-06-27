@@ -5,7 +5,7 @@ As in a dashboard for all devices
 ## Demo
 <img width="1686" alt="image" src="https://github.com/DualzIT/Dashball/assets/125699393/d294956e-139b-4e19-8142-07604d84f98f">
 
-Unfortunately the demo pc does not have a GPU but you can still check out the demo at http://dualzit.nl
+Unfortunately the demo pc does not have a GPU but you can still check out the demo at https://demo.dashball.dualzit.nl
 
 # Use case
 Dashball is not one of those cloud monitoring software. 
