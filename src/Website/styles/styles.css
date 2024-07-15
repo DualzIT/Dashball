@@ -151,7 +151,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(46px); /* Pas de afstand aan voor de bredere slider */
+    transform: translateX(46px); 
 }
 
 /* Label Text Styles */
@@ -164,11 +164,11 @@ input:checked + .slider:before {
 }
 
 .label-text.light {
-    left: -50px; /* Pas aan voor voldoende ruimte tussen tekst en toggle */
+    left: -50px; 
 }
 
 .label-text.dark {
-    right: -50px; /* Pas aan voor voldoende ruimte tussen tekst en toggle */
+    right: -50px; 
 }
 
 .cpu-charts-container {
