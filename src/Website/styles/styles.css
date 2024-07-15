@@ -106,13 +106,14 @@ a:hover:not(.active) {
     color: white;
 }
 
-/* Toggle Switch */
+/* dark mode Toggle Switch */
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
+    width: 80px; 
     height: 34px;
-    right: 50vh;
+    margin: 0 10px; 
+    margin-right: 20%;
 }
 
 .switch input {
@@ -140,52 +141,34 @@ a:hover:not(.active) {
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: #888888;
+    background-color: white;
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #6a6d70;
 }
 
 input:checked + .slider:before {
-    transform: translateX(26px);
+    transform: translateX(46px); /* Pas de afstand aan voor de bredere slider */
 }
 
-/* Icon Styles */
-.icon {
+/* Label Text Styles */
+.label-text {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
-.sun {
-    left: 8px;
-    display: block;
+.label-text.light {
+    left: -50px; /* Pas aan voor voldoende ruimte tussen tekst en toggle */
 }
 
-.moon {
-    right: 8px;
-    display: none;
-}
-
-input:checked + .slider .sun {
-    display: none;
-}
-
-input:checked + .slider .moon {
-    display: block;
-}
-
-/* Dark Mode Colors */
-body.dark-mode .slider {
-    background-color: #888888;
-}
-
-body.dark-mode .slider:before {
-    background-color: #ccc;
+.label-text.dark {
+    right: -50px; /* Pas aan voor voldoende ruimte tussen tekst en toggle */
 }
 
 .cpu-charts-container {
@@ -196,7 +179,6 @@ body.dark-mode .slider:before {
 }
 
 .cpu-linegraph {
-    
     flex: 1 1 calc(20% - 20px); /* 4 items per row */
     margin: 10px;
     box-sizing: border-box;
@@ -207,10 +189,16 @@ body.dark-mode .slider:before {
     width: 100% !important;
     height: auto !important;
 }
-.cpu-info{
+
+.cpu-info {
     width: 60%;
     margin-top: 5vh;
     margin-right: -10%;
+}
+
+.lighttoggle {
+    position: relative;
+    margin-right: 0vh;
 }
 
 @media screen and (max-width: 1000px) {
