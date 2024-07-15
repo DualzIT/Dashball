@@ -19,7 +19,7 @@
             <li><a href="cpu.html">CPU</a></li>
         </ul>
         <label class="switch">
-            <input type="checkbox" id="dark-mode-toggle">
+            <input type="checkbox" id="dark-mode-toggle" checked> 
             <span class="slider round">
                 <span class="icon sun">🌞</span>
                 <span class="icon moon">🌜</span>
@@ -89,17 +89,21 @@
                 }
                 localStorage.setItem('theme', theme);
             }
-
-            // Initialize dark mode if previously set
+    
+            // Initialize dark mode if previously set, or default to dark mode
             const currentTheme = localStorage.getItem('theme');
-            if (currentTheme && currentTheme === 'dark') {
+            if (currentTheme === 'dark' || !currentTheme) {
                 document.body.classList.add('dark-mode');
                 document.getElementById('dark-mode-toggle').checked = true;
+            } else if (currentTheme === 'light') {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('dark-mode-toggle').checked = false;
             }
-
+    
             // Add event listener to the dark mode toggle button
             document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
         });
     </script>
+    
 </body>
 </html>
