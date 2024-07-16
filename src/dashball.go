@@ -131,21 +131,26 @@ func main() {
 	// Start a goroutine to collect and store historical data periodically
 	go saveHistoricalDataPeriodically(config)
 
+	mux := http.NewServeMux()
+
 	// Register endpoint handlers
-	http.HandleFunc("/save_historical_data", saveHistoricalData)
-	http.HandleFunc("/history", serveHistoricalData)
-	http.HandleFunc("/system_info", systemInfoHandler)
+	mux.HandleFunc("/save_historical_data", saveHistoricalData)
+	mux.HandleFunc("/history", serveHistoricalData)
+	mux.HandleFunc("/system_info", systemInfoHandler)
 
 	startTrayIcon()
 
 	// Web server
 	websiteDir := filepath.Join(".", "Website")
 	fs := http.FileServer(http.Dir(websiteDir))
-	http.Handle("/", fs)
-	http.Handle("/cpu", http.FileServer(http.Dir(filepath.Join(websiteDir, "cpu.html")))) // Serve the new CPU page
+	mux.Handle("/", fs)
+	mux.Handle("/cpu", http.FileServer(http.Dir(filepath.Join(websiteDir, "cpu.html")))) // Serve the new CPU page
 
 	fmt.Printf("Server started at http://localhost:%d\n", config.ServerPort)
-	http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), nil)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", config.ServerPort), mux)
+	if err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
 
 // Function to collect and store historical data periodically
@@ -186,7 +191,7 @@ func saveHistoricalDataPeriodically(config Config) {
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	configFile, err := os.Open("json/config.json")
 	if err != nil {
-		fmt.Println("Can't open config file:", err)
+		http.Error(w, "Can't open config file", http.StatusInternalServerError)
 		return
 	}
 	defer configFile.Close()
@@ -194,7 +199,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	var config Config
 	err = json.NewDecoder(configFile).Decode(&config)
 	if err != nil {
-		fmt.Println("Can't open config file:", err)
+		http.Error(w, "Can't decode config file", http.StatusInternalServerError)
 		return
 	}
 
@@ -213,11 +218,46 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	usedMemoryGB := float64(vMem.Used) / (1024 * 1024 * 1024)
 
 	// Disk Usage
-	diskUsage, _ := disk.Usage("/")
-	availableDiskSpaceGB := float64(diskUsage.Total-diskUsage.Used) / float64(1<<30)
-	totalDiskSpaceGB := math.Round(float64(diskUsage.Total) / float64(1<<30))
-	usedDiskSpaceGB := math.Round(float64(diskUsage.Used) / float64(1<<30))
-	availableDiskSpaceGB = math.Round(availableDiskSpaceGB)
+	partitions, _ := disk.Partitions(true)
+	var diskInfos []map[string]interface{}
+	for _, partition := range partitions {
+		if partition.Fstype == "tmpfs" || partition.Fstype == "devtmpfs" || partition.Fstype == "overlay" || strings.HasPrefix(partition.Mountpoint, "/sys") || strings.HasPrefix(partition.Mountpoint, "/proc") || strings.HasPrefix(partition.Mountpoint, "/run") {
+			// Skip pseudo or virtual filesystems
+			continue
+		}
+
+		diskUsage, err := disk.Usage(partition.Mountpoint)
+		if err != nil {
+			log.Printf("Failed to get disk usage for %s: %v", partition.Mountpoint, err)
+			continue
+		}
+
+		ioStats, err := disk.IOCounters(partition.Device)
+		if err != nil {
+			log.Printf("Failed to get IO counters for %s: %v", partition.Device, err)
+			continue
+		}
+
+		if ioStat, exists := ioStats[partition.Device]; exists {
+			diskInfo := map[string]interface{}{
+				"device":       partition.Device,
+				"mountpoint":   partition.Mountpoint,
+				"fstype":       partition.Fstype,
+				"total_space":  diskUsage.Total / (1024 * 1024 * 1024),
+				"used_space":   diskUsage.Used / (1024 * 1024 * 1024),
+				"free_space":   diskUsage.Free / (1024 * 1024 * 1024),
+				"read_count":   ioStat.ReadCount,
+				"write_count":  ioStat.WriteCount,
+				"read_bytes":   ioStat.ReadBytes,
+				"write_bytes":  ioStat.WriteBytes,
+				"read_time":    ioStat.ReadTime,
+				"write_time":   ioStat.WriteTime,
+				"io_time":      ioStat.IoTime,
+				"weighted_io":  ioStat.WeightedIO,
+			}
+			diskInfos = append(diskInfos, diskInfo)
+		}
+	}
 
 	// Computer information
 	hostInfo, _ := host.Info()
@@ -225,7 +265,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// GPU Info
 	gpuInfo, err := getGPUInfo()
 	if err != nil {
-		fmt.Printf("Error retrieving GPU info: %v\n", err)
+		log.Printf("Error retrieving GPU info: %v\n", err)
 	}
 
 	// Uptime
@@ -246,10 +286,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"total_memory":            totalMemoryGB,
 		"used_memory":             usedMemoryGB,
 		"memory_usage":            vMem.UsedPercent,
-		"total_disk_space_gb":     totalDiskSpaceGB,
-		"used_disk_space_gb":      usedDiskSpaceGB,
-		"available_disk_space_gb": availableDiskSpaceGB,
-		"disk_usage_percent":      diskUsage.UsedPercent,
+		"disk_infos":              diskInfos, // Make sure this is always present
 		"os":                      hostInfo.OS,
 		"platform":                hostInfo.Platform,
 		"platform_version":        hostInfo.PlatformVersion,
@@ -268,10 +305,8 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
-
-	// wait for the interval in config.json
-	time.Sleep(time.Duration(config.UpdateIntervalSeconds) * time.Second)
 }
+
 
 // Function to save historical data to a file
 func saveHistoricalDataToFile() error {
