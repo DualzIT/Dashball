@@ -1,110 +1,140 @@
 document.addEventListener("DOMContentLoaded", function () {
     const maxDataPoints = 30;
+    let diskCharts = {};
+    let diskSpaceCharts = {};
 
-    function initializeDiskCharts(diskData) {
-        const container = document.getElementById('disks');
-        container.innerHTML = '';
+    function initializeCharts(diskInfos) {
+        diskInfos.forEach((disk, index) => {
+            const readCtx = document.getElementById(`readSpeedChart${index}`).getContext('2d');
+            const writeCtx = document.getElementById(`writeSpeedChart${index}`).getContext('2d');
+            const spaceCtx = document.getElementById(`diskSpaceChart${index}`).getContext('2d');
 
-        if (!diskData || diskData.length === 0) {
-            container.innerHTML = '<p>No disk data available.</p>';
-            return;
-        }
-
-        diskData.forEach((disk, index) => {
-            const diskDiv = document.createElement('div');
-            diskDiv.classList.add('disk');
-
-            const title = document.createElement('h3');
-            title.textContent = `Disk: ${disk.device}`;
-            diskDiv.appendChild(title);
-
-            const readChartCanvas = document.createElement('canvas');
-            readChartCanvas.id = `diskReadChart${index}`;
-            diskDiv.appendChild(readChartCanvas);
-
-            const writeChartCanvas = document.createElement('canvas');
-            writeChartCanvas.id = `diskWriteChart${index}`;
-            diskDiv.appendChild(writeChartCanvas);
-
-            container.appendChild(diskDiv);
-
-            const ctxRead = readChartCanvas.getContext('2d');
-            const ctxWrite = writeChartCanvas.getContext('2d');
-
-            const readChart = new Chart(ctxRead, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Read Bytes',
-                        data: [],
-                        borderColor: 'rgb(75, 192, 192)',
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
+            diskCharts[disk.device] = {
+                readSpeed: new Chart(readCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: `Read Speed (Bytes/s) - ${disk.device}`,
+                            data: [],
+                            borderColor: 'rgb(75, 192, 192)',
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
                         }
                     }
-                }
-            });
-
-            const writeChart = new Chart(ctxWrite, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Write Bytes',
-                        data: [],
-                        borderColor: 'rgb(153, 102, 255)',
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
+                }),
+                writeSpeed: new Chart(writeCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: `Write Speed (Bytes/s) - ${disk.device}`,
+                            data: [],
+                            borderColor: 'rgb(153, 102, 255)',
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
                         }
                     }
+                })
+            };
+
+            diskSpaceCharts[disk.device] = new Chart(spaceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Used Space (GB)', 'Free Space (GB)'],
+                    datasets: [{
+                        data: [disk.used_space, disk.free_space],
+                        backgroundColor: ['#F9B94B', '#6FF36F'],
+                        borderWidth: 0
+                    }]
                 }
             });
-
-            setInterval(() => {
-                fetch('/system_info')
-                    .then(response => response.json())
-                    .then(data => {
-                        const now = new Date();
-                        const timestamp = now.toLocaleTimeString();
-
-                        const diskInfo = data.disk_infos[index];
-
-                        if (!diskInfo) return;
-
-                        readChart.data.labels.push(timestamp);
-                        writeChart.data.labels.push(timestamp);
-
-                        if (readChart.data.labels.length > maxDataPoints) {
-                            readChart.data.labels.shift();
-                            writeChart.data.labels.shift();
-                            readChart.data.datasets[0].data.shift();
-                            writeChart.data.datasets[0].data.shift();
-                        }
-
-                        readChart.data.datasets[0].data.push(diskInfo.read_bytes);
-                        writeChart.data.datasets[0].data.push(diskInfo.write_bytes);
-
-                        readChart.update();
-                        writeChart.update();
-                    })
-                    .catch(error => console.error('Error fetching disk data:', error));
-            }, 1000);
         });
+    }
+
+    function updateData() {
+        fetch('/system_info')
+            .then(response => response.json())
+            .then(data => {
+                const now = new Date();
+                const timestamp = now.toLocaleTimeString();
+
+                data.disk_infos.forEach((disk, index) => {
+                    const charts = diskCharts[disk.device];
+                    const spaceChart = diskSpaceCharts[disk.device];
+
+                    if (charts && spaceChart) {
+                        charts.readSpeed.data.labels.push(timestamp);
+                        charts.writeSpeed.data.labels.push(timestamp);
+
+                        if (charts.readSpeed.data.labels.length > maxDataPoints) {
+                            charts.readSpeed.data.labels.shift();
+                            charts.writeSpeed.data.labels.shift();
+                            charts.readSpeed.data.datasets[0].data.shift();
+                            charts.writeSpeed.data.datasets[0].data.shift();
+                        }
+
+                        charts.readSpeed.data.datasets[0].data.push(disk.read_speed);
+                        charts.writeSpeed.data.datasets[0].data.push(disk.write_speed);
+
+                        spaceChart.data.datasets[0].data = [disk.used_space, disk.free_space];
+
+                        charts.readSpeed.update();
+                        charts.writeSpeed.update();
+                        spaceChart.update();
+
+                        document.getElementById(`used_disk_gb${index}`).textContent = `${disk.used_space}GB`;
+                        document.getElementById(`free_disk_gb${index}`).textContent = `${disk.free_space}GB`;
+                        document.getElementById(`total_disk_gb${index}`).textContent = `${disk.total_space}GB`;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('ERROR:', error);
+            });
     }
 
     fetch('/system_info')
         .then(response => response.json())
         .then(data => {
-            initializeDiskCharts(data.disk_infos);
+            const diskContainer = document.getElementById('diskContainer');
+
+            data.disk_infos.forEach((disk, index) => {
+                const diskElement = `
+                    <div class="disk-info">
+                        <h2>${disk.device} - ${disk.mountpoint}</h2>
+                        <div class="linegraph">
+                            <canvas id="readSpeedChart${index}"></canvas>
+                        </div>
+                        <div class="linegraph">
+                            <canvas id="writeSpeedChart${index}"></canvas>
+                        </div>
+                        <div class="linegraph">
+                            <canvas id="diskSpaceChart${index}"></canvas>
+                        </div>
+                        <p>Used Space: <span id="used_disk_gb${index}">${disk.used_space}GB</span></p>
+                        <p>Free Space: <span id="free_disk_gb${index}">${disk.free_space}GB</span></p>
+                        <p>Total Space: <span id="total_disk_gb${index}">${disk.total_space}GB</span></p>
+                    </div>
+                `;
+                diskContainer.insertAdjacentHTML('beforeend', diskElement);
+            });
+
+            initializeCharts(data.disk_infos);
+            updateData();
+            setInterval(updateData, 1000);
         })
-        .catch(error => console.error('Error fetching initial disk data:', error));
+        .catch(error => {
+            console.error('ERROR:', error);
+        });
 });

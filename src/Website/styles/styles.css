@@ -200,6 +200,13 @@ input:checked + .slider:before {
     position: relative;
     margin-right: 0vh;
 }
+.disk-info{
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    
+}
 
 @media screen and (max-width: 1000px) {
     .diskgraph {

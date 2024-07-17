@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles/styles.css">
-    <title>Disk Information</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="JS/disk_charts.js" defer></script>
+    <title>Disk Usage</title>
 </head>
+
 <body>
-    <h1 class="title">Disk Information</h1>
+    <h1 class="titel">Disk Usage</h1>
+    <img class="logo" src="img/Dualz_logo.png" alt="Logo">
     <nav>
         <ul>
             <li><a href="index.html">Home</a></li>
@@ -25,16 +27,13 @@
         </label>
     </nav>
 
-    <div class="charts-container">
-        <!-- Disk Information -->
-        <div class="disk-info">
-            <h2>Disk Information</h2>
-            <div id="disks"></div>
-        </div>
+    <div id="diskContainer" class="charts-container">
+        <!-- Disk information will be injected here -->
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Dark mode toggle function
             function toggleDarkMode() {
                 document.body.classList.toggle('dark-mode');
                 let theme = 'light';
@@ -43,7 +42,8 @@
                 }
                 localStorage.setItem('theme', theme);
             }
-    
+
+            // Initialize dark mode if previously set, or default to dark mode
             const currentTheme = localStorage.getItem('theme');
             if (currentTheme === 'dark' || !currentTheme) {
                 document.body.classList.add('dark-mode');
@@ -52,9 +52,11 @@
                 document.body.classList.remove('dark-mode');
                 document.getElementById('dark-mode-toggle').checked = false;
             }
-    
+
+            // Add event listener to the dark mode toggle button
             document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
         });
     </script>
+
 </body>
 </html>
