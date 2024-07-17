@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 data: {
                     labels: ['Used Space (GB)', 'Free Space (GB)'],
                     datasets: [{
-                        data: [disk.used_space, disk.free_space],
+                        data: [disk.used_space / 1024, disk.free_space / 1024], // Convert MB to GB
                         backgroundColor: ['#F9B94B', '#6FF36F'],
                         borderWidth: 0
                     }]
@@ -87,15 +87,15 @@ document.addEventListener("DOMContentLoaded", function () {
                         charts.readSpeed.data.datasets[0].data.push(disk.read_speed);
                         charts.writeSpeed.data.datasets[0].data.push(disk.write_speed);
 
-                        spaceChart.data.datasets[0].data = [disk.used_space, disk.free_space];
+                        spaceChart.data.datasets[0].data = [disk.used_space / 1024, disk.free_space / 1024]; // Convert MB to GB
 
                         charts.readSpeed.update();
                         charts.writeSpeed.update();
                         spaceChart.update();
 
-                        document.getElementById(`used_disk_gb${index}`).textContent = `${disk.used_space}GB`;
-                        document.getElementById(`free_disk_gb${index}`).textContent = `${disk.free_space}GB`;
-                        document.getElementById(`total_disk_gb${index}`).textContent = `${disk.total_space}GB`;
+                        document.getElementById(`used_disk_gb${index}`).textContent = `${(disk.used_space / 1024).toFixed(2)} GB`;
+                        document.getElementById(`free_disk_gb${index}`).textContent = `${(disk.free_space / 1024).toFixed(2)} GB`;
+                        document.getElementById(`total_disk_gb${index}`).textContent = `${(disk.total_space / 1024).toFixed(2)} GB`;
                     }
                 });
             })
@@ -112,19 +112,30 @@ document.addEventListener("DOMContentLoaded", function () {
             data.disk_infos.forEach((disk, index) => {
                 const diskElement = `
                     <div class="disk-info">
-                        <h2>${disk.device} - ${disk.mountpoint}</h2>
-                        <div class="linegraph">
-                            <canvas id="readSpeedChart${index}"></canvas>
+                        <div class="disk-graphs">
+                            
+                            <div class="device-info">
+                            <div>
+                                <h2>Device: ${disk.device}</h2>
+                                <h3>Mountpoint: ${disk.mountpoint}</h3>
+                                <h3>Type: ${disk.fstype}</h3>
+                            </div> 
+                            </div>
+                            <div>
+                                <canvas id="readSpeedChart${index}"></canvas>
+                            </div>
+                            <div>
+                                <canvas id="writeSpeedChart${index}"></canvas>
+                            </div>
+                            <div>
+                                <div class="diskspacechart">
+                                <canvas id="diskSpaceChart${index}"></canvas>
+                                <p>Used Space: <span id="used_disk_gb${index}">${(disk.used_space / 1024).toFixed(2)} GB</span></p>
+                                <p>Free Space: <span id="free_disk_gb${index}">${(disk.free_space / 1024).toFixed(2)} GB</span></p>
+                                <p>Total Space: <span id="total_disk_gb${index}">${(disk.total_space / 1024).toFixed(2)} GB</span></p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="linegraph">
-                            <canvas id="writeSpeedChart${index}"></canvas>
-                        </div>
-                        <div class="linegraph">
-                            <canvas id="diskSpaceChart${index}"></canvas>
-                        </div>
-                        <p>Used Space: <span id="used_disk_gb${index}">${disk.used_space}GB</span></p>
-                        <p>Free Space: <span id="free_disk_gb${index}">${disk.free_space}GB</span></p>
-                        <p>Total Space: <span id="total_disk_gb${index}">${disk.total_space}GB</span></p>
                     </div>
                 `;
                 diskContainer.insertAdjacentHTML('beforeend', diskElement);

@@ -44,9 +44,9 @@ type HistoricalData struct {
 }
 
 var (
-	historicalData HistoricalData           // Declare a global variable to store historical data
-	previousDiskStats map[string]disk.IOCountersStat // Store previous disk stats for calculating speeds
-	mutex sync.Mutex // Ensure thread safety
+	historicalData      HistoricalData           // Declare a global variable to store historical data
+	previousDiskStats   map[string]disk.IOCountersStat // Store previous disk stats for calculating speeds
+	mutex               sync.Mutex                     // Ensure thread safety
 )
 
 func startTrayIcon() {
@@ -270,13 +270,19 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 			previousDiskStats[partition.Device] = ioStat
 
+			// Convert disk space to MB and filter out disks with less than 100MB free space
+			freeSpaceMB := diskUsage.Free / (1024 * 1024)
+			if freeSpaceMB < 100 {
+				continue
+			}
+
 			diskInfo := map[string]interface{}{
 				"device":       partition.Device,
 				"mountpoint":   partition.Mountpoint,
 				"fstype":       partition.Fstype,
-				"total_space":  diskUsage.Total / (1024 * 1024 * 1024),
-				"used_space":   diskUsage.Used / (1024 * 1024 * 1024),
-				"free_space":   diskUsage.Free / (1024 * 1024 * 1024),
+				"total_space":  diskUsage.Total / (1024 * 1024), // Convert to MB
+				"used_space":   diskUsage.Used / (1024 * 1024),  // Convert to MB
+				"free_space":   freeSpaceMB,                     // Already in MB
 				"read_bytes":   ioStat.ReadBytes,
 				"write_bytes":  ioStat.WriteBytes,
 				"read_count":   ioStat.ReadCount,
