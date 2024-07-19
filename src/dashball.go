@@ -220,6 +220,26 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// CPU Frequencies
 	cpuFrequencies, _ := cpu.Info()
 
+	// Filter out the flags from the CPU frequencies
+	var filteredCpuFrequencies []map[string]interface{}
+	for _, freq := range cpuFrequencies {
+		filteredFreq := map[string]interface{}{
+			"cpu":        freq.CPU,
+			"vendorId":   freq.VendorID,
+			"family":     freq.Family,
+			"model":      freq.Model,
+			"stepping":   freq.Stepping,
+			"physicalId": freq.PhysicalID,
+			"coreId":     freq.CoreID,
+			"cores":      freq.Cores,
+			"modelName":  freq.ModelName,
+			"mhz":        freq.Mhz,
+			"cacheSize":  freq.CacheSize,
+			"microcode":  freq.Microcode,
+		}
+		filteredCpuFrequencies = append(filteredCpuFrequencies, filteredFreq)
+	}
+
 	// Memory Usage
 	vMem, _ := mem.VirtualMemory()
 	totalMemoryGB := float64(vMem.Total) / (1024 * 1024 * 1024)
@@ -293,7 +313,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 				"write_speed":  writeSpeed,
 			}
 			diskInfos = append(diskInfos, diskInfo)
-			logs = append(logs, fmt.Sprintf("Added disk info for device: %s", partition.Device))
+			
 		}
 	}
 
@@ -321,12 +341,11 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
 		"cpu_usage_per_core":      cpuUsagePerCore,
 		"cpu_usage":               cpuUsageAvgRounded,
-		"cpu_frequencies":         cpuFrequencies,
+		"cpu_frequencies":         filteredCpuFrequencies, // Use filtered CPU frequencies
 		"total_memory":            totalMemoryGB,
 		"used_memory":             usedMemoryGB,
 		"memory_usage":            vMem.UsedPercent,
 		"disk_infos":              diskInfos, // Make sure this is always present
-		"logs":                    logs,      // Add logs to the response
 		"os":                      hostInfo.OS,
 		"platform":                hostInfo.Platform,
 		"platform_version":        hostInfo.PlatformVersion,
