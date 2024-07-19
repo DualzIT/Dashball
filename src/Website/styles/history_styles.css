@@ -105,16 +105,13 @@ button {
     list-style-type: none;
 }
 
-/* Toggle Switch */
 .switch {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    width: 60px;
+    position: relative;
+    display: inline-block;
+    width: 80px; 
     height: 34px;
-    z-index: 2; 
-    right: 50vh;
-
+    margin: 0 10px; 
+    margin-right: 20%;
 }
 
 .switch input {
@@ -142,53 +139,36 @@ button {
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: #888888;
+    background-color: white;
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #6a6d70;
 }
 
 input:checked + .slider:before {
-    transform: translateX(26px);
+    transform: translateX(46px); 
 }
 
-/* Icon Styles */
-.icon {
+/* Label Text Styles */
+.label-text {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
-.sun {
-    left: 8px;
-    display: block;
+.label-text.light {
+    left: -50px; 
 }
 
-.moon {
-    right: 8px;
-    display: none;
+.label-text.dark {
+    right: -50px;
 }
 
-input:checked + .slider .sun {
-    display: none;
-}
-
-input:checked + .slider .moon {
-    display: block;
-}
-
-/* Dark Mode Colors */
-body.dark-mode .slider {
-    background-color: #888888;
-}
-
-body.dark-mode .slider:before {
-    background-color: #ccc;
-}
 
 @media screen and (max-width: 1000px) {
     .chart-container {

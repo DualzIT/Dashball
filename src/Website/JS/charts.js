@@ -4,13 +4,13 @@
         let memoryChart;
         let gpuUsageChart;
         let gpuMemoryChart;
-        let diskChart;
+      
 
         const ctxCpu = document.getElementById('cpuChart').getContext('2d');
         const ctxMemory = document.getElementById('memoryChart').getContext('2d');
         const ctxGpuUsage = document.getElementById('gpuUsageChart').getContext('2d');
         const ctxGpuMemory = document.getElementById('gpuMemoryChart').getContext('2d');
-        const ctxDisk = document.getElementById('diskChart').getContext('2d');
+        
 
         function initializeCharts() {
             // CPU usage
@@ -103,18 +103,7 @@
                     }
                 }
             });
-            // Disk
-            diskChart = new Chart(ctxDisk, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Used Space (GB) ', 'Free Space (GB)'],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: ['#F9B94B', '#6FF36F'],
-                        borderWidth: 0
-                    }]
-                },
-            });
+         
         }
 
         function updateData() {
@@ -153,9 +142,6 @@
                     document.getElementById('used_memory').textContent = ` ${data.used_memory.toFixed(1)} GB`;  
                     document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
                     document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
-                    document.getElementById('used_disk_gb').textContent = `Used: ${data.used_disk_space_gb}GB`;
-                    document.getElementById('total_disk_gb').textContent = `Total: ${data.total_disk_space_gb}GB`;
-                    document.getElementById('free_disk_gb').textContent = `Free: ${data.available_disk_space_gb}GB`;
                     document.getElementById('gpu_name').textContent = `${data.gpu_info.gpu0.name}`;
                     document.getElementById('gpu_temperature').textContent = `${data.gpu_info.gpu0.temperature_gpu}°C`;
                     document.getElementById('computer_name').textContent = `${data.hostname}`;
@@ -167,9 +153,9 @@
                     memoryChart.data.datasets[0].data.push(data.memory_usage);
                     gpuUsageChart.data.datasets[0].data.push(data.gpu_info.gpu0.utilization_gpu);
                     gpuMemoryChart.data.datasets[0].data.push(data.gpu_info.gpu0.memory_used);
-                    diskChart.data.datasets[0].data = [data.used_disk_space_gb, data.available_disk_space_gb];
                    
-                    diskChart.update();
+                   
+                    
                     cpuChart.update();
                     memoryChart.update();
                     gpuUsageChart.update();

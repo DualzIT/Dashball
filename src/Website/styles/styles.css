@@ -12,7 +12,7 @@ body.dark-mode {
 
 h1 {
     font-family: Arial, Helvetica, sans-serif;
-    margin-top: 20px; 
+    margin-top: 20px;
 }
 
 .logo {
@@ -25,7 +25,7 @@ h1 {
 .linegraph {
     box-sizing: border-box;
     margin: 20px;
-    width: 150%;
+    width: 100%;
     height: auto;
 }
 
@@ -38,14 +38,15 @@ h1 {
 .diskgraph {
     box-sizing: border-box;
     margin: 20px;
-    width: 20%;
+    width: 100%;
     height: auto;
 }
 
 .disk-container {
     display: flex;
+    flex-direction: column; /* Zorg ervoor dat elke disk-info een aparte regel krijgt */
     gap: 20px;
-    width: 90%;
+    width: 100%;
 }
 
 .gpu-info {
@@ -78,11 +79,11 @@ body.dark-mode nav {
 }
 
 ul {
-    display: flex; 
+    display: flex;
 }
 
 li {
-    margin-right: 10px; 
+    margin-right: 10px;
 }
 
 a {
@@ -97,22 +98,23 @@ body.dark-mode a {
 }
 
 a.active {
-    background-color: #f5b865; 
-    color: white; 
-}
-
-a:hover:not(.active) {
-    background-color: #f5b865; 
+    background-color: #f5b865;
     color: white;
 }
 
-/* Toggle Switch */
+a:hover:not(.active) {
+    background-color: #f5b865;
+    color: white;
+}
+
+/* dark mode Toggle Switch */
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
+    width: 80px;
     height: 34px;
-    right: 50vh;
+    margin: 0 10px;
+    margin-right: 20%;
 }
 
 .switch input {
@@ -140,63 +142,44 @@ a:hover:not(.active) {
     width: 26px;
     left: 4px;
     bottom: 4px;
-    background-color: #888888;
+    background-color: white;
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #6a6d70;
 }
 
 input:checked + .slider:before {
-    transform: translateX(26px);
+    transform: translateX(46px);
 }
 
-/* Icon Styles */
-.icon {
+/* Label Text Styles */
+.label-text {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
-.sun {
-    left: 8px;
-    display: block;
+.label-text.light {
+    left: -50px;
 }
 
-.moon {
-    right: 8px;
-    display: none;
-}
-
-input:checked + .slider .sun {
-    display: none;
-}
-
-input:checked + .slider .moon {
-    display: block;
-}
-
-/* Dark Mode Colors */
-body.dark-mode .slider {
-    background-color: #888888;
-}
-
-body.dark-mode .slider:before {
-    background-color: #ccc;
+.label-text.dark {
+    right: -50px;
 }
 
 .cpu-charts-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; 
+    gap: 10px;
     margin-top: 70px;
 }
 
 .cpu-linegraph {
-    
     flex: 1 1 calc(20% - 20px); /* 4 items per row */
     margin: 10px;
     box-sizing: border-box;
@@ -207,37 +190,65 @@ body.dark-mode .slider:before {
     width: 100% !important;
     height: auto !important;
 }
-.cpu-info{
+
+.cpu-info {
     width: 60%;
     margin-top: 5vh;
     margin-right: -10%;
 }
 
+.lighttoggle {
+    position: relative;
+    margin-right: 0vh;
+}
+
+.disk-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    margin-top: 40px;
+  
+}
+
+.disk-info h2 {
+    margin-bottom: 10px;
+}
+
+.disk-info .disk-graphs {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.disk-info .disk-graphs > div {
+    flex: 1 1 30%;
+    min-width: 600px;
+}
+.diskspacechart{
+    position: relative;
+    width: 50%;
+
+}
+.device-info{
+    min-width: 300px !important;
+}
 @media screen and (max-width: 1000px) {
-    .diskgraph {
-        box-sizing: border-box;
-        margin: 20px;
-        width: 40%;
-        height: auto;
+    .disk-info .disk-graphs {
+        flex-direction: column;
     }
 
-    .disk-container {
-        display: flex;
-        gap: 20px;
-        width: 90%;
-    }
-
+    .diskgraph,
     .linegraph {
-        box-sizing: border-box;
-        margin: 20px;
-        width: 150%;
+        width: 100%;
+        max-width: 100%;
         height: auto;
     }
 
     .charts-container {
-        display: flex;
-        gap: 20px;
-        width: 60%;
         flex-direction: column;
     }
 }
