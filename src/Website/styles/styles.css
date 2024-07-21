@@ -44,7 +44,7 @@ h1 {
 
 .disk-container {
     display: flex;
-    flex-direction: column; /* Zorg ervoor dat elke disk-info een aparte regel krijgt */
+    flex-direction: column;
     gap: 20px;
     width: 100%;
 }
@@ -114,7 +114,7 @@ a:hover:not(.active) {
     width: 80px;
     height: 34px;
     margin: 0 10px;
-    margin-right: 20%;
+    margin-right: 40%;
 }
 
 .switch input {
@@ -194,7 +194,6 @@ input:checked + .slider:before {
 .cpu-info {
     width: 60%;
     margin-top: 5vh;
-    margin-right: -10%;
 }
 
 .lighttoggle {

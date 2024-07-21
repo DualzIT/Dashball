@@ -85,37 +85,7 @@ async function createCpuCharts() {
         }
     });
 
-    const freqCanvas = document.getElementById('freqChart');
-    const freqChart = new Chart(freqCanvas, {
-        type: 'line',
-        data: {
-            labels: [new Date().toLocaleTimeString()],
-            datasets: data.cpu_frequencies.map((freq, index) => ({
-                label: `Core ${index} Frequency`,
-                data: [freq.mhz],
-                borderColor: 'rgba(255, 250, 132, 1)',
-                borderWidth: 1,
-                fill: false
-            }))
-        },
-        options: {
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                       
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Frequency (MHz)'
-                    }
-                }
-            }
-        }
-    });
+   
 
     const ctxSwitchCanvas = document.getElementById('ctxSwitchChart');
     const ctxSwitchChart = new Chart(ctxSwitchCanvas, {
@@ -151,40 +121,19 @@ async function createCpuCharts() {
 
     // Start updating data with interval from config
     const updateInterval = data.update_interval_seconds * 1000; 
-    setInterval(() => updateData(averageCpuChart, freqChart, ctxSwitchChart), updateInterval);
+    setInterval(() => updateData(averageCpuChart,  ctxSwitchChart), updateInterval);
 
     // Update CPU information section
-    const cpuUsageElement = document.getElementById('cpu_usage');
-    if (cpuUsageElement) {
-        cpuUsageElement.textContent = data.cpu_usage.toFixed(1);
-    }
-    const cpuNameElement = document.getElementById('cpu_name');
-    if (cpuNameElement) {
-        cpuNameElement.textContent = data.cpu_info.name;
-    }
-    const cpuTemperatureElement = document.getElementById('cpu_temperature');
-    if (cpuTemperatureElement) {
-        cpuTemperatureElement.textContent = data.cpu_info.temperature + '°C';
-    }
-    const cpuFrequencyElement = document.getElementById('cpu_frequency');
-    if (cpuFrequencyElement) {
-        cpuFrequencyElement.textContent = data.cpu_info.frequency + ' MHz';
-    }
-    const cpuCoresElement = document.getElementById('cpu_cores');
-    if (cpuCoresElement) {
-        cpuCoresElement.textContent = data.cpu_info.cores;
-    }
-    const cpuUptimeElement = document.getElementById('cpu_uptime');
-    if (cpuUptimeElement) {
-        cpuUptimeElement.textContent = data.cpu_info.uptime;
-    }
-    const cpuThreadsElement = document.getElementById('cpu_threads');
-    if (cpuThreadsElement) {
-        cpuThreadsElement.textContent = data.cpu_info.threads;
-    }
+    document.getElementById('cpu_name').textContent = `${data.cpu_info.name}`;
+    document.getElementById('cpu_temperature').textContent = `${data.cpu_info.temperature} °C`;
+    document.getElementById('cpu_frequency').textContent = `${data.cpu_info.frequency}MHz`;
+    document.getElementById('cpu_cores').textContent = `${data.cpu_info.cores}`;
+    document.getElementById('cpu_uptime').textContent = `${data.cpu_info.uptime}`;
+    document.getElementById('cpu_threads').textContent = `${data.cpu_info.threads}`;
+
 }
 
-function updateData(averageCpuChart, freqChart, ctxSwitchChart) {
+function updateData(averageCpuChart, ctxSwitchChart) {
     fetchCpuData().then(data => {
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
@@ -212,16 +161,7 @@ function updateData(averageCpuChart, freqChart, ctxSwitchChart) {
         }
         averageCpuChart.update();
 
-        // Update CPU frequencies chart
-        data.cpu_frequencies.forEach((freq, index) => {
-            freqChart.data.labels.push(timestamp);
-            freqChart.data.datasets[index].data.push(freq.mhz);
-            if (freqChart.data.labels.length > maxDataPoints) {
-                freqChart.data.labels.shift();
-                freqChart.data.datasets[index].data.shift();
-            }
-        });
-        freqChart.update();
+       
 
         // Update context switches chart
         ctxSwitchChart.data.labels.push(timestamp);
