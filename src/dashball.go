@@ -20,13 +20,6 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
-func removeHistoricalDataFile() {
-	err := os.Remove("json/historical_data.json")
-	if err != nil && !os.IsNotExist(err) {
-		log.Printf("Failed to remove historical data file: %v\n", err)
-	}
-}
-
 type Config struct {
 	ServerPort            int `json:"port"`
 	UpdateIntervalSeconds int `json:"update_interval_seconds"`
@@ -47,6 +40,12 @@ var (
 	mutex               sync.Mutex                     // Ensure thread safety
 )
 
+func removeHistoricalDataFile() {
+	err := os.Remove("json/historical_data.json")
+	if err != nil && !os.IsNotExist(err) {
+		log.Printf("Failed to remove historical data file: %v\n", err)
+	}
+}
 
 func loadHistoricalDataFromFile() error {
 	file, err := os.Open("json/historical_data.json")
@@ -100,8 +99,8 @@ func main() {
 		return
 	}
 	defer configFile.Close()
-
 	var config Config
+	
 	err = json.NewDecoder(configFile).Decode(&config)
 	if err != nil {
 		fmt.Println("Can't open config file:", err)
@@ -273,18 +272,10 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hostInfo, _ := host.Info()
-
-	gpuInfo, err := getNvidiaGPUInfo()
-	if err != nil {
-		log.Printf("Error retrieving GPU info: %v\n", err)
-		logs = append(logs, fmt.Sprintf("Error retrieving GPU info: %v", err))
-	}
-
+	gpuInfo, _ := getNvidiaGPUInfo()
 	uptime, _ := host.Uptime()
 	uptimeStr := formatUptime(uptime)
-
 	threadCount := runtime.NumGoroutine()
-
 	cpuTemperature := "N/A"
 
 	data := map[string]interface{}{
@@ -301,13 +292,13 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"hostname":                hostInfo.Hostname,
 		"gpu_info":                gpuInfo,
 		"update_interval_seconds": config.UpdateIntervalSeconds,
-		"cpu_info": map[string]interface{}{
-			"name":        cpuFrequencies[0].ModelName,
-			"temperature": cpuTemperature,
-			"frequency":   cpuFrequencies[0].Mhz,
-			"cores":       runtime.NumCPU(),
-			"uptime":      uptimeStr,
-			"threads":     threadCount,
+		"cpu_info": 							 map[string]interface{}{
+		"name":        						 cpuFrequencies[0].ModelName,
+		"temperature":  					 cpuTemperature,
+		"frequency":   						 cpuFrequencies[0].Mhz,
+		"cores":       						 runtime.NumCPU(),
+		"uptime":      						 uptimeStr,
+		"threads":     						 threadCount,
 		},
 	}
 
@@ -389,9 +380,3 @@ func getNvidiaGPUInfo() (map[string]interface{}, error) {
 	return gpuInfo, nil
 }
 
-func checkErr(err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s\n", err.Error())
-		os.Exit(1)
-	}
-}
