@@ -47,19 +47,6 @@ var (
 	mutex               sync.Mutex                     // Ensure thread safety
 )
 
-func startTrayIcon() {
-	if runtime.GOOS == "windows" {
-		cmd := exec.Command("powershell.exe", "-File", "Trayicon/trayicon.ps1")
-		cmd.Stderr = os.Stderr // Capture standard errors
-		cmd.Stdout = os.Stdout // Capture standard output
-		err := cmd.Start()
-		if err != nil {
-			log.Fatalf("Failed to start tray icon script: %v", err)
-		}
-	} else {
-		log.Println("Tray icon script is not supported on non-Windows platforms.")
-	}
-}
 
 func loadHistoricalDataFromFile() error {
 	file, err := os.Open("json/historical_data.json")
@@ -130,8 +117,6 @@ func main() {
 	mux.HandleFunc("/save_historical_data", saveHistoricalData)
 	mux.HandleFunc("/history", serveHistoricalData)
 	mux.HandleFunc("/system_info", systemInfoHandler)
-
-	startTrayIcon()
 
 	websiteDir := filepath.Join(".", "Website")
 	fs := http.FileServer(http.Dir(websiteDir))
