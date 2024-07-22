@@ -1,4 +1,4 @@
-const maxDataPoints = 20;  
+const maxDataPoints = 20;
 
 async function fetchCpuData() {
     const response = await fetch('/system_info');
@@ -36,7 +36,6 @@ async function createCpuCharts() {
                     x: {
                         title: {
                             display: true,
-                           
                         }
                     },
                     y: {
@@ -70,7 +69,6 @@ async function createCpuCharts() {
                 x: {
                     title: {
                         display: true,
-                     
                     }
                 },
                 y: {
@@ -84,8 +82,6 @@ async function createCpuCharts() {
             }
         }
     });
-
-   
 
     const ctxSwitchCanvas = document.getElementById('ctxSwitchChart');
     const ctxSwitchChart = new Chart(ctxSwitchCanvas, {
@@ -105,7 +101,6 @@ async function createCpuCharts() {
                 x: {
                     title: {
                         display: true,
-                     
                     }
                 },
                 y: {
@@ -119,88 +114,64 @@ async function createCpuCharts() {
         }
     });
 
-    // Start updating data with interval from config
     const updateInterval = data.update_interval_seconds * 1000; 
-    setInterval(() => updateData(averageCpuChart,  ctxSwitchChart), updateInterval);
+    setInterval(() => updateData(averageCpuChart, ctxSwitchChart), updateInterval);
 
-    // Update CPU information section
     document.getElementById('cpu_name').textContent = `${data.cpu_info.name}`;
     document.getElementById('cpu_temperature').textContent = `${data.cpu_info.temperature} °C`;
     document.getElementById('cpu_frequency').textContent = `${data.cpu_info.frequency}MHz`;
     document.getElementById('cpu_cores').textContent = `${data.cpu_info.cores}`;
     document.getElementById('cpu_uptime').textContent = `${data.cpu_info.uptime}`;
     document.getElementById('cpu_threads').textContent = `${data.cpu_info.threads}`;
-
 }
 
 function updateData(averageCpuChart, ctxSwitchChart) {
     fetchCpuData().then(data => {
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
-        
-        // Update per-core CPU usage charts
+
         data.cpu_usage_per_core.forEach((usage, index) => {
             const chart = Chart.getChart(`coreChart${index}`);
+            if (!chart) return;
+
             chart.data.labels.push(timestamp);
             chart.data.datasets[0].data.push(usage);
 
-            // Shift charts if they reach maxDataPoints
             if (chart.data.labels.length > maxDataPoints) {
                 chart.data.labels.shift();
                 chart.data.datasets[0].data.shift();
             }
-            chart.update();
+
+            chart.update('none');
         });
 
-        // Update average CPU usage chart
         averageCpuChart.data.labels.push(timestamp);
         averageCpuChart.data.datasets[0].data.push(data.cpu_usage);
+
         if (averageCpuChart.data.labels.length > maxDataPoints) {
             averageCpuChart.data.labels.shift();
             averageCpuChart.data.datasets[0].data.shift();
         }
-        averageCpuChart.update();
 
-       
+        averageCpuChart.update('none');
 
-        // Update context switches chart
         ctxSwitchChart.data.labels.push(timestamp);
         ctxSwitchChart.data.datasets[0].data.push(data.context_switches);
+
         if (ctxSwitchChart.data.labels.length > maxDataPoints) {
             ctxSwitchChart.data.labels.shift();
             ctxSwitchChart.data.datasets[0].data.shift();
         }
-        ctxSwitchChart.update();
 
-        // Update CPU information section
-        const cpuUsageElement = document.getElementById('cpu_usage');
-        if (cpuUsageElement) {
-            cpuUsageElement.textContent = data.cpu_usage.toFixed(1);
-        }
-        const cpuNameElement = document.getElementById('cpu_name');
-        if (cpuNameElement) {
-            cpuNameElement.textContent = data.cpu_info.name;
-        }
-        const cpuTemperatureElement = document.getElementById('cpu_temperature');
-        if (cpuTemperatureElement) {
-            cpuTemperatureElement.textContent = data.cpu_info.temperature + '°C';
-        }
-        const cpuFrequencyElement = document.getElementById('cpu_frequency');
-        if (cpuFrequencyElement) {
-            cpuFrequencyElement.textContent = data.cpu_info.frequency + ' MHz';
-        }
-        const cpuCoresElement = document.getElementById('cpu_cores');
-        if (cpuCoresElement) {
-            cpuCoresElement.textContent = data.cpu_info.cores;
-        }
-        const cpuUptimeElement = document.getElementById('cpu_uptime');
-        if (cpuUptimeElement) {
-            cpuUptimeElement.textContent = data.cpu_info.uptime;
-        }
-        const cpuThreadsElement = document.getElementById('cpu_threads');
-        if (cpuThreadsElement) {
-            cpuThreadsElement.textContent = data.cpu_info.threads;
-        }
+        ctxSwitchChart.update('none');
+
+        document.getElementById('cpu_usage').textContent = data.cpu_usage.toFixed(1);
+        document.getElementById('cpu_name').textContent = data.cpu_info.name;
+        document.getElementById('cpu_temperature').textContent = `${data.cpu_info.temperature} °C`;
+        document.getElementById('cpu_frequency').textContent = `${data.cpu_info.frequency} MHz`;
+        document.getElementById('cpu_cores').textContent = data.cpu_info.cores;
+        document.getElementById('cpu_uptime').textContent = data.cpu_info.uptime;
+        document.getElementById('cpu_threads').textContent = data.cpu_info.threads;
     }).catch(error => {
         console.error('ERROR:', error);
     });
