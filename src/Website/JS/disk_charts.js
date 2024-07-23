@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         datasets: [{
                             label: `Read Speed (Bytes/s) - ${disk.device}`,
                             data: [],
-                            borderColor: 'rgb(75, 192, 192)',
+                            borderColor: 'rgb(75, 192, 255)',
                         }]
                     },
                     options: {

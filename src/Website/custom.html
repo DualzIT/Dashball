@@ -8,8 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/5.1.0/gridstack.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/5.1.0/gridstack-h5.min.js"></script>
-    <script src="JS/darkmode.js" defer></script>
-    <script src="js/custom_script.js"></script>
 </head>
 <body>
     <h1 class="titel">Dashball</h1>
@@ -42,5 +40,15 @@
         </div>
     </div>
 
+    <div id="confirmOverlay" class="overlay">
+        <div class="overlay-content">
+            <h2>Are you sure you want to delete this chart?</h2>
+            <button id="confirmDeleteButton">Yes</button>
+            <button id="cancelDeleteButton">No</button>
+        </div>
+    </div>
+
+    <script src="js/custom_script.js"></script>
+    <script src="js/darkmode.js"></script>
 </body>
 </html>

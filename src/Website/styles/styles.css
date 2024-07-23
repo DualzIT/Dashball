@@ -253,14 +253,17 @@ input:checked + .slider:before {
     min-width: 300px !important;
 }
 .overlay {
-    display: none;
+
     position: fixed;
-    z-index: 1;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     overflow: auto;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
     background-color: rgba(0,0,0,0.4);
 }
 
@@ -298,14 +301,21 @@ input:checked + .slider:before {
     align-items: center;
     width: 100%;
     height: 100%;
+    position: relative;
 }
-
 canvas {
     width: 100% !important;
     height: 100% !important;
 }
 
-
+.close-chart {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    font-size: 20px;
+    color: red;
+}
 @media screen and (max-width: 1000px) {
     .disk-info .disk-graphs {
         flex-direction: column;
