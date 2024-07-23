@@ -158,7 +158,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                         beginAtZero: true,
                         max: config.yAxisMax !== undefined ? config.yAxisMax : undefined
                     }
-                }
+                },
+                maintainAspectRatio: false
             }
         };
     }
@@ -193,6 +194,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         const chart = new Chart(canvas, chartOptions);
 
         updateChart(chart, config.fetchData, config.type);
+
+        // Adjust canvas resolution on resize
+        adjustCanvasResolution(chartItem, chart);
+        chartItem.addEventListener('resize', () => adjustCanvasResolution(chartItem, chart));
     }
 
     function addCpuUsagePerCoreChart(config) {
@@ -232,6 +237,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 const chart = new Chart(canvas, chartOptions);
 
                 updateChart(chart, () => Promise.resolve(usage), 'line');
+
+                // Adjust canvas resolution on resize
+                adjustCanvasResolution(chartItem, chart);
+                chartItem.addEventListener('resize', () => adjustCanvasResolution(chartItem, chart));
             });
         });
     }
@@ -283,6 +292,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 console.error('Update chart error:', error);
             }
         }, 1000);
+    }
+
+    function adjustCanvasResolution(chartItem, chart) {
+        const canvas = chartItem.querySelector('canvas');
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        chart.resize();
     }
 
     function showConfirmOverlay(chartItem) {
