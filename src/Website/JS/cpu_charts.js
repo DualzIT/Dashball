@@ -8,7 +8,7 @@ async function fetchCpuData() {
 
 async function createCpuCharts() {
     const data = await fetchCpuData();
-    const chartsContainer = document.getElementById('chartsContainer');
+    const cpuchartsContainer = document.getElementById('cpuchartsContainer');
 
     data.cpu_usage_per_core.forEach((usage, index) => {
         const container = document.createElement('div');
@@ -17,7 +17,7 @@ async function createCpuCharts() {
         const canvas = document.createElement('canvas');
         canvas.id = `coreChart${index}`;
         container.appendChild(canvas);
-        chartsContainer.appendChild(container);
+        cpuchartsContainer.appendChild(container);
 
         new Chart(canvas, {
             type: 'line',

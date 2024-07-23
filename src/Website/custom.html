@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Charts</title>
+    <link rel="stylesheet" href="styles/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/5.1.0/gridstack.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/5.1.0/gridstack-h5.min.js"></script>
+    <script src="JS/darkmode.js" defer></script>
+    <script src="js/custom_script.js"></script>
+</head>
+<body>
+    <h1 class="titel">Dashball</h1>
+    <img class="logo" src="img/Dualz_logo.png" alt="Logo">
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="history.html">History</a></li>
+            <li><a href="gpu.html">GPU</a></li>
+            <li><a href="cpu.html">CPU</a></li>
+            <li><a href="disk.html">Disk</a></li>
+            <li><a href="custom.html" class="active">Custom</a></li>
+        </ul>
+        <label class="switch">
+            <span class="label-text light">Light</span>
+            <input type="checkbox" id="dark-mode-toggle" checked>
+            <span class="slider round"></span>
+            <span class="label-text dark">Dark</span>
+        </label>
+    </nav>
+
+    <button id="addChartButton">Add Chart</button>
+    <div class="grid-stack" id="chartsContainer"></div>
+
+    <div id="chartOverlay" class="overlay">
+        <div class="overlay-content">
+            <span id="closeOverlay">&times;</span>
+            <h2>Select a Chart to Add</h2>
+            <div id="chartOptions"></div>
+        </div>
+    </div>
+
+</body>
+</html>
