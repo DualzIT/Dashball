@@ -241,19 +241,17 @@ input:checked + .slider:before {
 }
 
 .disk-info .disk-graphs > div {
-    flex: 1 1 30%;
-    min-width: 600px;
+    flex: 1 1 calc(33% - 10px); /* Ensure three charts per row */
+    min-width: 200px;
 }
 .diskspacechart{
     position: relative;
     width: 50%;
-
 }
 .device-info{
     min-width: 300px !important;
 }
 .overlay {
-
     position: fixed;
     left: 0;
     top: 0;

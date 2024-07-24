@@ -5,9 +5,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function initializeCharts(diskInfos) {
         diskInfos.forEach((disk, index) => {
-            const readCtx = document.getElementById(`readSpeedChart${index}`).getContext('2d');
-            const writeCtx = document.getElementById(`writeSpeedChart${index}`).getContext('2d');
-            const spaceCtx = document.getElementById(`diskSpaceChart${index}`).getContext('2d');
+            const readCanvas = document.getElementById(`readSpeedChart${index}`);
+            const writeCanvas = document.getElementById(`writeSpeedChart${index}`);
+            const spaceCanvas = document.getElementById(`diskSpaceChart${index}`);
+
+            adjustCanvasResolution(readCanvas);
+            adjustCanvasResolution(writeCanvas);
+            adjustCanvasResolution(spaceCanvas);
+
+            const readCtx = readCanvas.getContext('2d');
+            const writeCtx = writeCanvas.getContext('2d');
+            const spaceCtx = spaceCanvas.getContext('2d');
 
             diskCharts[disk.device] = {
                 readSpeed: new Chart(readCtx, {
@@ -62,6 +70,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function adjustCanvasResolution(canvas) {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+    }
+
     function updateData() {
         fetch('/system_info')
             .then(response => response.json())
@@ -113,13 +129,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 const diskElement = `
                     <div class="disk-info">
                         <div class="disk-graphs">
-                            
-                            <div class="device-info">
                             <div>
                                 <h2>Device: ${disk.device}</h2>
                                 <h3>Mountpoint: ${disk.mountpoint}</h3>
                                 <h3>Type: ${disk.fstype}</h3>
-                            </div> 
                             </div>
                             <div>
                                 <canvas id="readSpeedChart${index}"></canvas>
@@ -129,10 +142,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             </div>
                             <div>
                                 <div class="diskspacechart">
-                                <canvas id="diskSpaceChart${index}"></canvas>
-                                <p>Used Space: <span id="used_disk_gb${index}">${(disk.used_space / 1024).toFixed(2)} GB</span></p>
-                                <p>Free Space: <span id="free_disk_gb${index}">${(disk.free_space / 1024).toFixed(2)} GB</span></p>
-                                <p>Total Space: <span id="total_disk_gb${index}">${(disk.total_space / 1024).toFixed(2)} GB</span></p>
+                                    <canvas id="diskSpaceChart${index}"></canvas>
+                                    <p>Used Space: <span id="used_disk_gb${index}">${(disk.used_space / 1024).toFixed(2)} GB</span></p>
+                                    <p>Free Space: <span id="free_disk_gb${index}">${(disk.free_space / 1024).toFixed(2)} GB</span></p>
+                                    <p>Total Space: <span id="total_disk_gb${index}">${(disk.total_space / 1024).toFixed(2)} GB</span></p>
                                 </div>
                             </div>
                         </div>
