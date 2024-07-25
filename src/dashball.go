@@ -258,7 +258,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 				"total_space":  diskUsage.Total / (1024 * 1024),
 				"used_space":   diskUsage.Used / (1024 * 1024),
 				"free_space":   freeSpaceMB,
-				"read_bytes":   ioStat.ReadBytes,
+					"read_bytes":   ioStat.ReadBytes,
 				"write_bytes":  ioStat.WriteBytes,
 				"read_count":   ioStat.ReadCount,
 				"write_count":  ioStat.WriteCount,
@@ -292,13 +292,13 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"hostname":                hostInfo.Hostname,
 		"gpu_info":                gpuInfo,
 		"update_interval_seconds": config.UpdateIntervalSeconds,
-		"cpu_info": 							 map[string]interface{}{
-		"name":        						 cpuFrequencies[0].ModelName,
-		"temperature":  					 cpuTemperature,
-		"frequency":   						 cpuFrequencies[0].Mhz,
-		"cores":       						 runtime.NumCPU(),
-		"uptime":      						 uptimeStr,
-		"threads":     						 threadCount,
+		"cpu_info": map[string]interface{}{
+			"name":         cpuFrequencies[0].ModelName,
+			"temperature":  cpuTemperature,
+			"frequency":    cpuFrequencies[0].Mhz,
+			"cores":        runtime.NumCPU(),
+			"uptime":       uptimeStr,
+			"threads":      threadCount,
 		},
 	}
 
@@ -332,7 +332,22 @@ func getNvidiaGPUInfo() (map[string]interface{}, error) {
 	cmd := exec.Command("nvidia-smi", "--query-gpu=name,uuid,temperature.gpu,utilization.gpu,memory.total,memory.used,memory.free,fan.speed,clocks.gr,clocks.mem,utilization.encoder,utilization.decoder", "--format=csv,noheader,nounits")
 	output, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to execute nvidia-smi: %v", err)
+		return map[string]interface{}{
+			"gpu0": map[string]interface{}{
+				"name":                "N/A",
+				"uuid":                "N/A",
+				"temperature_gpu":     "N/A",
+				"utilization_gpu":     "N/A",
+				"memory_total":        "N/A",
+				"memory_used":         "N/A",
+				"memory_free":         "N/A",
+				"fan_speed":           "N/A",
+				"clock_speed":         "N/A",
+				"memory_clock_speed":  "N/A",
+				"encoder_utilization": "N/A",
+				"decoder_utilization": "N/A",
+			},
+		}, nil
 	}
 
 	lines := strings.Split(string(output), "\n")
@@ -379,4 +394,3 @@ func getNvidiaGPUInfo() (map[string]interface{}, error) {
 	}
 	return gpuInfo, nil
 }
-
