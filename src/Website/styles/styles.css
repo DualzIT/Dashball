@@ -346,9 +346,7 @@ canvas {
     flex-direction: column;
     cursor: pointer;
     position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1001; /* Ensure it is on top */
+
 }
 
 .hamburger-menu .bar {
@@ -379,13 +377,6 @@ body.dark-mode .hamburger-menu .bar {
         flex-direction: column;
     }
 
-    .logo {
-        position: static;
-        height: 80px;
-        margin: 0 auto;
-        display: block;
-    }
-
     nav ul {
         flex-direction: column;
         align-items: center;
@@ -395,9 +386,15 @@ body.dark-mode .hamburger-menu .bar {
     nav ul.show {
         display: flex; /* Show navigation links when the menu is opened */
         position: relative;
-        align-items: center;
-    }
 
+        
+    }
+    #nav-links{
+        position: relative;
+        margin-top: 60px;
+        width: 100px;
+        font-size: xx-large;
+    }
     nav ul li {
         margin: 5px 0;
     }
@@ -408,6 +405,7 @@ body.dark-mode .hamburger-menu .bar {
 
     .hamburger-menu {
         display: flex; /* Show the hamburger menu on mobile */
+
     }
     .chart-container {
         width: 100%; 
