@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="styles/history_styles.css">
+    
+    <link rel="stylesheet" href="styles/styles.css">
     <script src="JS/history_charts.js"></script>
-    <script src="JS/darkmode.js" defer></script>
+    <script src="JS/scripts/darkmode.js" defer></script>
+    <script src="JS/scripts/Load_navbar.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.4/nouislider.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,22 +17,7 @@
 <body>
     <h1 class="title">Dashball history</h1>
     <img class="logo" src="img/Dualz_logo.png" alt="Logo">
-    <nav>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="history.html" class="active">History</a></li>
-            <li><a href="gpu.html">GPU</a></li>
-            <li><a href="cpu.html">CPU</a></li>
-            <li><a href="disk.html">Disk</a></li>
-            <li><a href="custom.html">Custom</a></li>
-        </ul>
-        <label class="switch">
-            <span class="label-text light">Light</span>
-            <input type="checkbox" id="dark-mode-toggle" checked>
-            <span class="slider round"></span>
-            <span class="label-text dark">Dark</span>
-        </label>
-    </nav>
+    <div id="navbar-container"></div>
 
     <div class="datapoints">
     <label for="datapointsInput">Data points:</label>
@@ -48,12 +35,12 @@
 <!-- Charts Flex Container -->
 <div class="charts-flex-container">
     <!-- CPU Graph -->
-    <div class="chart-container">
+    <div class="history-chart-container">
         <canvas id="cpuChart"></canvas>
     </div>
   
     <!-- Memory Graph -->
-    <div class="chart-container">
+    <div class="history-chart-container">
         <canvas id="memoryChart"></canvas>
     </div>
 </div>

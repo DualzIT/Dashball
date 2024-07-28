@@ -305,7 +305,17 @@ canvas {
     width: 100% !important;
     height: 100% !important;
 }
+.time{
+    margin: 20px;
+}
 
+.charts-flex-container {
+    display: flex;
+    gap: 20px; 
+    flex-direction: row; 
+    justify-content: center; 
+    align-items: flex-start; 
+}
 .close-chart {
     position: absolute;
     top: 5px;
@@ -328,5 +338,82 @@ canvas {
 
     .charts-container {
         flex-direction: column;
+    }
+}
+/* Hamburger menu styles */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1001; /* Ensure it is on top */
+}
+
+.hamburger-menu .bar {
+    width: 25px;
+    height: 3px;
+    background-color: black;
+    margin: 4px 0;
+    transition: 0.4s;
+}
+
+body.dark-mode .hamburger-menu .bar {
+    background-color: white;
+}
+
+@media screen and (max-width: 1000px) {
+    .disk-info .disk-graphs {
+        flex-direction: column;
+    }
+
+    .diskgraph,
+    .linegraph {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .charts-container {
+        flex-direction: column;
+    }
+
+    .logo {
+        position: static;
+        height: 80px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+        display: none; /* Hide navigation links by default on mobile */
+    }
+
+    nav ul.show {
+        display: flex; /* Show navigation links when the menu is opened */
+        position: relative;
+        align-items: center;
+    }
+
+    nav ul li {
+        margin: 5px 0;
+    }
+
+    .switch {
+        margin: 10px auto;
+    }
+
+    .hamburger-menu {
+        display: flex; /* Show the hamburger menu on mobile */
+    }
+    .chart-container {
+        width: 100%; 
+    }
+    
+    .charts-flex-container {
+        flex-direction: column; 
     }
 }
