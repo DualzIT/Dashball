@@ -17,6 +17,9 @@ jobs:
       with:
         go-version: '1.18'
 
+    - name: Verify Go version
+      run: go version
+
     - name: Build for Linux
       run: |
         GOOS=linux GOARCH=amd64 go build -o dashball ./src
@@ -45,16 +48,21 @@ jobs:
       with:
         go-version: '1.18'
 
+    - name: Verify Go version
+      run: go version
+
     - name: Build for Windows
       run: |
         GOOS=windows GOARCH=amd64 go build -o dashball.exe ./src
 
     - name: Install Inno Setup
       run: choco install innosetup
+      shell: powershell
 
     - name: Create Windows installer
       run: |
         iscc installer.iss
+      shell: cmd
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
