@@ -362,6 +362,12 @@ body.dark-mode .hamburger-menu .bar {
 }
 
 @media screen and (max-width: 1000px) {
+    #addChartButton{
+        width: 20%;
+        padding: 20px;
+        position: relative;
+        font-size: x-large;
+    }
     .disk-info .disk-graphs {
         flex-direction: column;
     }
