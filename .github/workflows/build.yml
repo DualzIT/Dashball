@@ -63,8 +63,12 @@ jobs:
       run: choco install innosetup
       shell: pwsh
 
+    - name: List directory contents
+      run: dir
+      shell: cmd
+
     - name: Create Windows installer
-      run: iscc installer.iss
+      run: iscc Installer.iss
       shell: cmd
 
     - name: Upload artifact
