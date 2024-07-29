@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Dashball"
-#define MyAppVersion "2.0"
+#define MyAppVersion "beta 0.2"
 #define MyAppPublisher "Dualz IT"
 #define MyAppURL "dualzit.nl"
 #define MyAppExeName "dashball.exe"
@@ -16,7 +16,6 @@
 AppId={{5F2EDDAC-5FC6-48D9-A8C1-988A753B2019}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -24,9 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=../../../LICENSE
-; Uncomment the following line to run in non administrative install mode (install for current user only.)
-;PrivilegesRequired=lowest
+LicenseFile=LICENSE
 OutputBaseFilename=Dashball
 Compression=lzma
 SolidCompression=yes
@@ -36,11 +33,14 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "src\install\windows\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "src\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "go.mod"; DestDir: "{app}"; Flags: ignoreversion
 Source: "go.sum"; DestDir: "{app}"; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "src\json\config.json"; DestDir: "{app}\json"; Flags: ignoreversion
+Source: "src\json\historical_data.json"; DestDir: "{app}\json"; Flags: ignoreversion
 
 [CustomMessages]
 AutoStartWithWindows=Let Dashball start up automatically

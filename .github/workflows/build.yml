@@ -22,18 +22,18 @@ jobs:
 
     - name: Build for Linux
       run: |
-        GOOS=linux GOARCH=amd64 go build -o dashball ./src
+        GOOS=linux GOARCH=amd64 go build -o src/install/linux/dashball ./src
 
     - name: Archive the build output
       run: |
-        tar czf dashball-linux.tar.gz dashball
+        tar czf dashball-linux.tar.gz -C src/install/linux dashball
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: build-output-linux
         path: |
-          dashball
+          src/install/linux/dashball
           dashball-linux.tar.gz
 
   build-windows:
@@ -56,7 +56,7 @@ jobs:
       run: |
         $env:GOOS = "windows"
         $env:GOARCH = "amd64"
-        go build -o dashball.exe ./src
+        go build -o src/install/windows/dashball.exe ./src
       shell: pwsh
 
     - name: Install Inno Setup
@@ -64,7 +64,7 @@ jobs:
       shell: pwsh
 
     - name: List directory contents
-      run: dir
+      run: dir src\install\windows
       shell: cmd
 
     - name: Create Windows installer
@@ -76,5 +76,5 @@ jobs:
       with:
         name: build-output-windows
         path: |
-          dashball.exe
-          Output/*.exe
+          src/install/windows/dashball.exe
+          src/install/windows/Output/*.exe
