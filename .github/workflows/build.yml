@@ -17,6 +17,10 @@ jobs:
       with:
         go-version: '1.18'
 
+    - name: Clear Go module cache
+      run: |
+        go clean -modcache
+
     - name: Verify Go version
       run: go version
 
@@ -47,6 +51,10 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.18'
+
+    - name: Clear Go module cache
+      run: |
+        go clean -modcache
 
     - name: Verify Go version
       run: go version
