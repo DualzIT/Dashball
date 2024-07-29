@@ -1,0 +1,54 @@
+name: Build and Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+
+    - name: Build for ${{ matrix.os }}
+      run: |
+        if [ "${{ matrix.os }}" == "windows-latest" ]; then
+          GOOS=windows GOARCH=amd64 go build -o dashball.exe ./src
+        else
+          GOOS=linux GOARCH=amd64 go build -o dashball ./src
+        fi
+
+    - name: Archive the build output
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        tar czf dashball-linux.tar.gz dashball
+
+    - name: Install Inno Setup
+      if: matrix.os == 'windows-latest'
+      run: choco install innosetup
+
+    - name: Create Windows installer
+      if: matrix.os == 'windows-latest'
+      run: |
+        iscc installer.iss
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-output-${{ matrix.os }}
+        path: |
+          dashball*
+          *.tar.gz
+          *.exe
+          Output/*.exe

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Dashball"
-#define MyAppVersion "2.0"
+#define MyAppVersion "beta 0.2"
 #define MyAppPublisher "Dualz IT"
 #define MyAppURL "dualzit.nl"
 #define MyAppExeName "dashball.exe"
@@ -24,7 +24,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=LICENSE
+LicenseFile=C:\Users\Alex\Documents\GitHub\Dashball\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputBaseFilename=Dashball
@@ -36,10 +36,10 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "go.mod"; DestDir: "{app}"; Flags: ignoreversion
-Source: "go.sum"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Alex\Documents\GitHub\Dashball\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Alex\Documents\GitHub\Dashball\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Alex\Documents\GitHub\Dashball\go.mod"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Alex\Documents\GitHub\Dashball\go.sum"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [CustomMessages]
@@ -69,9 +69,9 @@ var
 procedure InitializeWizard;
 begin
   PortInputPage := CreateInputQueryPage(wpWelcome,
-    'Port Configuration', 'Which port needs the website to be?',
+    'Port Configuration', 'Wich port needs the website to be?',
     'Choose a port for the website and click on next.');
-  PortInputPage.Add('Port:', False);
+  PortInputPage.Add('Poort:', False);
   PortInputPage.Values[0] := '80';
 end;
 
@@ -83,3 +83,4 @@ begin
      MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
   end;
 end;
+
