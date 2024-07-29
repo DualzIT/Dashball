@@ -68,7 +68,7 @@ jobs:
       shell: cmd
 
     - name: Create Windows installer
-      run: iscc Installer.iss
+      run: iscc src/install/windows/installer.iss
       shell: cmd
 
     - name: Upload artifact
