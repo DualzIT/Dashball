@@ -26,7 +26,7 @@ jobs:
 
     - name: Archive the build output
       run: |
-        tar -czvf dashball-linux.tar.gz -C src/install/linux dashball -C ../../../ json/config.json Website/ go.mod go.sum LICENSE README.md
+        tar -czvf dashball-linux.tar.gz -C src/install/linux dashball -C ../../../ src/json/config.json src/Website/ go.mod go.sum LICENSE README.md
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
