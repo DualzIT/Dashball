@@ -24,9 +24,13 @@ jobs:
       run: |
         GOOS=linux GOARCH=amd64 go build -o src/install/linux/dashball ./src
 
+    - name: Copy executable to src
+      run: |
+        cp src/install/linux/dashball src/
+
     - name: Archive the build output
       run: |
-        tar -czvf dashball-linux.tar.gz -C src/install/linux dashball -C ../../../ src/json/config.json src/Website/ go.mod go.sum LICENSE README.md
+        tar -czvf dashball-linux.tar.gz -C src dashball -C ../ json/config.json Website/ go.mod go.sum LICENSE README.md
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
