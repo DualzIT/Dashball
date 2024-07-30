@@ -34,7 +34,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: "D:\a\Dashball\Dashball\src\install\windows\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Dashball\Dashball\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Dashball\Dashball\src\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "D:\a\Dashball\Dashball\go.mod"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\a\Dashball\Dashball\go.sum"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\a\Dashball\Dashball\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
