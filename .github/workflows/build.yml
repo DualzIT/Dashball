@@ -26,15 +26,13 @@ jobs:
 
     - name: Archive the build output
       run: |
-        tar -czvf dashball-linux.tar.gz -C src/install/linux dashball
+        tar -czvf dashball-linux.tar.gz -C src/install/linux dashball -C ../../../ json/config.json Website/ go.mod go.sum LICENSE README.md
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: build-output-linux
-        path: |
-          src/install/linux/dashball
-          dashball-linux.tar.gz
+        path: dashball-linux.tar.gz
 
   build-windows:
     runs-on: windows-latest
