@@ -40,7 +40,7 @@ Source: "D:\a\Dashball\Dashball\go.sum"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\a\Dashball\Dashball\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\a\Dashball\Dashball\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\a\Dashball\Dashball\src\json\config.json"; DestDir: "{app}\json"; Flags: ignoreversion
-Source: "D:\a\Dashball\Dashball\src\json\historical_data.json"; DestDir: "{app}\json"; Flags: ignoreversion
+
 
 [CustomMessages]
 AutoStartWithWindows=Let Dashball start up automatically
