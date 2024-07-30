@@ -23,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=../../../LICENSE
+LicenseFile=LICENSE
 OutputBaseFilename=Dashball
 Compression=lzma
 SolidCompression=yes
@@ -33,7 +33,7 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "src\install\windows\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "src\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "go.mod"; DestDir: "{app}"; Flags: ignoreversion
 Source: "go.sum"; DestDir: "{app}"; Flags: ignoreversion

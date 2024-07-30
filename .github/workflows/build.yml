@@ -56,7 +56,7 @@ jobs:
       run: |
         $env:GOOS = "windows"
         $env:GOARCH = "amd64"
-        go build -o src/install/windows/dashball.exe ./src
+        go build -o src\install\windows\dashball.exe ./src
       shell: pwsh
 
     - name: Install Inno Setup
@@ -68,7 +68,7 @@ jobs:
       shell: cmd
 
     - name: Create Windows installer
-      run: iscc src/install/windows/installer.iss
+      run: iscc src\install\windows\Installer.iss
       shell: cmd
 
     - name: Upload artifact
