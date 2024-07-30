@@ -23,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=..\..\..\LICENSE
+LicenseFile=D:\a\Dashball\Dashball\LICENSE
 OutputBaseFilename=Dashball
 Compression=lzma
 SolidCompression=yes
@@ -33,14 +33,14 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\..\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\..\..\go.mod"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\..\..\go.sum"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\..\..\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\json\config.json"; DestDir: "{app}\json"; Flags: ignoreversion
-Source: "..\..\..\json\historical_data.json"; DestDir: "{app}\json"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\src\install\windows\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Dashball\Dashball\go.mod"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\go.sum"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\src\json\config.json"; DestDir: "{app}\json"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\src\json\historical_data.json"; DestDir: "{app}\json"; Flags: ignoreversion
 
 [CustomMessages]
 AutoStartWithWindows=Let Dashball start up automatically
