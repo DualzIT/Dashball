@@ -1,13 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const maxDataPoints = 30; // Data points
-
     let gpuUsageChart;
     let gpuMemoryChart;
     let gpuClockSpeedChart;
     let gpuMemoryClockSpeedChart;
     let gpuEncoderChart;
     let gpuDecoderChart;
-
+    let config;
+    const charts = [];
 
     const ctxGpuUsage = document.getElementById('gpuUsageChart').getContext('2d');
     const ctxGpuMemory = document.getElementById('gpuMemoryChart').getContext('2d');
@@ -15,9 +14,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const ctxGpuMemoryClockSpeed = document.getElementById('gpuMemoryClockSpeedChart').getContext('2d');
     const ctxGpuEncoder = document.getElementById('gpuEncoderChart').getContext('2d');
     const ctxGpuDecoder = document.getElementById('gpuDecoderChart').getContext('2d');
-    
 
     function initializeCharts() {
+        // Common chart options
+        const chartOptions = {
+            animation: config.animations,
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        };
+
         // GPU usage
         gpuUsageChart = new Chart(ctxGpuUsage, {
             type: 'line',
@@ -30,15 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     borderColor: 'rgb(255, 99, 132)',
                 }]
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
-            }
+            options: chartOptions
         });
+        charts.push(gpuUsageChart);
 
         // GPU memory usage
         gpuMemoryChart = new Chart(ctxGpuMemory, {
@@ -54,6 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }]
             },
             options: {
+                animation: config.animations,
+                responsive: true,
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -61,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         });
+        charts.push(gpuMemoryChart);
 
         // GPU clock speed
         gpuClockSpeedChart = new Chart(ctxGpuClockSpeed, {
@@ -75,6 +82,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }]
             },
             options: {
+                animation: config.animations,
+                responsive: true,
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -82,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         });
+        charts.push(gpuClockSpeedChart);
 
         // GPU memory clock speed
         gpuMemoryClockSpeedChart = new Chart(ctxGpuMemoryClockSpeed, {
@@ -96,6 +106,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }]
             },
             options: {
+                animation: config.animations,
+                responsive: true,
                 scales: {
                     y: {
                         beginAtZero: true,
@@ -103,6 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         });
+        charts.push(gpuMemoryClockSpeedChart);
 
         // GPU encoder utilization
         gpuEncoderChart = new Chart(ctxGpuEncoder, {
@@ -116,15 +129,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     borderColor: 'rgb(54, 162, 235)',
                 }]
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
-            }
+            options: chartOptions
         });
+        charts.push(gpuEncoderChart);
 
         // GPU decoder utilization
         gpuDecoderChart = new Chart(ctxGpuDecoder, {
@@ -138,21 +145,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     borderColor: 'rgb(255, 205, 86)',
                 }]
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
-            }
+            options: chartOptions
         });
-
-      
+        charts.push(gpuDecoderChart);
     }
 
     function updateData() {
-        // Get JSON data
         fetch('/system_info')
             .then(response => response.json())
             .then(data => {
@@ -163,19 +161,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 gpuMemoryChart.options.scales.y.max = parseFloat(data.gpu_info.gpu0.memory_total);
 
                 // Add timestamp as a label to all charts
-                const charts = [
-                    gpuUsageChart,
-                    gpuMemoryChart,
-                    gpuClockSpeedChart,
-                    gpuMemoryClockSpeedChart,
-                    gpuEncoderChart,
-                    gpuDecoderChart,
-              
-                ];
-
                 charts.forEach(chart => {
                     chart.data.labels.push(timestamp);
-                    if (chart.data.labels.length > maxDataPoints) {
+                    if (chart.data.labels.length > config.max_data_points) {
                         chart.data.labels.shift();
                         chart.data.datasets[0].data.shift();
                     }
@@ -184,14 +172,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Update text elements
                 document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
                 document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
-                document.getElementById('gpu_name').textContent = ` ${data.gpu_info.gpu0.name}`;
-                document.getElementById('gpu_temperature').textContent = ` ${data.gpu_info.gpu0.temperature_gpu}°C`;
-                document.getElementById('gpu_fan_speed').textContent = ` ${data.gpu_info.gpu0.fan_speed}%`;
+                document.getElementById('gpu_name').textContent = `${data.gpu_info.gpu0.name}`;
+                document.getElementById('gpu_temperature').textContent = `${data.gpu_info.gpu0.temperature_gpu}°C`;
+                document.getElementById('gpu_fan_speed').textContent = `${data.gpu_info.gpu0.fan_speed}%`;
                 document.getElementById('gpu_clock_speed').textContent = `GPU Clock Speed: ${data.gpu_info.gpu0.clock_speed} MHz`;
                 document.getElementById('gpu_memory_clock_speed').textContent = `GPU Memory Clock Speed: ${data.gpu_info.gpu0.memory_clock_speed} MHz`;
                 document.getElementById('gpu_encoder').textContent = `GPU Encoder Utilization: ${data.gpu_info.gpu0.encoder_utilization}%`;
                 document.getElementById('gpu_decoder').textContent = `GPU Decoder Utilization: ${data.gpu_info.gpu0.decoder_utilization}%`;
-              
 
                 // Update chart data
                 gpuUsageChart.data.datasets[0].data.push(data.gpu_info.gpu0.utilization_gpu);
@@ -200,7 +187,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 gpuMemoryClockSpeedChart.data.datasets[0].data.push(data.gpu_info.gpu0.memory_clock_speed);
                 gpuEncoderChart.data.datasets[0].data.push(data.gpu_info.gpu0.encoder_utilization);
                 gpuDecoderChart.data.datasets[0].data.push(data.gpu_info.gpu0.decoder_utilization);
-               
 
                 // Update all charts
                 charts.forEach(chart => chart.update());
@@ -210,7 +196,15 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    initializeCharts();
-    updateData();
-    setInterval(updateData, 1000);
+    fetch('../webconfig.json')
+        .then(response => response.json())
+        .then(data => {
+            config = data;
+            initializeCharts();
+            updateData();
+            setInterval(updateData, config.update_interval_seconds * 1000); // Use interval in milliseconds
+        })
+        .catch(error => {
+            console.error('Error fetching configuration:', error);
+        });
 });
