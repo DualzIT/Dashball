@@ -22,18 +22,18 @@ jobs:
 
     - name: Build for Linux
       run: |
-        GOOS=linux GOARCH=amd64 go build -o dashball ./src
+        GOOS=linux GOARCH=amd64 go build -o src/install/linux/dashball ./src
 
     - name: Archive the build output
       run: |
-        tar czf dashball-linux.tar.gz dashball
+        tar czf dashball-linux.tar.gz -C src/install/linux dashball
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: build-output-linux
         path: |
-          dashball
+          src/install/linux/dashball
           dashball-linux.tar.gz
 
   build-windows:
@@ -67,17 +67,6 @@ jobs:
       run: dir src\install\windows
       shell: cmd
 
-    - name: Move installer files to root
-      run: |
-        move src\install\windows\dashball.exe dashball.exe
-        move src\Website Website
-        move src\json json
-        move go.mod go.mod
-        move go.sum go.sum
-        move LICENSE LICENSE
-        move README.md README.md
-      shell: cmd
-
     - name: Create Windows installer
       run: iscc src\install\windows\Installer.iss
       shell: cmd
@@ -87,5 +76,5 @@ jobs:
       with:
         name: build-output-windows
         path: |
-          dashball.exe
-          Output/*.exe
+          src/install/windows/dashball.exe
+          src/install/windows/Output/*.exe

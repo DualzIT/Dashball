@@ -11,6 +11,8 @@
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
 [Setup]
+; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
+; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{5F2EDDAC-5FC6-48D9-A8C1-988A753B2019}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -21,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=../../../LICENSE
+LicenseFile=../../../../LICENSE
 OutputBaseFilename=Dashball
 Compression=lzma
 SolidCompression=yes
@@ -31,14 +33,14 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "src\install\windows\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "src\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "go.mod"; DestDir: "{app}"; Flags: ignoreversion
-Source: "go.sum"; DestDir: "{app}"; Flags: ignoreversion
-Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
-Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "src\json\config.json"; DestDir: "{app}\json"; Flags: ignoreversion
-Source: "src\json\historical_data.json"; DestDir: "{app}\json"; Flags: ignoreversion
+Source: "..\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\..\..\go.mod"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\..\go.sum"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\..\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\json\config.json"; DestDir: "{app}\json"; Flags: ignoreversion
+Source: "..\..\..\json\historical_data.json"; DestDir: "{app}\json"; Flags: ignoreversion
 
 [CustomMessages]
 AutoStartWithWindows=Let Dashball start up automatically
