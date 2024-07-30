@@ -16,7 +16,6 @@
 AppId={{5F2EDDAC-5FC6-48D9-A8C1-988A753B2019}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -24,9 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=C:\Users\Alex\Documents\GitHub\Dashball\LICENSE
-; Uncomment the following line to run in non administrative install mode (install for current user only.)
-;PrivilegesRequired=lowest
+LicenseFile=D:\a\Dashball\Dashball\LICENSE
 OutputBaseFilename=Dashball
 Compression=lzma
 SolidCompression=yes
@@ -36,11 +33,14 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "C:\Users\Alex\Documents\GitHub\Dashball\src\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Alex\Documents\GitHub\Dashball\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Alex\Documents\GitHub\Dashball\go.mod"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Alex\Documents\GitHub\Dashball\go.sum"; DestDir: "{app}"; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: "D:\a\Dashball\Dashball\src\install\windows\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\src\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\a\Dashball\Dashball\go.mod"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\go.sum"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\a\Dashball\Dashball\src\json\config.json"; DestDir: "{app}\json"; Flags: ignoreversion
+
 
 [CustomMessages]
 AutoStartWithWindows=Let Dashball start up automatically
@@ -69,9 +69,9 @@ var
 procedure InitializeWizard;
 begin
   PortInputPage := CreateInputQueryPage(wpWelcome,
-    'Port Configuration', 'Wich port needs the website to be?',
+    'Port Configuration', 'Which port needs the website to be?',
     'Choose a port for the website and click on next.');
-  PortInputPage.Add('Poort:', False);
+  PortInputPage.Add('Port:', False);
   PortInputPage.Values[0] := '80';
 end;
 
@@ -83,4 +83,3 @@ begin
      MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
   end;
 end;
-
