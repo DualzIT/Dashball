@@ -1,5 +1,15 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    const maxDataPoints = 20;
+    let config;
+
+    // Fetch the configuration
+    async function fetchConfig() {
+        const response = await fetch('../webconfig.json');
+        config = await response.json();
+    }
+
+    await fetchConfig();
+
+    const maxDataPoints = config.max_data_points;
     let chartToDelete = null;
 
     const chartConfigurations = {
@@ -153,6 +163,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }]
             },
             options: {
+                animation: config.animations,
                 scales: config.type === 'doughnut' ? {} : {
                     y: {
                         beginAtZero: true,
@@ -291,7 +302,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             } catch (error) {
                 console.error('Update chart error:', error);
             }
-        }, 1000);
+        }, config.update_interval_seconds * 1000);
     }
 
     function adjustCanvasResolution(chartItem, chart) {

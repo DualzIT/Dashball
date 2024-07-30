@@ -1,4 +1,8 @@
-const maxDataPoints = 20;
+async function fetchConfig() {
+    const response = await fetch('../webconfig.json');
+    const config = await response.json();
+    return config;
+}
 
 async function fetchCpuData() {
     const response = await fetch('/system_info');
@@ -7,6 +11,7 @@ async function fetchCpuData() {
 }
 
 async function createCpuCharts() {
+    const config = await fetchConfig();
     const data = await fetchCpuData();
     const cpuchartsContainer = document.getElementById('cpuchartsContainer');
 
@@ -32,6 +37,7 @@ async function createCpuCharts() {
                 }]
             },
             options: {
+                animation: config.animations,
                 scales: {
                     x: {
                         title: {
@@ -65,6 +71,7 @@ async function createCpuCharts() {
             }]
         },
         options: {
+            animation: config.animations,
             scales: {
                 x: {
                     title: {
@@ -97,6 +104,7 @@ async function createCpuCharts() {
             }]
         },
         options: {
+            animation: config.animations,
             scales: {
                 x: {
                     title: {
@@ -114,18 +122,18 @@ async function createCpuCharts() {
         }
     });
 
-    const updateInterval = data.update_interval_seconds * 1000; 
-    setInterval(() => updateData(averageCpuChart, ctxSwitchChart), updateInterval);
+    const updateInterval = config.update_interval_seconds * 1000; 
+    setInterval(() => updateData(averageCpuChart, ctxSwitchChart, config.max_data_points), updateInterval);
 
     document.getElementById('cpu_name').textContent = `${data.cpu_info.name}`;
     document.getElementById('cpu_temperature').textContent = `${data.cpu_info.temperature} °C`;
-    document.getElementById('cpu_frequency').textContent = `${data.cpu_info.frequency}MHz`;
+    document.getElementById('cpu_frequency').textContent = `${data.cpu_info.frequency} MHz`;
     document.getElementById('cpu_cores').textContent = `${data.cpu_info.cores}`;
     document.getElementById('cpu_uptime').textContent = `${data.cpu_info.uptime}`;
     document.getElementById('cpu_threads').textContent = `${data.cpu_info.threads}`;
 }
 
-function updateData(averageCpuChart, ctxSwitchChart) {
+function updateData(averageCpuChart, ctxSwitchChart, maxDataPoints) {
     fetchCpuData().then(data => {
         const now = new Date();
         const timestamp = now.toLocaleTimeString();

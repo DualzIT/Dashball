@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const maxDataPoints = 30;
     let diskCharts = {};
     let diskSpaceCharts = {};
+    let config;
 
     function initializeCharts(diskInfos) {
         diskInfos.forEach((disk, index) => {
@@ -29,6 +29,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         }]
                     },
                     options: {
+                        animation: config.animations,
+                        responsive: true,
                         scales: {
                             y: {
                                 beginAtZero: true
@@ -47,6 +49,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         }]
                     },
                     options: {
+                        animation: config.animations,
+                        responsive: true,
                         scales: {
                             y: {
                                 beginAtZero: true
@@ -65,6 +69,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         backgroundColor: ['#F9B94B', '#6FF36F'],
                         borderWidth: 0
                     }]
+                },
+                options: {
+                    animation: config.animations,
+                    responsive: true
                 }
             });
         });
@@ -93,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         charts.readSpeed.data.labels.push(timestamp);
                         charts.writeSpeed.data.labels.push(timestamp);
 
-                        if (charts.readSpeed.data.labels.length > maxDataPoints) {
+                        if (charts.readSpeed.data.labels.length > config.max_data_points) {
                             charts.readSpeed.data.labels.shift();
                             charts.writeSpeed.data.labels.shift();
                             charts.readSpeed.data.datasets[0].data.shift();
@@ -120,45 +128,54 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    fetch('/system_info')
+    fetch('../webconfig.json')
         .then(response => response.json())
         .then(data => {
-            const diskContainer = document.getElementById('diskContainer');
+            config = data;
 
-            data.disk_infos.forEach((disk, index) => {
-                const diskElement = `
-                    <div class="disk-info">
-                        <div class="disk-graphs">
-                            <div>
-                                <h2>Device: ${disk.device}</h2>
-                                <h3>Mountpoint: ${disk.mountpoint}</h3>
-                                <h3>Type: ${disk.fstype}</h3>
-                            </div>
-                            <div>
-                                <canvas id="readSpeedChart${index}"></canvas>
-                            </div>
-                            <div>
-                                <canvas id="writeSpeedChart${index}"></canvas>
-                            </div>
-                            <div>
-                                <div class="diskspacechart">
-                                    <canvas id="diskSpaceChart${index}"></canvas>
-                                    <p>Used Space: <span id="used_disk_gb${index}">${(disk.used_space / 1024).toFixed(2)} GB</span></p>
-                                    <p>Free Space: <span id="free_disk_gb${index}">${(disk.free_space / 1024).toFixed(2)} GB</span></p>
-                                    <p>Total Space: <span id="total_disk_gb${index}">${(disk.total_space / 1024).toFixed(2)} GB</span></p>
+            fetch('/system_info')
+                .then(response => response.json())
+                .then(data => {
+                    const diskContainer = document.getElementById('diskContainer');
+
+                    data.disk_infos.forEach((disk, index) => {
+                        const diskElement = `
+                            <div class="disk-info">
+                                <div class="disk-graphs">
+                                    <div>
+                                        <h2>Device: ${disk.device}</h2>
+                                        <h3>Mountpoint: ${disk.mountpoint}</h3>
+                                        <h3>Type: ${disk.fstype}</h3>
+                                    </div>
+                                    <div>
+                                        <canvas id="readSpeedChart${index}"></canvas>
+                                    </div>
+                                    <div>
+                                        <canvas id="writeSpeedChart${index}"></canvas>
+                                    </div>
+                                    <div>
+                                        <div class="diskspacechart">
+                                            <canvas id="diskSpaceChart${index}"></canvas>
+                                            <p>Used Space: <span id="used_disk_gb${index}">${(disk.used_space / 1024).toFixed(2)} GB</span></p>
+                                            <p>Free Space: <span id="free_disk_gb${index}">${(disk.free_space / 1024).toFixed(2)} GB</span></p>
+                                            <p>Total Space: <span id="total_disk_gb${index}">${(disk.total_space / 1024).toFixed(2)} GB</span></p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                `;
-                diskContainer.insertAdjacentHTML('beforeend', diskElement);
-            });
+                        `;
+                        diskContainer.insertAdjacentHTML('beforeend', diskElement);
+                    });
 
-            initializeCharts(data.disk_infos);
-            updateData();
-            setInterval(updateData, 1000);
+                    initializeCharts(data.disk_infos);
+                    updateData();
+                    setInterval(updateData, config.update_interval_seconds * 1000); // Use interval in milliseconds
+                })
+                .catch(error => {
+                    console.error('ERROR:', error);
+                });
         })
         .catch(error => {
-            console.error('ERROR:', error);
+            console.error('Error fetching configuration:', error);
         });
 });
