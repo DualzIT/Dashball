@@ -360,8 +360,60 @@ canvas {
 body.dark-mode .hamburger-menu .bar {
     background-color: white;
 }
+.app-icon{
+    width: 20px;
+    height: 20px;
+}
+table{
+    width: 50%;
+    margin-top: 30px;
+    margin-left: 20%;
+}
+td{
+    text-align: center;
+}
+.processname{
+    text-align: left;
+    width: 20%;
+    
+}
+th {
+    position: relative;
+    cursor: pointer;
+}
 
+th.sort-asc::before, th.sort-desc::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+}
+
+th.sort-asc::before {
+    border-bottom-color: black;
+    border-top: none;
+}
+
+th.sort-desc::before {
+    border-top-color: black;
+    border-bottom: none;
+}
+body.dark-mode th.sort-asc::before {
+    border-bottom-color: rgb(255, 255, 255);
+    border-top: none;
+}
+
+body.dark-mode th.sort-desc::before {
+    border-top-color: rgb(255, 255, 255);
+    border-bottom: none;
+}
 @media screen and (max-width: 1000px) {
+    table{
+        width: 100%;
+        margin-left: 0%;
+    }
     #addChartButton{
         width: 20%;
         padding: 20px;
