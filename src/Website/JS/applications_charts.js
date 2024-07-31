@@ -37,10 +37,11 @@ document.addEventListener("DOMContentLoaded", function() {
         sortedApps.forEach(app => {
             const row = document.createElement("tr");
 
-            const iconPath = getIconPath(app.name);
+            const appName = removeExeExtension(app.name);
+            const iconPath = getIconPath(appName);
 
             row.innerHTML = `
-                <td class="processname"><img src="${iconPath}" alt="${app.name}" class="app-icon" onerror="this.onerror=null;this.src='icons/default.png';"> ${app.name}</td>
+                <td class="processname"><img src="${iconPath}" alt="${appName}" class="app-icon" onerror="this.onerror=null;this.src='icons/default.png';"> ${appName}</td>
                 <td>${app.pid}</td>
                 <td>${app.cpu_percent.toFixed(2)}</td>
                 <td>${(app.memory_info.rss / (1024 * 1024)).toFixed(0)}</td>
@@ -62,6 +63,13 @@ document.addEventListener("DOMContentLoaded", function() {
         // Convert process name to lowercase and add .png extension
         const iconName = processName.toLowerCase() + ".png";
         return "icons/" + iconName;
+    }
+
+    function removeExeExtension(name) {
+        if (name.toLowerCase().endsWith(".exe")) {
+            return name.slice(0, -4);
+        }
+        return name;
     }
 
     function updateSortIcons() {
@@ -89,5 +97,5 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     fetchApplications();
-    setInterval(fetchApplications, 5000); // Fetch applications data every 5 seconds
+    setInterval(fetchApplications, 2000); // Fetch applications data every 2 seconds
 });
