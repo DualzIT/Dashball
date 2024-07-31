@@ -18,6 +18,7 @@ import (
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
+	"github.com/shirou/gopsutil/process"
 )
 
 type Config struct {
@@ -116,6 +117,7 @@ func main() {
 	mux.HandleFunc("/save_historical_data", saveHistoricalData)
 	mux.HandleFunc("/history", serveHistoricalData)
 	mux.HandleFunc("/system_info", systemInfoHandler)
+	mux.HandleFunc("/running_apps", runningAppsHandler) // Add this line
 
 	websiteDir := filepath.Join(".", "Website")
 	fs := http.FileServer(http.Dir(websiteDir))
@@ -258,7 +260,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 				"total_space":  diskUsage.Total / (1024 * 1024),
 				"used_space":   diskUsage.Used / (1024 * 1024),
 				"free_space":   freeSpaceMB,
-					"read_bytes":   ioStat.ReadBytes,
+				"read_bytes":   ioStat.ReadBytes,
 				"write_bytes":  ioStat.WriteBytes,
 				"read_count":   ioStat.ReadCount,
 				"write_count":  ioStat.WriteCount,
@@ -277,6 +279,46 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	uptimeStr := formatUptime(uptime)
 	threadCount := runtime.NumGoroutine()
 	cpuTemperature := "N/A"
+
+	// Fetch process data
+	processes, err := process.Processes()
+	if err != nil {
+		http.Error(w, "Failed to get processes", http.StatusInternalServerError)
+		return
+	}
+
+	var apps []map[string]interface{}
+	for _, p := range processes {
+		name, err := p.Name()
+		if err != nil {
+			name = "Unknown"
+		}
+
+		cpuPercent, err := p.CPUPercent()
+		if err != nil {
+			cpuPercent = 0.0
+		}
+
+		memInfo, err := p.MemoryInfo()
+		if err != nil {
+			memInfo = &process.MemoryInfoStat{}
+		}
+
+		ioCounters, err := p.IOCounters()
+		if err != nil {
+			ioCounters = &process.IOCountersStat{}
+		}
+
+		app := map[string]interface{}{
+			"pid":         p.Pid,
+			"name":        name,
+			"cpu_percent": cpuPercent,
+			"memory_info": memInfo,
+			"read_bytes":  ioCounters.ReadBytes,
+			"write_bytes": ioCounters.WriteBytes,
+		}
+		apps = append(apps, app)
+	}
 
 	data := map[string]interface{}{
 		"cpu_usage_per_core":      cpuUsagePerCore,
@@ -300,10 +342,39 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 			"uptime":       uptimeStr,
 			"threads":      threadCount,
 		},
+		"running_apps": apps, // Add process data here
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
+}
+
+func runningAppsHandler(w http.ResponseWriter, r *http.Request) {
+	processes, err := process.Processes()
+	if err != nil {
+		http.Error(w, "Failed to get processes", http.StatusInternalServerError)
+		return
+	}
+
+	var apps []map[string]interface{}
+	for _, p := range processes {
+		cpuPercent, _ := p.CPUPercent()
+		memInfo, _ := p.MemoryInfo()
+		ioCounters, _ := p.IOCounters()
+
+		app := map[string]interface{}{
+			"pid":         p.Pid,
+			"name":        p.Name,
+			"cpu_percent": cpuPercent,
+			"memory_info": memInfo,
+			"read_bytes":  ioCounters.ReadBytes,
+			"write_bytes": ioCounters.WriteBytes,
+		}
+		apps = append(apps, app)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(apps)
 }
 
 func saveHistoricalDataToFile() error {
