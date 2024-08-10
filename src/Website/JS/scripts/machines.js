@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tab.setAttribute('data-computer-name', computer.name);
         tab.textContent = computer.name;
 
-        // Voeg de 'active' class toe aan de eerste tab die wordt aangemaakt
+    
         if (tabsContainer.children.length === 0) {
             tab.classList.add('active');
         }

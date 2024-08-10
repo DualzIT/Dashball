@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let gpuUsageChart;
     let gpuMemoryChart;
     let config;
-    let activeComputer = 'Local'; // Default active computer is Local
+    let activeComputer = 'Local';
 
     const ctxCpu = document.getElementById('cpuChart').getContext('2d');
     const ctxMemory = document.getElementById('memoryChart').getContext('2d');
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function initializeCharts() {
         const chartOptions = {
-            animation: config.animations, // Use the animation setting from config
+            animation: config.animations,
             responsive: true,
             scales: {
                 y: {
@@ -82,96 +82,95 @@ document.addEventListener("DOMContentLoaded", function () {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        // Customize the max value for GPU memory based on the fetched data
                     }
                 }
             }
         });
     }
 
-    function updateData() {
-        // Fetch data from /system_info_all
-        fetch('/system_info_all')
-            .then(response => response.json())
-            .then(data => {
-                const now = new Date();
-                const timestamp = now.toLocaleTimeString();
+    function connectWebSocket() {
+        const socket = new WebSocket("ws://localhost:8080/ws");
 
-                // Retrieve data for the active computer
-                const activeData = data[`system_info_${activeComputer}`];
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
 
-                if (!activeData) {
-                    console.error(`No data found for active computer: ${activeComputer}`);
-                    return;
-                }
+            // Retrieve data for the active computer
+            const activeData = data[`system_info_${activeComputer}`];
 
-                // Update GPU Memory Chart y-axis max based on the fetched data
-                gpuMemoryChart.options.scales.y.max = parseFloat(activeData.gpu_info.gpu0.memory_total);
+            if (!activeData) {
+                console.error(`No data found for active computer: ${activeComputer}`);
+                return;
+            }
 
-                // Add timestamp as a label
-                cpuChart.data.labels.push(timestamp);
-                memoryChart.data.labels.push(timestamp);
-                gpuUsageChart.data.labels.push(timestamp);
-                gpuMemoryChart.data.labels.push(timestamp);
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString();
 
-                // Shift chart when it hits maxdatapoints
-                if (cpuChart.data.labels.length > config.max_data_points) {
-                    cpuChart.data.labels.shift();
-                    memoryChart.data.labels.shift();
-                    gpuUsageChart.data.labels.shift();
-                    gpuMemoryChart.data.labels.shift();
-                    cpuChart.data.datasets[0].data.shift();
-                    memoryChart.data.datasets[0].data.shift();
-                    gpuUsageChart.data.datasets[0].data.shift();
-                    gpuMemoryChart.data.datasets[0].data.shift();
-                }
+            gpuMemoryChart.options.scales.y.max = parseFloat(activeData.gpu_info.gpu0.memory_total);
 
-                document.getElementById('cpu_usage').textContent = `CPU: ${activeData.cpu_usage}`;
-                document.getElementById('memory_usage').textContent = `Memory: ${activeData.memory_usage.toFixed(1)}%`;
-                document.getElementById('total_memory').textContent = `${activeData.total_memory.toFixed(1)} GB`;
-                document.getElementById('used_memory').textContent = `${activeData.used_memory.toFixed(1)} GB`;
-                document.getElementById('gpu_usage').textContent = `GPU Usage: ${activeData.gpu_info.gpu0.utilization_gpu}%`;
-                document.getElementById('gpu_memory').textContent = `GPU Memory: ${activeData.gpu_info.gpu0.memory_used}MB / ${activeData.gpu_info.gpu0.memory_total}MB`;
-                document.getElementById('gpu_name').textContent = `${activeData.gpu_info.gpu0.name}`;
-                document.getElementById('gpu_temperature').textContent = `${activeData.gpu_info.gpu0.temperature_gpu}°C`;
-                document.getElementById('computer_name').textContent = `${activeData.hostname}`;
-                document.getElementById('os').textContent = `${activeData.platform}`;
-                document.getElementById('os_version').textContent = `${activeData.platform_version}`;
+            cpuChart.data.labels.push(timestamp);
+            memoryChart.data.labels.push(timestamp);
+            gpuUsageChart.data.labels.push(timestamp);
+            gpuMemoryChart.data.labels.push(timestamp);
 
-                cpuChart.data.datasets[0].data.push(activeData.cpu_usage);
-                memoryChart.data.datasets[0].data.push(activeData.memory_usage);
-                gpuUsageChart.data.datasets[0].data.push(activeData.gpu_info.gpu0.utilization_gpu);
-                gpuMemoryChart.data.datasets[0].data.push(activeData.gpu_info.gpu0.memory_used);
+            if (cpuChart.data.labels.length > config.max_data_points) {
+                cpuChart.data.labels.shift();
+                memoryChart.data.labels.shift();
+                gpuUsageChart.data.labels.shift();
+                gpuMemoryChart.data.labels.shift();
+                cpuChart.data.datasets[0].data.shift();
+                memoryChart.data.datasets[0].data.shift();
+                gpuUsageChart.data.datasets[0].data.shift();
+                gpuMemoryChart.data.datasets[0].data.shift();
+            }
 
-                cpuChart.update();
-                memoryChart.update();
-                gpuUsageChart.update();
-                gpuMemoryChart.update();
-            })
-            .catch(error => {
-                console.error('ERROR:', error);
-            });
+            document.getElementById('cpu_usage').textContent = `CPU: ${activeData.cpu_usage}`;
+            document.getElementById('memory_usage').textContent = `Memory: ${activeData.memory_usage.toFixed(1)}%`;
+            document.getElementById('total_memory').textContent = `${activeData.total_memory.toFixed(1)} GB`;
+            document.getElementById('used_memory').textContent = `${activeData.used_memory.toFixed(1)} GB`;
+            document.getElementById('gpu_usage').textContent = `GPU Usage: ${activeData.gpu_info.gpu0.utilization_gpu}%`;
+            document.getElementById('gpu_memory').textContent = `GPU Memory: ${activeData.gpu_info.gpu0.memory_used}MB / ${activeData.gpu_info.gpu0.memory_total}MB`;
+            document.getElementById('gpu_name').textContent = `${activeData.gpu_info.gpu0.name}`;
+            document.getElementById('gpu_temperature').textContent = `${activeData.gpu_info.gpu0.temperature_gpu}°C`;
+            document.getElementById('computer_name').textContent = `${activeData.hostname}`;
+            document.getElementById('os').textContent = `${activeData.platform}`;
+            document.getElementById('os_version').textContent = `${activeData.platform_version}`;
+
+            cpuChart.data.datasets[0].data.push(activeData.cpu_usage);
+            memoryChart.data.datasets[0].data.push(activeData.memory_usage);
+            gpuUsageChart.data.datasets[0].data.push(activeData.gpu_info.gpu0.utilization_gpu);
+            gpuMemoryChart.data.datasets[0].data.push(activeData.gpu_info.gpu0.memory_used);
+
+            cpuChart.update();
+            memoryChart.update();
+            gpuUsageChart.update();
+            gpuMemoryChart.update();
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket error: ", error);
+        };
+
+        socket.onclose = function() {
+            console.log("WebSocket connection closed. Reconnecting in 1 second...");
+            setTimeout(connectWebSocket, 1000); // Reconnect on close
+        };
     }
 
-    // Handle tab selection and change the active computer
     document.getElementById('computer-tabs').addEventListener('click', function (event) {
         if (event.target.tagName === 'LI') {
             const selectedTab = event.target;
             activeComputer = selectedTab.getAttribute('data-computer-name');
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             selectedTab.classList.add('active');
-            updateData(); // Immediately update data when tab changes
         }
     });
 
-    // Fetch the configuration
     fetch('../webconfig.json')
         .then(response => response.json())
         .then(data => {
             config = data;
             initializeCharts();
-            updateData();
-            setInterval(updateData, config.update_interval_seconds * 1000); // Use interval in milliseconds
+            connectWebSocket();
         })
         .catch(error => {
             console.error('ERROR:', error);

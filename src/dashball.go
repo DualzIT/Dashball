@@ -14,6 +14,7 @@ import (
     "sync"
     "time"
 
+    "github.com/gorilla/websocket"
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/disk"
     "github.com/shirou/gopsutil/host"
@@ -49,6 +50,11 @@ var (
     historicalData      HistoricalData           // Declare a global variable to store historical data
     previousDiskStats   map[string]disk.IOCountersStat // Store previous disk stats for calculating speeds
     mutex               sync.Mutex                     // Ensure thread safety
+    upgrader            = websocket.Upgrader{
+        CheckOrigin: func(r *http.Request) bool {
+            return true
+        },
+    }
 )
 
 func removeHistoricalDataFile() {
@@ -71,6 +77,26 @@ func loadHistoricalDataFromFile() error {
     }
 
     return nil
+}
+
+func filterSystemInfo(data map[string]interface{}) map[string]interface{} {
+    // Filter cpu_frequencies: Remove the 'family' field
+    if cpuFrequencies, ok := data["cpu_frequencies"].([]map[string]interface{}); ok {
+        for i := range cpuFrequencies {
+            delete(cpuFrequencies[i], "family")
+        }
+    }
+
+    // Filter running_apps: Remove 'swap' from memory_info
+    if runningApps, ok := data["running_apps"].([]map[string]interface{}); ok {
+        for _, app := range runningApps {
+            if memoryInfo, ok := app["memory_info"].(*process.MemoryInfoStat); ok {
+                memoryInfo.Swap = 0
+            }
+        }
+    }
+
+    return data
 }
 
 func saveHistoricalData(w http.ResponseWriter, r *http.Request) {
@@ -128,6 +154,7 @@ func main() {
     mux.HandleFunc("/history", serveHistoricalData)
     mux.HandleFunc("/system_info", systemInfoHandler)
     mux.HandleFunc("/system_info_all", systemInfoHandlerAll)
+    mux.HandleFunc("/ws", systemInfoWebSocketHandler)
 
     websiteDir := filepath.Join(".", "Website")
     fs := http.FileServer(http.Dir(websiteDir))
@@ -172,26 +199,23 @@ func saveHistoricalDataPeriodically(config Config) {
 }
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
-    configFile, err := os.Open("json/config.json")
-    if err != nil {
-        http.Error(w, "Can't open config file", http.StatusInternalServerError)
-        return
-    }
-    defer configFile.Close()
+    data := getSystemInfoData()
+    filteredData := filterSystemInfo(data)
 
-    var config Config
-    err = json.NewDecoder(configFile).Decode(&config)
-    if err != nil {
-        http.Error(w, "Can't decode config file", http.StatusInternalServerError)
-        return
-    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(filteredData)
+}
 
+func getSystemInfoData() map[string]interface{} {
+    // Implement your logic to fetch system info data, similar to what you did in systemInfoHandler
+    // This is where you can combine various pieces of information into the final structure.
+    
+    // For example, fetch CPU, memory, disk, and other system stats
     cpuUsagePerCore, _ := cpu.Percent(0, true)
     cpuUsageAvg, _ := cpu.Percent(0, false)
     cpuUsageAvgRounded := math.Round(cpuUsageAvg[0]*10) / 10
 
     cpuFrequencies, _ := cpu.Info()
-
     var filteredCpuFrequencies []map[string]interface{}
     for _, freq := range cpuFrequencies {
         filteredFreq := map[string]interface{}{
@@ -215,167 +239,36 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     totalMemoryGB := float64(vMem.Total) / (1024 * 1024 * 1024)
     usedMemoryGB := float64(vMem.Used) / (1024 * 1024 * 1024)
 
-    partitions, err := disk.Partitions(true)
-    if err != nil {
-        log.Printf("Failed to get disk partitions: %v", err)
-        http.Error(w, "Failed to get disk partitions", http.StatusInternalServerError)
-        return
-    }
-
-    var diskInfos []map[string]interface{}
-    var logs []string
-    mutex.Lock()
-    defer mutex.Unlock()
-    for _, partition := range partitions {
-        logs = append(logs, fmt.Sprintf("Inspecting partition: %s, mountpoint: %s, fstype: %s", partition.Device, partition.Mountpoint, partition.Fstype))
-        if partition.Fstype == "tmpfs" || partition.Fstype == "devtmpfs" || partition.Fstype == "overlay" || strings.HasPrefix(partition.Mountpoint, "/sys") || strings.HasPrefix(partition.Mountpoint, "/proc") || strings.HasPrefix(partition.Mountpoint, "/run") {
-            logs = append(logs, fmt.Sprintf("Skipping pseudo or virtual filesystem: %s", partition.Mountpoint))
-            continue
-        }
-
-        diskUsage, err := disk.Usage(partition.Mountpoint)
-        if err != nil {
-            logs = append(logs, fmt.Sprintf("Failed to get disk usage for %s: %v", partition.Mountpoint, err))
-            continue
-        }
-
-        deviceName := strings.TrimPrefix(partition.Device, "/dev/")
-        ioStats, err := disk.IOCounters(deviceName)
-        if err != nil {
-            logs = append(logs, fmt.Sprintf("Failed to get IO counters for %s: %v", deviceName, err))
-            continue
-        }
-
-        for _, ioStat := range ioStats {
-            previousStat, exists := previousDiskStats[partition.Device]
-            if !exists {
-                previousDiskStats[partition.Device] = ioStat
-                continue
-            }
-
-            readSpeed := float64(ioStat.ReadBytes-previousStat.ReadBytes) / float64(config.UpdateIntervalSeconds)
-            writeSpeed := float64(ioStat.WriteBytes-previousStat.WriteBytes) / float64(config.UpdateIntervalSeconds)
-
-            previousDiskStats[partition.Device] = ioStat
-
-            freeSpaceMB := diskUsage.Free / (1024 * 1024)
-            if freeSpaceMB < 100 {
-                continue
-            }
-
-            diskInfo := map[string]interface{}{
-                "device":       partition.Device,
-                "mountpoint":   partition.Mountpoint,
-                "fstype":       partition.Fstype,
-                "total_space":  diskUsage.Total / (1024 * 1024),
-                "used_space":   diskUsage.Used / (1024 * 1024),
-                "free_space":   freeSpaceMB,
-                "read_bytes":   ioStat.ReadBytes,
-                "write_bytes":  ioStat.WriteBytes,
-                "read_count":   ioStat.ReadCount,
-                "write_count":  ioStat.WriteCount,
-                "read_time":    ioStat.ReadTime,
-                "write_time":   ioStat.WriteTime,
-                "read_speed":   readSpeed,
-                "write_speed":  writeSpeed,
-            }
-            diskInfos = append(diskInfos, diskInfo)
-        }
-    }
-
     hostInfo, _ := host.Info()
     gpuInfo, _ := getNvidiaGPUInfo()
     uptime, _ := host.Uptime()
     uptimeStr := formatUptime(uptime)
     threadCount := runtime.NumGoroutine()
-    cpuTemperature := "N/A"
-
-    processes, err := process.Processes()
-    if err != nil {
-        http.Error(w, "Failed to get processes", http.StatusInternalServerError)
-        return
-    }
-
-    processMap := make(map[string]map[string]interface{})
-    for _, p := range processes {
-        name, err := p.Name()
-        if err != nil {
-            name = "Unknown"
-        }
-
-        exe, err := p.Exe()
-        if err != nil {
-            exe = ""
-        }
-
-        cpuPercent, err := p.CPUPercent()
-        if err != nil {
-            cpuPercent = 0.0
-        }
-
-        memInfo, err := p.MemoryInfo()
-        if err != nil {
-            memInfo = &process.MemoryInfoStat{}
-        }
-
-        ioCounters, err := p.IOCounters()
-        if err != nil {
-            ioCounters = &process.IOCountersStat{}
-        }
-
-        pid := p.Pid
-
-        if app, exists := processMap[name]; exists {
-            app["cpu_percent"] = app["cpu_percent"].(float64) + cpuPercent
-            app["memory_info"].(*process.MemoryInfoStat).RSS += memInfo.RSS
-            app["read_bytes"] = app["read_bytes"].(uint64) + ioCounters.ReadBytes
-            app["write_bytes"] = app["write_bytes"].(uint64) + ioCounters.WriteBytes
-        } else {
-            processMap[name] = map[string]interface{}{
-                "name":        name,
-                "exe":         exe,
-                "cpu_percent": cpuPercent,
-                "memory_info": memInfo,
-                "read_bytes":  ioCounters.ReadBytes,
-                "write_bytes": ioCounters.WriteBytes,
-                "pid":         pid,
-            }
-        }
-    }
-
-    var apps []map[string]interface{}
-    for _, app := range processMap {
-        apps = append(apps, app)
-    }
 
     data := map[string]interface{}{
-        "cpu_usage_per_core":      cpuUsagePerCore,
-        "cpu_usage":               cpuUsageAvgRounded,
-        "cpu_frequencies":         filteredCpuFrequencies,
-        "total_memory":            totalMemoryGB,
-        "used_memory":             usedMemoryGB,
-        "memory_usage":            vMem.UsedPercent,
-        "disk_infos":              diskInfos,
-        "os":                      hostInfo.OS,
-        "platform":                hostInfo.Platform,
-        "platform_version":        hostInfo.PlatformVersion,
-        "hostname":                hostInfo.Hostname,
-        "gpu_info":                gpuInfo,
-        "update_interval_seconds": config.UpdateIntervalSeconds,
+        "cpu_usage_per_core": cpuUsagePerCore,
+        "cpu_usage":          cpuUsageAvgRounded,
+        "cpu_frequencies":    filteredCpuFrequencies,
+        "total_memory":       totalMemoryGB,
+        "used_memory":        usedMemoryGB,
+        "memory_usage":       vMem.UsedPercent,
+        "os":                 hostInfo.OS,
+        "platform":           hostInfo.Platform,
+        "platform_version":   hostInfo.PlatformVersion,
+        "hostname":           hostInfo.Hostname,
+        "gpu_info":           gpuInfo,
         "cpu_info": map[string]interface{}{
             "name":         cpuFrequencies[0].ModelName,
-            "temperature":  cpuTemperature,
             "frequency":    cpuFrequencies[0].Mhz,
             "cores":        runtime.NumCPU(),
             "uptime":       uptimeStr,
             "threads":      threadCount,
         },
-        "running_apps": apps,
     }
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(data)
+    return data
 }
+
 func systemInfoHandlerAll(w http.ResponseWriter, r *http.Request) {
     computersConfig, err := loadComputersConfig()
     if err != nil {
@@ -392,13 +285,37 @@ func systemInfoHandlerAll(w http.ResponseWriter, r *http.Request) {
             continue
         }
 
-       
-        allSystemInfo[fmt.Sprintf("system_info_%s", computer.Name)] = remoteInfo
+        // Apply filtering to the remote system info
+        filteredInfo := filterSystemInfo(remoteInfo)
+
+        allSystemInfo[fmt.Sprintf("system_info_%s", computer.Name)] = filteredInfo
     }
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(allSystemInfo)
 }
+
+func systemInfoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println("Failed to upgrade to WebSocket:", err)
+        return
+    }
+    defer conn.Close()
+
+    for {
+        data := getSystemInfoData()
+        filteredData := filterSystemInfo(data)
+        
+        if err := conn.WriteJSON(filteredData); err != nil {
+            log.Println("Error sending data over WebSocket:", err)
+            break // Verbreek de lus als er een fout optreedt bij het verzenden
+        }
+        
+        time.Sleep(time.Second) // Send updates every second
+    }
+}
+
 
 func saveHistoricalDataToFile() error {
     file, err := os.Create("json/historical_data.json")
