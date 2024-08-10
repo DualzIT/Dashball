@@ -69,7 +69,7 @@ nav, ul {
     padding: 0;
     list-style-type: none;
     display: flex;
-    justify-content: space-between;
+    
     align-items: center;
 }
 
@@ -409,6 +409,71 @@ body.dark-mode th.sort-desc::before {
     border-top-color: rgb(255, 255, 255);
     border-bottom: none;
 }
+#computer-navbar {
+    background-color: #f1f1f1;
+    padding: 10px;
+}
+
+#computer-tabs {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+#computer-tabs li {
+    padding: 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    margin-right: 5px;
+    background-color: #45a01a;
+    border-radius: 5px;
+    margin-left: 5px;
+}
+
+
+#add-computer-button {
+    margin-left: 20px;
+    cursor: pointer;
+    background-color: #f5b865;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    max-width: 80%;
+}
+
+.close-button {
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+
+
 @media screen and (max-width: 1000px) {
     table{
         width: 100%;

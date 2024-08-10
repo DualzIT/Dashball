@@ -35,6 +35,16 @@ type HistoricalData struct {
     } `json:"historical_data"`
 }
 
+type Computer struct {
+    Name string `json:"name"`
+    IP   string `json:"ip"`
+    Port int    `json:"port"`
+}
+
+type ComputersConfig struct {
+    Computers []Computer `json:"computers"`
+}
+
 var (
     historicalData      HistoricalData           // Declare a global variable to store historical data
     previousDiskStats   map[string]disk.IOCountersStat // Store previous disk stats for calculating speeds
@@ -104,7 +114,7 @@ func main() {
 
     err = json.NewDecoder(configFile).Decode(&config)
     if err != nil {
-        fmt.Println("Can't open config file:", err)
+        fmt.Println("Can't decode config file:", err)
         return
     }
 
@@ -117,6 +127,7 @@ func main() {
     mux.HandleFunc("/save_historical_data", saveHistoricalData)
     mux.HandleFunc("/history", serveHistoricalData)
     mux.HandleFunc("/system_info", systemInfoHandler)
+    mux.HandleFunc("/system_info_all", systemInfoHandlerAll)
 
     websiteDir := filepath.Join(".", "Website")
     fs := http.FileServer(http.Dir(websiteDir))
@@ -365,6 +376,29 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(data)
 }
+func systemInfoHandlerAll(w http.ResponseWriter, r *http.Request) {
+    computersConfig, err := loadComputersConfig()
+    if err != nil {
+        http.Error(w, "Can't load computers config file", http.StatusInternalServerError)
+        return
+    }
+
+    allSystemInfo := make(map[string]interface{})
+
+    for _, computer := range computersConfig.Computers {
+        remoteInfo, err := fetchRemoteSystemInfo(computer.IP, computer.Port)
+        if err != nil {
+            log.Printf("Failed to fetch system info for %s: %v", computer.Name, err)
+            continue
+        }
+
+       
+        allSystemInfo[fmt.Sprintf("system_info_%s", computer.Name)] = remoteInfo
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(allSystemInfo)
+}
 
 func saveHistoricalDataToFile() error {
     file, err := os.Create("json/historical_data.json")
@@ -453,4 +487,37 @@ func getNvidiaGPUInfo() (map[string]interface{}, error) {
         }
     }
     return gpuInfo, nil
+}
+
+func loadComputersConfig() (ComputersConfig, error) {
+    var computersConfig ComputersConfig
+    configFile, err := os.Open("Website/computers.json")
+    if err != nil {
+        return computersConfig, err
+    }
+    defer configFile.Close()
+
+    err = json.NewDecoder(configFile).Decode(&computersConfig)
+    if err != nil {
+        return computersConfig, err
+    }
+
+    return computersConfig, nil
+}
+
+func fetchRemoteSystemInfo(ip string, port int) (map[string]interface{}, error) {
+    url := fmt.Sprintf("http://%s:%d/system_info", ip, port)
+    resp, err := http.Get(url)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    var data map[string]interface{}
+    err = json.NewDecoder(resp.Body).Decode(&data)
+    if err != nil {
+        return nil, err
+    }
+
+    return data, nil
 }
