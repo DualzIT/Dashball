@@ -279,22 +279,26 @@ func systemInfoHandlerAll(w http.ResponseWriter, r *http.Request) {
     allSystemInfo := make(map[string]interface{})
 
     for _, computer := range computersConfig.Computers {
-        remoteInfo, err := fetchRemoteSystemInfo(computer.IP, computer.Port)
-        if err != nil {
-            log.Printf("Failed to fetch system info for %s: %v", computer.Name, err)
-            continue
+        if computer.Name == "Local" {
+            localData := getSystemInfoData()
+            filteredData := filterSystemInfo(localData)
+            allSystemInfo[fmt.Sprintf("system_info_%s", computer.Name)] = filteredData
+        } else {
+            remoteInfo, err := fetchRemoteSystemInfo(computer.IP, computer.Port)
+            if err != nil {
+                log.Printf("Failed to fetch system info for %s: %v", computer.Name, err)
+                continue
+            }
+
+            // Apply filtering to the remote system info
+            filteredInfo := filterSystemInfo(remoteInfo)
+            allSystemInfo[fmt.Sprintf("system_info_%s", computer.Name)] = filteredInfo
         }
-
-        // Apply filtering to the remote system info
-        filteredInfo := filterSystemInfo(remoteInfo)
-
-        allSystemInfo[fmt.Sprintf("system_info_%s", computer.Name)] = filteredInfo
     }
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(allSystemInfo)
 }
-
 func systemInfoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
@@ -303,18 +307,27 @@ func systemInfoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
     }
     defer conn.Close()
 
+    log.Printf("WebSocket connection established from %s", r.RemoteAddr)
+
     for {
         data := getSystemInfoData()
         filteredData := filterSystemInfo(data)
-        
-        if err := conn.WriteJSON(filteredData); err != nil {
-            log.Println("Error sending data over WebSocket:", err)
-            break // Verbreek de lus als er een fout optreedt bij het verzenden
+
+        // Attempt to send data over WebSocket
+        err := conn.WriteJSON(filteredData)
+        if err != nil {
+            log.Printf("Error sending data to %s over WebSocket: %v", r.RemoteAddr, err)
+            break // Exit loop on error to prevent "broken pipe" issues
         }
-        
+
+        log.Printf("Data sent successfully to %s", r.RemoteAddr)
+
         time.Sleep(time.Second) // Send updates every second
     }
+
+    log.Printf("WebSocket connection closed gracefully from %s", r.RemoteAddr)
 }
+
 
 
 func saveHistoricalDataToFile() error {

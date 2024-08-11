@@ -4,7 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let gpuUsageChart;
     let gpuMemoryChart;
     let config;
-    let activeComputer = 'Local';
+    let activeComputer = 'Local'; // Default active computer is Local
+    let socket = null;
 
     const ctxCpu = document.getElementById('cpuChart').getContext('2d');
     const ctxMemory = document.getElementById('memoryChart').getContext('2d');
@@ -88,62 +89,29 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function fetchLocalSystemInfo() {
+        fetch('/system_info')
+            .then(response => response.json())
+            .then(data => updateCharts(data))
+            .catch(error => console.error('Error fetching local system info:', error));
+    }
+
     function connectWebSocket() {
-        const socket = new WebSocket("ws://localhost:8080/ws");
+        socket = new WebSocket("ws://localhost:8080/ws");
 
         socket.onmessage = function(event) {
             const data = JSON.parse(event.data);
 
-            // Retrieve data for the active computer
-            const activeData = data[`system_info_${activeComputer}`];
+            if (activeComputer === 'Local') return; // Ignore WebSocket messages when Local is active
+
+            const activeData = data[`system_info`];
 
             if (!activeData) {
                 console.error(`No data found for active computer: ${activeComputer}`);
                 return;
             }
 
-            const now = new Date();
-            const timestamp = now.toLocaleTimeString();
-
-            gpuMemoryChart.options.scales.y.max = parseFloat(activeData.gpu_info.gpu0.memory_total);
-
-            cpuChart.data.labels.push(timestamp);
-            memoryChart.data.labels.push(timestamp);
-            gpuUsageChart.data.labels.push(timestamp);
-            gpuMemoryChart.data.labels.push(timestamp);
-
-            if (cpuChart.data.labels.length > config.max_data_points) {
-                cpuChart.data.labels.shift();
-                memoryChart.data.labels.shift();
-                gpuUsageChart.data.labels.shift();
-                gpuMemoryChart.data.labels.shift();
-                cpuChart.data.datasets[0].data.shift();
-                memoryChart.data.datasets[0].data.shift();
-                gpuUsageChart.data.datasets[0].data.shift();
-                gpuMemoryChart.data.datasets[0].data.shift();
-            }
-
-            document.getElementById('cpu_usage').textContent = `CPU: ${activeData.cpu_usage}`;
-            document.getElementById('memory_usage').textContent = `Memory: ${activeData.memory_usage.toFixed(1)}%`;
-            document.getElementById('total_memory').textContent = `${activeData.total_memory.toFixed(1)} GB`;
-            document.getElementById('used_memory').textContent = `${activeData.used_memory.toFixed(1)} GB`;
-            document.getElementById('gpu_usage').textContent = `GPU Usage: ${activeData.gpu_info.gpu0.utilization_gpu}%`;
-            document.getElementById('gpu_memory').textContent = `GPU Memory: ${activeData.gpu_info.gpu0.memory_used}MB / ${activeData.gpu_info.gpu0.memory_total}MB`;
-            document.getElementById('gpu_name').textContent = `${activeData.gpu_info.gpu0.name}`;
-            document.getElementById('gpu_temperature').textContent = `${activeData.gpu_info.gpu0.temperature_gpu}°C`;
-            document.getElementById('computer_name').textContent = `${activeData.hostname}`;
-            document.getElementById('os').textContent = `${activeData.platform}`;
-            document.getElementById('os_version').textContent = `${activeData.platform_version}`;
-
-            cpuChart.data.datasets[0].data.push(activeData.cpu_usage);
-            memoryChart.data.datasets[0].data.push(activeData.memory_usage);
-            gpuUsageChart.data.datasets[0].data.push(activeData.gpu_info.gpu0.utilization_gpu);
-            gpuMemoryChart.data.datasets[0].data.push(activeData.gpu_info.gpu0.memory_used);
-
-            cpuChart.update();
-            memoryChart.update();
-            gpuUsageChart.update();
-            gpuMemoryChart.update();
+            updateCharts(activeData);
         };
 
         socket.onerror = function(error) {
@@ -156,12 +124,66 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
+    function updateCharts(data) {
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString();
+
+        gpuMemoryChart.options.scales.y.max = parseFloat(data.gpu_info.gpu0.memory_total);
+
+        cpuChart.data.labels.push(timestamp);
+        memoryChart.data.labels.push(timestamp);
+        gpuUsageChart.data.labels.push(timestamp);
+        gpuMemoryChart.data.labels.push(timestamp);
+
+        if (cpuChart.data.labels.length > config.max_data_points) {
+            cpuChart.data.labels.shift();
+            memoryChart.data.labels.shift();
+            gpuUsageChart.data.labels.shift();
+            gpuMemoryChart.data.labels.shift();
+            cpuChart.data.datasets[0].data.shift();
+            memoryChart.data.datasets[0].data.shift();
+            gpuUsageChart.data.datasets[0].data.shift();
+            gpuMemoryChart.data.datasets[0].data.shift();
+        }
+
+        document.getElementById('cpu_usage').textContent = `CPU: ${data.cpu_usage}`;
+        document.getElementById('memory_usage').textContent = `Memory: ${data.memory_usage.toFixed(1)}%`;
+        document.getElementById('total_memory').textContent = `${data.total_memory.toFixed(1)} GB`;
+        document.getElementById('used_memory').textContent = `${data.used_memory.toFixed(1)} GB`;
+        document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
+        document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
+        document.getElementById('gpu_name').textContent = `${data.gpu_info.gpu0.name}`;
+        document.getElementById('gpu_temperature').textContent = `${data.gpu_info.gpu0.temperature_gpu}°C`;
+        document.getElementById('computer_name').textContent = `${data.hostname}`;
+        document.getElementById('os').textContent = `${data.platform}`;
+        document.getElementById('os_version').textContent = `${data.platform_version}`;
+
+        cpuChart.data.datasets[0].data.push(data.cpu_usage);
+        memoryChart.data.datasets[0].data.push(data.memory_usage);
+        gpuUsageChart.data.datasets[0].data.push(data.gpu_info.gpu0.utilization_gpu);
+        gpuMemoryChart.data.datasets[0].data.push(data.gpu_info.gpu0.memory_used);
+
+        cpuChart.update();
+        memoryChart.update();
+        gpuUsageChart.update();
+        gpuMemoryChart.update();
+    }
+
     document.getElementById('computer-tabs').addEventListener('click', function (event) {
         if (event.target.tagName === 'LI') {
             const selectedTab = event.target;
             activeComputer = selectedTab.getAttribute('data-computer-name');
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             selectedTab.classList.add('active');
+
+            if (activeComputer === 'Local') {
+                if (socket) socket.close(); // Close WebSocket connection when switching to Local
+                fetchLocalSystemInfo(); // Immediately fetch data for Local
+            } else {
+                if (!socket || socket.readyState !== WebSocket.OPEN) {
+                    connectWebSocket(); // Reconnect WebSocket if needed
+                }
+            }
         }
     });
 
@@ -170,7 +192,16 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             config = data;
             initializeCharts();
-            connectWebSocket();
+            if (activeComputer === 'Local') {
+                fetchLocalSystemInfo(); // Fetch Local data on load
+            } else {
+                connectWebSocket(); // Connect to WebSocket for other computers
+            }
+            setInterval(() => {
+                if (activeComputer === 'Local') {
+                    fetchLocalSystemInfo();
+                }
+            }, config.update_interval_seconds * 1000); // Regular update for Local
         })
         .catch(error => {
             console.error('ERROR:', error);
