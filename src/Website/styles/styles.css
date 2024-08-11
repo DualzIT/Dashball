@@ -409,28 +409,39 @@ body.dark-mode th.sort-desc::before {
     border-top-color: rgb(255, 255, 255);
     border-bottom: none;
 }
+.managecomputers{
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 5%;
+}
 #computer-navbar {
     background-color: #f1f1f1;
     padding: 10px;
+    left: 10%;
+    position: relative;
 }
-
+body.dark-mode #computer-navbar {
+background-color: #121212;
+}
 #computer-tabs {
     list-style-type: none;
     margin: 0;
     padding: 0;
     display: flex;
+
 }
 
 #computer-tabs li {
     padding: 10px;
     cursor: pointer;
-    border: 1px solid #ccc;
     margin-right: 5px;
-    background-color: #45a01a;
     border-radius: 5px;
     margin-left: 5px;
 }
-
+#computer-tabs li.active{
+    background-color: #f5b865;
+}
 
 #add-computer-button {
     margin-left: 20px;
