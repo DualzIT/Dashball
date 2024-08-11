@@ -192,21 +192,21 @@ input:checked + .slider:before {
 .cpu-charts-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 70px;
+    justify-content: space-between;
 }
 
-.cpu-linegraph {
-    flex: 1 1 calc(20% - 20px); /* 4 items per row */
-    margin: 10px;
+.cpu-chart-item {
+    flex: 1 1 calc(25% - 10px); /* Vier grafieken per rij, met ruimte ertussen */
+    margin: 5px;
     box-sizing: border-box;
-    max-width: calc(25% - 20px);
+    max-width: calc(25% - 10px);
 }
 
-.cpu-linegraph canvas {
-    width: 100% !important;
-    height: auto !important;
+.linegraph {
+    margin-bottom: 20px;
 }
+
+
 
 .cpu-info {
     width: 60%;

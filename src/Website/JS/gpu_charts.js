@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let gpuEncoderChart;
     let gpuDecoderChart;
     let config;
+    let activeComputer = 'Local';
+    let computers = [];
     const charts = [];
 
     const ctxGpuUsage = document.getElementById('gpuUsageChart').getContext('2d');
@@ -16,7 +18,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const ctxGpuDecoder = document.getElementById('gpuDecoderChart').getContext('2d');
 
     function initializeCharts() {
-        // Common chart options
         const chartOptions = {
             animation: config.animations,
             responsive: true,
@@ -28,7 +29,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         };
 
-        // GPU usage
         gpuUsageChart = new Chart(ctxGpuUsage, {
             type: 'line',
             data: {
@@ -44,7 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         charts.push(gpuUsageChart);
 
-        // GPU memory usage
         gpuMemoryChart = new Chart(ctxGpuMemory, {
             type: 'line',
             data: {
@@ -69,7 +68,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         charts.push(gpuMemoryChart);
 
-        // GPU clock speed
         gpuClockSpeedChart = new Chart(ctxGpuClockSpeed, {
             type: 'line',
             data: {
@@ -93,7 +91,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         charts.push(gpuClockSpeedChart);
 
-        // GPU memory clock speed
         gpuMemoryClockSpeedChart = new Chart(ctxGpuMemoryClockSpeed, {
             type: 'line',
             data: {
@@ -117,7 +114,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         charts.push(gpuMemoryClockSpeedChart);
 
-        // GPU encoder utilization
         gpuEncoderChart = new Chart(ctxGpuEncoder, {
             type: 'line',
             data: {
@@ -133,7 +129,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         charts.push(gpuEncoderChart);
 
-        // GPU decoder utilization
         gpuDecoderChart = new Chart(ctxGpuDecoder, {
             type: 'line',
             data: {
@@ -150,17 +145,36 @@ document.addEventListener("DOMContentLoaded", function () {
         charts.push(gpuDecoderChart);
     }
 
-    function updateData() {
-        fetch('/system_info')
-            .then(response => response.json())
-            .then(data => {
+    function resetCharts() {
+        charts.forEach(chart => {
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            chart.update();
+        });
+    }
+
+    function connectWebSocket(computer) {
+        const url = `ws://${computer.ip}:${computer.port}/ws`;
+        console.log(`Connecting to WebSocket at ${url} for computer: ${computer.name}`);
+
+        const socket = new WebSocket(url);
+
+        socket.onmessage = function (event) {
+            try {
+                const data = JSON.parse(event.data);
+
+                if (computer.name !== activeComputer) {
+                    console.log(`Received data for ${computer.name}, but ${activeComputer} is active. Ignoring.`);
+                    return;
+                }
+
+                console.log(`Processing data for active computer: ${computer.name}`);
+
                 const now = new Date();
                 const timestamp = now.toLocaleTimeString();
 
-                // Set y-axis max for GPU memory chart
                 gpuMemoryChart.options.scales.y.max = parseFloat(data.gpu_info.gpu0.memory_total);
 
-                // Add timestamp as a label to all charts
                 charts.forEach(chart => {
                     chart.data.labels.push(timestamp);
                     if (chart.data.labels.length > config.max_data_points) {
@@ -169,7 +183,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
 
-                // Update text elements
                 document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
                 document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
                 document.getElementById('gpu_name').textContent = `${data.gpu_info.gpu0.name}`;
@@ -180,7 +193,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById('gpu_encoder').textContent = `GPU Encoder Utilization: ${data.gpu_info.gpu0.encoder_utilization}%`;
                 document.getElementById('gpu_decoder').textContent = `GPU Decoder Utilization: ${data.gpu_info.gpu0.decoder_utilization}%`;
 
-                // Update chart data
                 gpuUsageChart.data.datasets[0].data.push(data.gpu_info.gpu0.utilization_gpu);
                 gpuMemoryChart.data.datasets[0].data.push(data.gpu_info.gpu0.memory_used);
                 gpuClockSpeedChart.data.datasets[0].data.push(data.gpu_info.gpu0.clock_speed);
@@ -188,23 +200,83 @@ document.addEventListener("DOMContentLoaded", function () {
                 gpuEncoderChart.data.datasets[0].data.push(data.gpu_info.gpu0.encoder_utilization);
                 gpuDecoderChart.data.datasets[0].data.push(data.gpu_info.gpu0.decoder_utilization);
 
-                // Update all charts
                 charts.forEach(chart => chart.update());
+            } catch (error) {
+                console.error("Error processing WebSocket message:", error);
+            }
+        };
+
+        socket.onerror = function (error) {
+            console.error("WebSocket error: ", error);
+        };
+
+        socket.onclose = function () {
+            console.log("WebSocket connection closed. Reconnecting in 1 second...");
+            setTimeout(() => connectWebSocket(computer), 1000); // Reconnect on close
+        };
+    }
+
+    function fetchComputersAndConnect() {
+        fetch('computers.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch computers.json");
+                }
+                return response.json();
+            })
+            .then(data => {
+                computers = data.computers;
+                const localComputer = computers.find(comp => comp.name === 'Local');
+
+                computers.forEach(computer => {
+                    connectWebSocket(computer);
+                });
+
+                if (!localComputer) {
+                    console.error("No local computer found in computers.json");
+                    return;
+                }
+
+                activeComputer = localComputer.name;
+
+                const tabsContainer = document.getElementById('computer-tabs');
+                tabsContainer.innerHTML = ''; // Clear existing tabs
+                computers.forEach(computer => {
+                    const tab = document.createElement('li');
+                    tab.setAttribute('data-computer-name', computer.name);
+                    tab.textContent = computer.name;
+                    if (computer.name === activeComputer) {
+                        tab.classList.add('active');
+                    }
+                    tabsContainer.appendChild(tab);
+                });
             })
             .catch(error => {
                 console.error('ERROR:', error);
             });
     }
 
+    document.getElementById('computer-tabs').addEventListener('click', function (event) {
+        if (event.target.tagName === 'LI') {
+            const selectedTab = event.target;
+            activeComputer = selectedTab.getAttribute('data-computer-name');
+            document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
+            selectedTab.classList.add('active');
+
+            console.log(`Switched to ${activeComputer}. Resetting charts and only processing data for this computer.`);
+
+            resetCharts(); // Reset charts on tab switch
+        }
+    });
+
     fetch('../webconfig.json')
         .then(response => response.json())
         .then(data => {
             config = data;
             initializeCharts();
-            updateData();
-            setInterval(updateData, config.update_interval_seconds * 1000); // Use interval in milliseconds
+            fetchComputersAndConnect(); // Fetch computers and then connect WebSocket
         })
         .catch(error => {
-            console.error('Error fetching configuration:', error);
+            console.error('ERROR:', error);
         });
 });

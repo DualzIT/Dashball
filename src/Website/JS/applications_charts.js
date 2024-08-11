@@ -4,15 +4,12 @@ document.addEventListener("DOMContentLoaded", function() {
     const sortedByElem = document.getElementById("sortedBy");
     let sortColumn = "cpu_percent";
     let sortAscending = false;
+    let activeComputer = 'Local';
+    let computers = [];
 
-    function fetchApplications() {
-        fetch('/system_info')
-            .then(response => response.json())
-            .then(data => {
-                const apps = data.running_apps;
-                updateTable(apps);
-            })
-            .catch(error => console.error('Error fetching applications:', error));
+    function fetchApplications(data) {
+        const apps = data.running_apps;
+        updateTable(apps);
     }
 
     function updateTable(apps) {
@@ -60,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function() {
             return "icons/default.png"; // Default icon path
         }
 
-        // Convert process name to lowercase and add .png extension
         const iconName = processName.toLowerCase() + ".png";
         return "icons/" + iconName;
     }
@@ -82,6 +78,66 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    function connectWebSocket(computer) {
+        const url = `ws://${computer.ip}:${computer.port}/ws`;
+        console.log(`Connecting to WebSocket at: ${url}`);
+        const socket = new WebSocket(url);
+
+        socket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log(`Received WebSocket data from ${computer.name}: `, data);
+                if (activeComputer === computer.name) {
+                    fetchApplications(data);
+                }
+            } catch (error) {
+                console.error("Error processing WebSocket message:", error);
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error("WebSocket error for " + computer.name + ": ", error);
+        };
+
+        socket.onclose = function() {
+            console.log("WebSocket connection closed for " + computer.name + ". Reconnecting in 1 second...");
+            setTimeout(() => connectWebSocket(computer), 1000); // Reconnect on close
+        };
+    }
+
+    function fetchComputersAndConnect() {
+        fetch('computers.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch computers.json");
+                }
+                return response.json();
+            })
+            .then(data => {
+                computers = data.computers;
+
+                computers.forEach(computer => {
+                    connectWebSocket(computer);
+                });
+
+                // Update the tabs UI
+                const tabsContainer = document.getElementById('computer-tabs');
+                tabsContainer.innerHTML = '';  // Clear existing tabs to avoid duplicates
+                computers.forEach(computer => {
+                    const tab = document.createElement('li');
+                    tab.setAttribute('data-computer-name', computer.name);
+                    tab.textContent = computer.name;
+                    if (computer.name === activeComputer) {
+                        tab.classList.add('active');
+                    }
+                    tabsContainer.appendChild(tab);
+                });
+            })
+            .catch(error => {
+                console.error('ERROR:', error);
+            });
+    }
+
     table.querySelectorAll("th[data-sort]").forEach(th => {
         th.addEventListener("click", function() {
             const column = this.getAttribute("data-sort");
@@ -91,11 +147,30 @@ document.addEventListener("DOMContentLoaded", function() {
                 sortColumn = column;
                 sortAscending = true;
             }
-            fetchApplications();
+            fetchApplications();  // Fetch data again after sorting
             sortedByElem.textContent = `Sorted by: ${column} (${sortAscending ? "asc" : "desc"})`;
         });
     });
 
-    fetchApplications();
-    setInterval(fetchApplications, 2000); // Fetch applications data every 2 seconds
+    document.getElementById('computer-tabs').addEventListener('click', function(event) {
+        if (event.target.tagName === 'LI') {
+            const selectedTab = event.target;
+            activeComputer = selectedTab.getAttribute('data-computer-name');
+            document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
+            selectedTab.classList.add('active');
+
+            // Clear the table when switching tabs
+            tbody.innerHTML = "";
+        }
+    });
+
+    fetch('../webconfig.json')
+        .then(response => response.json())
+        .then(data => {
+            config = data;
+            fetchComputersAndConnect();
+        })
+        .catch(error => {
+            console.error('Error fetching configuration:', error);
+        });
 });

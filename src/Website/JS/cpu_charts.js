@@ -1,188 +1,231 @@
-async function fetchConfig() {
-    const response = await fetch('../webconfig.json');
-    const config = await response.json();
-    return config;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    let cpuCoreCharts = {};  // Grafieken voor CPU gebruik per core
+    let averageCpuChart;     // Grafiek voor gemiddelde CPU gebruik
+    let config;
+    let activeComputer = 'Local';
+    let computers = [];
 
-async function fetchCpuData() {
-    const response = await fetch('/system_info');
-    const data = await response.json();
-    return data;
-}
+    async function fetchConfig() {
+        try {
+            const response = await fetch('../webconfig.json');
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching config:', error);
+        }
+    }
 
-async function createCpuCharts() {
-    const config = await fetchConfig();
-    const data = await fetchCpuData();
-    const cpuchartsContainer = document.getElementById('cpuchartsContainer');
+    function createCpuCoreCharts(coreCount) {
+        const chartsContainer = document.getElementById('cpuchartsContainer');
+        chartsContainer.innerHTML = '';  // Clear existing charts
 
-    data.cpu_usage_per_core.forEach((usage, index) => {
-        const container = document.createElement('div');
-        container.className = 'cpu-linegraph';
-        
-        const canvas = document.createElement('canvas');
-        canvas.id = `coreChart${index}`;
-        container.appendChild(canvas);
-        cpuchartsContainer.appendChild(container);
+        for (let i = 0; i < coreCount; i++) {
+            const canvasWrapper = document.createElement('div');
+            canvasWrapper.className = 'cpu-chart-item'; // Flexbox item class
+            const canvas = document.createElement('canvas');
+            canvas.id = `coreChart${i}`;
+            canvasWrapper.appendChild(canvas);
+            chartsContainer.appendChild(canvasWrapper);
 
-        new Chart(canvas, {
+            cpuCoreCharts[i] = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: `Core ${i} Usage`,
+                        data: [],
+                        borderColor: `rgba(255, 99, 132, 1)`,
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    animation: config.animations,
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true } },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'CPU Usage (%)' }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function createAverageCpuChart() {
+        const averageCpuCanvas = document.getElementById('averageCpuChart');
+        averageCpuChart = new Chart(averageCpuCanvas, {
             type: 'line',
             data: {
-                labels: [new Date().toLocaleTimeString()], 
+                labels: [],
                 datasets: [{
-                    label: `Core ${index} Usage`,
-                    data: [usage],
-                    borderColor: 'rgba(75, 192, 192, 1)',
+                    label: 'Average CPU Usage',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
                     borderWidth: 1,
                     fill: false
                 }]
             },
             options: {
                 animation: config.animations,
+                responsive: true,
                 scales: {
-                    x: {
-                        title: {
-                            display: true,
-                        }
-                    },
+                    x: { title: { display: true } },
                     y: {
                         beginAtZero: true,
                         max: 100,
-                        title: {
-                            display: true,
-                            text: 'CPU Usage (%)'
-                        }
+                        title: { display: true, text: 'CPU Usage (%)' }
                     }
                 }
             }
         });
-    });
+    }
 
-    const averageCpuCanvas = document.getElementById('averageCpuChart');
-    const averageCpuChart = new Chart(averageCpuCanvas, {
-        type: 'line',
-        data: {
-            labels: [new Date().toLocaleTimeString()], 
-            datasets: [{
-                label: 'Average CPU Usage',
-                data: [data.cpu_usage],
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1,
-                fill: false
-            }]
-        },
-        options: {
-            animation: config.animations,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'CPU Usage (%)'
-                    }
-                }
-            }
-        }
-    });
+    function updateCpuCharts(data) {
+        const timestamp = new Date().toLocaleTimeString();
 
-    const ctxSwitchCanvas = document.getElementById('ctxSwitchChart');
-    const ctxSwitchChart = new Chart(ctxSwitchCanvas, {
-        type: 'line',
-        data: {
-            labels: [new Date().toLocaleTimeString()],
-            datasets: [{
-                label: 'Context Switches',
-                data: [data.context_switches],
-                borderColor: 'rgba(153, 102, 255, 1)',
-                borderWidth: 1,
-                fill: false
-            }]
-        },
-        options: {
-            animation: config.animations,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Context Switches'
-                    }
-                }
-            }
-        }
-    });
-
-    const updateInterval = config.update_interval_seconds * 1000; 
-    setInterval(() => updateData(averageCpuChart, ctxSwitchChart, config.max_data_points), updateInterval);
-
-    document.getElementById('cpu_name').textContent = `${data.cpu_info.name}`;
-    document.getElementById('cpu_temperature').textContent = `${data.cpu_info.temperature} °C`;
-    document.getElementById('cpu_frequency').textContent = `${data.cpu_info.frequency} MHz`;
-    document.getElementById('cpu_cores').textContent = `${data.cpu_info.cores}`;
-    document.getElementById('cpu_uptime').textContent = `${data.cpu_info.uptime}`;
-    document.getElementById('cpu_threads').textContent = `${data.cpu_info.threads}`;
-}
-
-function updateData(averageCpuChart, ctxSwitchChart, maxDataPoints) {
-    fetchCpuData().then(data => {
-        const now = new Date();
-        const timestamp = now.toLocaleTimeString();
-
+        // Update CPU Core Charts
         data.cpu_usage_per_core.forEach((usage, index) => {
-            const chart = Chart.getChart(`coreChart${index}`);
-            if (!chart) return;
+            const chart = cpuCoreCharts[index];
+            if (chart) {
+                chart.data.labels.push(timestamp);
+                chart.data.datasets[0].data.push(usage);
 
-            chart.data.labels.push(timestamp);
-            chart.data.datasets[0].data.push(usage);
+                if (chart.data.labels.length > config.max_data_points) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
 
-            if (chart.data.labels.length > maxDataPoints) {
-                chart.data.labels.shift();
-                chart.data.datasets[0].data.shift();
+                chart.update('none');
             }
-
-            chart.update('none');
         });
 
-        averageCpuChart.data.labels.push(timestamp);
-        averageCpuChart.data.datasets[0].data.push(data.cpu_usage);
+        // Update Average CPU Chart
+        if (averageCpuChart) {
+            averageCpuChart.data.labels.push(timestamp);
+            averageCpuChart.data.datasets[0].data.push(data.cpu_usage);
 
-        if (averageCpuChart.data.labels.length > maxDataPoints) {
-            averageCpuChart.data.labels.shift();
-            averageCpuChart.data.datasets[0].data.shift();
+            if (averageCpuChart.data.labels.length > config.max_data_points) {
+                averageCpuChart.data.labels.shift();
+                averageCpuChart.data.datasets[0].data.shift();
+            }
+
+            averageCpuChart.update('none');
         }
 
-        averageCpuChart.update('none');
+        updateCpuInfoText(data.cpu_info);
+    }
 
-        ctxSwitchChart.data.labels.push(timestamp);
-        ctxSwitchChart.data.datasets[0].data.push(data.context_switches);
+    function updateCpuInfoText(cpuInfo) {
+        setTextContent('cpu_name', cpuInfo.name);
+        setTextContent('cpu_temperature', `${cpuInfo.temperature} °C`);
+        setTextContent('cpu_frequency', `${cpuInfo.frequency} MHz`);
+        setTextContent('cpu_cores', cpuInfo.cores);
+        setTextContent('cpu_uptime', cpuInfo.uptime);
+        setTextContent('cpu_threads', cpuInfo.threads);
+        setTextContent('cpu_usage', cpuInfo.cpu_usage);
+    }
 
-        if (ctxSwitchChart.data.labels.length > maxDataPoints) {
-            ctxSwitchChart.data.labels.shift();
-            ctxSwitchChart.data.datasets[0].data.shift();
+    function setTextContent(elementId, text) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = text;
+        } else {
+            console.warn(`Element with ID ${elementId} not found.`);
         }
+    }
 
-        ctxSwitchChart.update('none');
+    function setupWebSocket(computer) {
+        const url = `ws://${computer.ip}:${computer.port}/ws`;
+        const socket = new WebSocket(url);
 
-        document.getElementById('cpu_usage').textContent = data.cpu_usage.toFixed(1);
-        document.getElementById('cpu_name').textContent = data.cpu_info.name;
-        document.getElementById('cpu_temperature').textContent = `${data.cpu_info.temperature} °C`;
-        document.getElementById('cpu_frequency').textContent = `${data.cpu_info.frequency} MHz`;
-        document.getElementById('cpu_cores').textContent = data.cpu_info.cores;
-        document.getElementById('cpu_uptime').textContent = data.cpu_info.uptime;
-        document.getElementById('cpu_threads').textContent = data.cpu_info.threads;
-    }).catch(error => {
-        console.error('ERROR:', error);
+        socket.onmessage = function (event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (activeComputer === computer.name) {
+                    if (!averageCpuChart || Object.keys(cpuCoreCharts).length === 0) {
+                        createCpuCoreCharts(data.cpu_usage_per_core.length);
+                        createAverageCpuChart();
+                    }
+                    updateCpuCharts(data);
+                }
+            } catch (error) {
+                console.error("Error processing WebSocket message:", error);
+            }
+        };
+
+        socket.onerror = function (error) {
+            console.error(`WebSocket error for ${computer.name}:`, error);
+        };
+
+        socket.onclose = function () {
+            console.log(`WebSocket connection closed for ${computer.name}. Reconnecting...`);
+            setTimeout(() => setupWebSocket(computer), 1000);
+        };
+    }
+
+    async function fetchComputersAndConnect() {
+        try {
+            const response = await fetch('computers.json');
+            const data = await response.json();
+
+            if (data.computers && Array.isArray(data.computers)) {
+                computers = data.computers;
+                computers.forEach(computer => {
+                    setupWebSocket(computer);
+                });
+
+                updateComputerTabs(computers);
+            } else {
+                console.error("Invalid computers.json format.");
+            }
+        } catch (error) {
+            console.error("Error fetching computers:", error);
+        }
+    }
+
+    function updateComputerTabs(computers) {
+        const tabsContainer = document.getElementById('computer-tabs');
+        tabsContainer.innerHTML = '';
+
+        computers.forEach(computer => {
+            const tab = document.createElement('li');
+            tab.setAttribute('data-computer-name', computer.name);
+            tab.textContent = computer.name;
+            if (computer.name === activeComputer) {
+                tab.classList.add('active');
+            }
+            tabsContainer.appendChild(tab);
+        });
+    }
+
+    document.getElementById('computer-tabs').addEventListener('click', function (event) {
+        if (event.target.tagName === 'LI') {
+            activeComputer = event.target.getAttribute('data-computer-name');
+            document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Clear charts when switching tabs
+            if (averageCpuChart) {
+                averageCpuChart.data.labels = [];
+                averageCpuChart.data.datasets[0].data = [];
+                averageCpuChart.update();
+            }
+
+            for (let key in cpuCoreCharts) {
+                cpuCoreCharts[key].data.labels = [];
+                cpuCoreCharts[key].data.datasets[0].data = [];
+                cpuCoreCharts[key].update();
+            }
+        }
     });
-}
 
-document.addEventListener('DOMContentLoaded', createCpuCharts);
+    fetchConfig().then(cfg => {
+        config = cfg;
+        fetchComputersAndConnect();
+    }).catch(error => {
+        console.error('Error fetching configuration:', error);
+    });
+});
