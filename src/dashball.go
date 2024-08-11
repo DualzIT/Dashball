@@ -7,9 +7,9 @@ import (
     "math"
     "net/http"
     "os"
-    "os/exec"
+    "os/exec"     
     "path/filepath"
-    "runtime"
+    "runtime"    
     "strings"
     "sync"
     "time"
@@ -157,6 +157,7 @@ func main() {
     mux.HandleFunc("/system_info", systemInfoHandler)
     mux.HandleFunc("/system_info_all", systemInfoHandlerAll)
     mux.HandleFunc("/ws", handleWebSocket) // WebSocket handler
+    mux.HandleFunc("/ws_history", handleWebSocketHistory) // WebSocket handler for history
 
     websiteDir := filepath.Join(".", "Website")
     fs := http.FileServer(http.Dir(websiteDir))
@@ -236,6 +237,35 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
             err = conn.WriteJSON(data)
             if err != nil {
                 log.Println("Error sending data over WebSocket:", err)
+                return
+            }
+        }
+    }
+}
+
+func handleWebSocketHistory(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println("Failed to upgrade WebSocket for history:", err)
+        return
+    }
+    defer conn.Close()
+
+    log.Println("WebSocket connection for history established")
+
+    ticker := time.NewTicker(1 * time.Second)
+    defer ticker.Stop()
+
+    for {
+        select {
+        case <-ticker.C:
+            mutex.Lock()
+            data := historicalData
+            mutex.Unlock()
+
+            err = conn.WriteJSON(data)
+            if err != nil {
+                log.Println("Error sending historical data over WebSocket:", err)
                 return
             }
         }

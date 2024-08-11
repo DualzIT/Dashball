@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const data = JSON.parse(event.data);
                 console.log(`Received WebSocket data from ${computer.name}: `, data);
                 if (activeComputer === computer.name) {
-                    // Initialiseer grafieken als dat nog niet gedaan is voor deze computer
+            
                     if (Object.keys(diskCharts).length === 0) {
                         initializeCharts(data.disk_infos);
                     }
@@ -216,14 +216,14 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 computers = data.computers;
 
-                // Verbinding maken voor elke computer
+                
                 computers.forEach(computer => {
                     connectWebSocket(computer);
                 });
 
-                // Update de tabbladen UI
+              
                 const tabsContainer = document.getElementById('computer-tabs');
-                tabsContainer.innerHTML = '';  // Verwijder bestaande tabs om dubbele te voorkomen
+                tabsContainer.innerHTML = '';  
                 computers.forEach(computer => {
                     const tab = document.createElement('li');
                     tab.setAttribute('data-computer-name', computer.name);

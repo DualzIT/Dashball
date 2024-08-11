@@ -8,45 +8,90 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let config;
     let pointsToShow;
+    let activeComputer = 'Local';
+    let computers = [];
 
+    // Initial fetch for configuration
     fetch('../webconfig.json')
         .then(response => response.json())
         .then(data => {
             config = data;
-            pointsToShow = config.default_points_to_show || 10;
-
-            fetch('/history')
-                .then(response => response.json())
-                .then(historyData => {
-                    const historicalData = historyData.historical_data;
-
-                    if (!historicalData || historicalData.length === 0) {
-                        throw new Error('No historical data available');
-                    }
-
-                    const timestamps = historicalData.map(entry => entry.timestamp);
-                    const cpuHistory = historicalData.map(entry => entry.cpu_history);
-                    const memoryHistory = historicalData.map(entry => entry.memory_history);
-
-                    const cpuChart = createChart(ctxCpu, 'CPU Usage (%)', timestamps, cpuHistory, 'rgb(75, 192, 192)');
-                    const memoryChart = createChart(ctxMemory, 'Memory Usage (%)', timestamps, memoryHistory, 'rgb(153, 102, 255)');
-
-                    initializeTimeSlider(timeSlider, timestamps.length, pointsToShow, (index) => {
-                        updateCharts(cpuChart, memoryChart, index, historicalData);
-                    });
-
-                    const currentTimeIndex = timestamps.length - 1;
-                    currentTimeField.textContent = `Current Time: ${timestamps[currentTimeIndex]}`;
-
-                    updateButton.addEventListener('click', function () {
-                        pointsToShow = parseInt(datapointsInput.value, 10) || pointsToShow;
-                        const sliderValue = parseInt(timeSlider.noUiSlider.get(), 10);
-                        updateCharts(cpuChart, memoryChart, sliderValue, historicalData);
-                    });
-                })
-                .catch(error => console.error('Error fetching historical data:', error));
+            pointsToShow = config.default_points_to_show || 10; // Use default value if not set in config
+            fetchComputersAndConnect();
         })
         .catch(error => console.error('Error fetching configuration:', error));
+
+    function fetchComputersAndConnect() {
+        fetch('computers.json')
+            .then(response => response.json())
+            .then(data => {
+                computers = data.computers;
+
+                if (computers && Array.isArray(computers)) {
+                    computers.forEach(computer => {
+                        setupWebSocket(computer);
+                    });
+
+                    updateComputerTabs(computers);
+                } else {
+                    console.error("Invalid computers.json format.");
+                }
+            })
+            .catch(error => console.error('Error fetching computers:', error));
+    }
+
+    function setupWebSocket(computer) {
+        const url = `ws://${computer.ip}:${computer.port}/ws_history`;
+        const socket = new WebSocket(url);
+
+        socket.onmessage = function (event) {
+            try {
+                const data = JSON.parse(event.data);
+                if (activeComputer === computer.name) {
+                    handleHistoricalData(data);
+                }
+            } catch (error) {
+                console.error("Error processing WebSocket message:", error);
+            }
+        };
+
+        socket.onerror = function (error) {
+            console.error(`WebSocket error for ${computer.name}:`, error);
+        };
+
+        socket.onclose = function () {
+            console.log(`WebSocket connection closed for ${computer.name}. Reconnecting...`);
+            setTimeout(() => setupWebSocket(computer), 1000);
+        };
+    }
+
+    function handleHistoricalData(data) {
+        const historicalData = data.historical_data;
+
+        if (!historicalData || historicalData.length === 0) {
+            throw new Error('No historical data available');
+        }
+
+        const timestamps = historicalData.map(entry => entry.timestamp);
+        const cpuHistory = historicalData.map(entry => entry.cpu_history);
+        const memoryHistory = historicalData.map(entry => entry.memory_history);
+
+        const cpuChart = createChart(ctxCpu, 'CPU Usage (%)', timestamps, cpuHistory, 'rgb(75, 192, 192)');
+        const memoryChart = createChart(ctxMemory, 'Memory Usage (%)', timestamps, memoryHistory, 'rgb(153, 102, 255)');
+
+        initializeTimeSlider(timeSlider, timestamps.length, pointsToShow, (index) => {
+            updateCharts(cpuChart, memoryChart, index, historicalData);
+        });
+
+        const currentTimeIndex = timestamps.length - 1;
+        currentTimeField.textContent = `Current Time: ${timestamps[currentTimeIndex]}`;
+
+        updateButton.addEventListener('click', function () {
+            pointsToShow = parseInt(datapointsInput.value, 10) || pointsToShow;
+            const sliderValue = parseInt(timeSlider.noUiSlider.get(), 10);
+            updateCharts(cpuChart, memoryChart, sliderValue, historicalData);
+        });
+    }
 
     function createChart(ctx, label, labels, data, borderColor) {
         return new Chart(ctx, {
@@ -125,4 +170,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         currentTimeField.textContent = `Current Time: ${timestamps[startIndex]}`;
     }
+
+    function updateComputerTabs(computers) {
+        const tabsContainer = document.getElementById('computer-tabs');
+        tabsContainer.innerHTML = '';
+
+        computers.forEach(computer => {
+            const tab = document.createElement('li');
+            tab.setAttribute('data-computer-name', computer.name);
+            tab.textContent = computer.name;
+            if (computer.name === activeComputer) {
+                tab.classList.add('active');
+            }
+            tabsContainer.appendChild(tab);
+        });
+    }
+
+    document.getElementById('computer-tabs').addEventListener('click', function (event) {
+        if (event.target.tagName === 'LI') {
+            activeComputer = event.target.getAttribute('data-computer-name');
+            document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    });
 });

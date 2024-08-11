@@ -196,7 +196,7 @@ input:checked + .slider:before {
 }
 
 .cpu-chart-item {
-    flex: 1 1 calc(25% - 10px); /* Vier grafieken per rij, met ruimte ertussen */
+    flex: 1 1 calc(25% - 10px);
     margin: 5px;
     box-sizing: border-box;
     max-width: calc(25% - 10px);
