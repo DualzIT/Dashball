@@ -10,9 +10,31 @@
     <script src="JS/custom_script.js"></script>
     <script src="JS/scripts/darkmode.js"></script>
     <script src="JS/scripts/Load_navbar.js"></script>
+    <script src="JS/scripts/machines.js" defer></script> 
 </head>
 <body>
-  
+    <input class="managecomputers"  id="add-computer-button" type="image" src="img/settings.png" />
+    <div id="computer-navbar">
+   
+        <ul id="computer-tabs">
+            <!-- computer tabs are listed here -->
+        </ul>
+        
+    </div>
+
+    <div id="computer-overlay" class="overlay">
+        <div class="overlay-content">
+            <span class="close-button">&times;</span>
+            <h2>Manage Computers</h2>
+            <ul id="computer-list">
+                <!-- List of computers will be managed here -->
+            </ul>
+            <input type="text" id="new-computer-name" placeholder="Computer Name">
+            <input type="text" id="new-computer-ip" placeholder="IP Address">
+            <input type="text" id="new-computer-port" placeholder="Port">
+            <button id="save-computer-button">Save Computer</button>
+        </div>
+    </div>
     <div id="navbar-container"></div>
 
     <button id="addChartButton">Add Chart</button>
