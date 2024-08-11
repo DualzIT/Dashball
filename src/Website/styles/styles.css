@@ -131,7 +131,8 @@ button:hover {
     width: 80px;
     height: 34px;
     margin: 0 10px;
-    margin-right: 40%;
+    margin-right: 30%;
+    margin-left: 5%;
 }
 
 .switch input {
