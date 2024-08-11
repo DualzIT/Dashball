@@ -1,5 +1,5 @@
 {
-    "animations": false,
+    "animations": true,
     "update_interval_seconds": 1,
     "default_points_to_show": 10,
     "max_data_points": 10
