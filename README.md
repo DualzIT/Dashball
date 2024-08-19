@@ -51,34 +51,10 @@ And run dashball.go using go
 ```
 sudo go run dashball.go
 ```
-## python3
-Warning: python3 is currently not supported. We want to focus on Go for now.
-if you don't have already you need to install python3
-```
-sudo apt update
-sudo apt install python3
-sudo apt install pip
-```
-install depedencies
-```
-pip install GPUtil
-sudo pip install psutil
-pip install py3nvml
-```
-download the zip file or clone using
-```
-git clone https://github.com/DualzIT/Dashball.git
-```
-go to the dashball/src directory
-```
-cd dashball/src
-```
-And run dashball.py using python3
-```
-sudo python3 Dashball.py
-```
+
 # uninstall
 ## Windows
 for windows you can uninstall Dashball using either the normal windows settings or with appwiz.cpl
+
 
 
