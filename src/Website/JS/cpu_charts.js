@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let cpuCoreCharts = {};  // Grafieken voor CPU gebruik per core
     let averageCpuChart;     // Grafiek voor gemiddelde CPU gebruik
     let config;
-    let activeComputer = 'Local';
+    let activeComputer = localStorage.getItem('activeComputer') || 'Local';  
     let computers = [];
 
     async function fetchConfig() {
@@ -204,6 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('computer-tabs').addEventListener('click', function (event) {
         if (event.target.tagName === 'LI') {
             activeComputer = event.target.getAttribute('data-computer-name');
+            localStorage.setItem('activeComputer', activeComputer);  
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
 

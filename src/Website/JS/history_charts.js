@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let config;
     let pointsToShow;
-    let activeComputer = 'Local';
+    let activeComputer = localStorage.getItem('activeComputer') || 'Local';  
     let computers = [];
 
     // Initial fetch for configuration
@@ -189,6 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('computer-tabs').addEventListener('click', function (event) {
         if (event.target.tagName === 'LI') {
             activeComputer = event.target.getAttribute('data-computer-name');
+            localStorage.setItem('activeComputer', activeComputer);  
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             event.target.classList.add('active');
         }

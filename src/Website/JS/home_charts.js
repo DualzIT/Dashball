@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let gpuUsageChart;
     let gpuMemoryChart;
     let config;
-    let activeComputer = 'Local';
+    let activeComputer = localStorage.getItem('activeComputer') || 'Local';  
     let computers = [];
 
     const ctxCpu = document.getElementById('cpuChart').getContext('2d');
@@ -193,19 +193,12 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(data => {
                 computers = data.computers;
-                const localComputer = computers.find(comp => comp.name === 'Local');
                 
                 // Connect to WebSocket for each computer
                 computers.forEach(computer => {
                     connectWebSocket(computer);
                 });
 
-                if (!localComputer) {
-                    console.error("No local computer found in computers.json");
-                    return;
-                }
-
-                activeComputer = localComputer.name;
 
                 // Update the tabs UI
                 const tabsContainer = document.getElementById('computer-tabs');
@@ -229,6 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.target.tagName === 'LI') {
             const selectedTab = event.target;
             activeComputer = selectedTab.getAttribute('data-computer-name');
+            localStorage.setItem('activeComputer', activeComputer);  
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             selectedTab.classList.add('active');
 

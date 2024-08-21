@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const sortedByElem = document.getElementById("sortedBy");
     let sortColumn = "cpu_percent";
     let sortAscending = false;
-    let activeComputer = 'Local';
+    let activeComputer = localStorage.getItem('activeComputer') || 'Local';  
     let computers = [];
 
     function fetchApplications(data) {
@@ -156,6 +156,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (event.target.tagName === 'LI') {
             const selectedTab = event.target;
             activeComputer = selectedTab.getAttribute('data-computer-name');
+            localStorage.setItem('activeComputer', activeComputer);  
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             selectedTab.classList.add('active');
 

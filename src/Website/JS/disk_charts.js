@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let diskCharts = {};
     let diskSpaceCharts = {};
     let config;
-    let activeComputer = 'Local';
+    let activeComputer = localStorage.getItem('activeComputer') || 'Local';  
     let computers = [];
 
     function createCanvasElement(index, label) {
@@ -243,6 +243,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.target.tagName === 'LI') {
             const selectedTab = event.target;
             activeComputer = selectedTab.getAttribute('data-computer-name');
+            localStorage.setItem('activeComputer', activeComputer);  
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             selectedTab.classList.add('active');
 

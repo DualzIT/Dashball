@@ -6,16 +6,22 @@ document.addEventListener("DOMContentLoaded", function () {
     let gpuEncoderChart;
     let gpuDecoderChart;
     let config;
-    let activeComputer = 'Local';
+    let activeComputer = localStorage.getItem('activeComputer') || 'Local';
     let computers = [];
     const charts = [];
 
-    const ctxGpuUsage = document.getElementById('gpuUsageChart').getContext('2d');
-    const ctxGpuMemory = document.getElementById('gpuMemoryChart').getContext('2d');
-    const ctxGpuClockSpeed = document.getElementById('gpuClockSpeedChart').getContext('2d');
-    const ctxGpuMemoryClockSpeed = document.getElementById('gpuMemoryClockSpeedChart').getContext('2d');
-    const ctxGpuEncoder = document.getElementById('gpuEncoderChart').getContext('2d');
-    const ctxGpuDecoder = document.getElementById('gpuDecoderChart').getContext('2d');
+    // Check if the elements exist before trying to get the context
+    const ctxGpuUsage = document.getElementById('gpuUsageChart')?.getContext('2d');
+    const ctxGpuMemory = document.getElementById('gpuMemoryChart')?.getContext('2d');
+    const ctxGpuClockSpeed = document.getElementById('gpuClockSpeedChart')?.getContext('2d');
+    const ctxGpuMemoryClockSpeed = document.getElementById('gpuMemoryClockSpeedChart')?.getContext('2d');
+    const ctxGpuEncoder = document.getElementById('gpuEncoderChart')?.getContext('2d');
+    const ctxGpuDecoder = document.getElementById('gpuDecoderChart')?.getContext('2d');
+
+    if (!ctxGpuUsage || !ctxGpuMemory || !ctxGpuClockSpeed || !ctxGpuMemoryClockSpeed || !ctxGpuEncoder || !ctxGpuDecoder) {
+        console.error('One or more chart contexts could not be initialized. Please check if the canvas elements are present in the HTML.');
+        return;
+    }
 
     function initializeCharts() {
         const chartOptions = {
@@ -225,19 +231,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 return response.json();
             })
             .then(data => {
-                computers = data.computers;
-                const localComputer = computers.find(comp => comp.name === 'Local');
+                computers = data.computers; 
 
                 computers.forEach(computer => {
                     connectWebSocket(computer);
                 });
-
-                if (!localComputer) {
-                    console.error("No local computer found in computers.json");
-                    return;
-                }
-
-                activeComputer = localComputer.name;
+    
 
                 const tabsContainer = document.getElementById('computer-tabs');
                 tabsContainer.innerHTML = ''; // Clear existing tabs
@@ -260,6 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.target.tagName === 'LI') {
             const selectedTab = event.target;
             activeComputer = selectedTab.getAttribute('data-computer-name');
+            localStorage.setItem('activeComputer', activeComputer);
             document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
             selectedTab.classList.add('active');
 
