@@ -414,7 +414,7 @@ body.dark-mode th.sort-desc::before {
     width: 20px;
     height: 20px;
     position: absolute;
-    top: 5%;
+    top: 16%;
 }
 #computer-navbar {
     background-color: #f1f1f1;
@@ -445,7 +445,7 @@ background-color: #121212;
 }
 
 #add-computer-button {
-    margin-left: 20px;
+    margin-left: -70px;
     cursor: pointer;
     background-color: #f5b865;
     color: white;
