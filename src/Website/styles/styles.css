@@ -483,6 +483,41 @@ background-color: #121212;
     font-size: 20px;
     cursor: pointer;
 }
+.loading-overlay {
+    position: fixed;
+    top: 180px; /* exclude navbar */
+    left: 0;
+    width: 100%;
+    height: calc(100% - 180px); /* exclude navbar */
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    flex-direction: column;
+}
+
+.spinner {
+    width: 64px;
+    height: 64px;
+    border: 8px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#loadingMessage {
+    margin-top: 20px;
+    color: white;
+    font-size: 18px;
+    text-align: center;
+}
 
 
 
