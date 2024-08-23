@@ -6,10 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const updateButton = document.getElementById('updateButton');
     const datapointsInput = document.getElementById('datapointsInput');
 
-    let config;
     let pointsToShow;
-    let activeComputer = localStorage.getItem('activeComputer') || 'Local';  
-    let computers = [];
 
     // Initial fetch for configuration
     fetch('../webconfig.json')
@@ -17,53 +14,9 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             config = data;
             pointsToShow = config.default_points_to_show || 10; // Use default value if not set in config
-            fetchComputersAndConnect();
+            fetchComputersAndConnect(handleHistoricalData);
         })
         .catch(error => console.error('Error fetching configuration:', error));
-
-    function fetchComputersAndConnect() {
-        fetch('computers.json')
-            .then(response => response.json())
-            .then(data => {
-                computers = data.computers;
-
-                if (computers && Array.isArray(computers)) {
-                    computers.forEach(computer => {
-                        setupWebSocket(computer);
-                    });
-
-                    updateComputerTabs(computers);
-                } else {
-                    console.error("Invalid computers.json format.");
-                }
-            })
-            .catch(error => console.error('Error fetching computers:', error));
-    }
-
-    function setupWebSocket(computer) {
-        const url = `ws://${computer.ip}:${computer.port}/ws_history`;
-        const socket = new WebSocket(url);
-
-        socket.onmessage = function (event) {
-            try {
-                const data = JSON.parse(event.data);
-                if (activeComputer === computer.name) {
-                    handleHistoricalData(data);
-                }
-            } catch (error) {
-                console.error("Error processing WebSocket message:", error);
-            }
-        };
-
-        socket.onerror = function (error) {
-            console.error(`WebSocket error for ${computer.name}:`, error);
-        };
-
-        socket.onclose = function () {
-            console.log(`WebSocket connection closed for ${computer.name}. Reconnecting...`);
-            setTimeout(() => setupWebSocket(computer), 1000);
-        };
-    }
 
     function handleHistoricalData(data) {
         const historicalData = data.historical_data;
@@ -170,28 +123,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
         currentTimeField.textContent = `Current Time: ${timestamps[startIndex]}`;
     }
-
-    function updateComputerTabs(computers) {
-        const tabsContainer = document.getElementById('computer-tabs');
-        tabsContainer.innerHTML = '';
-
-        computers.forEach(computer => {
-            const tab = document.createElement('li');
-            tab.setAttribute('data-computer-name', computer.name);
-            tab.textContent = computer.name;
-            if (computer.name === activeComputer) {
-                tab.classList.add('active');
-            }
-            tabsContainer.appendChild(tab);
-        });
-    }
-
-    document.getElementById('computer-tabs').addEventListener('click', function (event) {
-        if (event.target.tagName === 'LI') {
-            activeComputer = event.target.getAttribute('data-computer-name');
-            localStorage.setItem('activeComputer', activeComputer);  
-            document.querySelectorAll('#computer-tabs li').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-    });
 });
