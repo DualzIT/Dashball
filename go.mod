@@ -2,9 +2,9 @@ module github.com/dualzit/Dashball
 
 go 1.19
 
-require (
-	github.com/shirou/gopsutil v3.21.11+incompatible
-)
+require github.com/shirou/gopsutil v3.21.11+incompatible
+
+require github.com/gorilla/websocket v1.5.3 // indirect
 
 require (
 	github.com/go-ole/go-ole v1.3.0 // indirect

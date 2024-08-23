@@ -5,14 +5,9 @@ document.addEventListener("DOMContentLoaded", function() {
     let sortColumn = "cpu_percent";
     let sortAscending = false;
 
-    function fetchApplications() {
-        fetch('/system_info')
-            .then(response => response.json())
-            .then(data => {
-                const apps = data.running_apps;
-                updateTable(apps);
-            })
-            .catch(error => console.error('Error fetching applications:', error));
+    function fetchApplications(data) {
+        const apps = data.running_apps;
+        updateTable(apps);
     }
 
     function updateTable(apps) {
@@ -60,7 +55,6 @@ document.addEventListener("DOMContentLoaded", function() {
             return "icons/default.png"; // Default icon path
         }
 
-        // Convert process name to lowercase and add .png extension
         const iconName = processName.toLowerCase() + ".png";
         return "icons/" + iconName;
     }
@@ -82,6 +76,20 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    function onMessageCallback(data) {
+        fetchApplications(data);
+    }
+
+    fetch('../webconfig.json')
+        .then(response => response.json())
+        .then(data => {
+            config = data;
+            fetchComputersAndConnect(onMessageCallback); // Fetch computers and then connect WebSocket
+        })
+        .catch(error => {
+            console.error('Error fetching configuration:', error);
+        });
+
     table.querySelectorAll("th[data-sort]").forEach(th => {
         th.addEventListener("click", function() {
             const column = this.getAttribute("data-sort");
@@ -91,11 +99,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 sortColumn = column;
                 sortAscending = true;
             }
-            fetchApplications();
+            fetchApplications();  // Fetch data again after sorting
             sortedByElem.textContent = `Sorted by: ${column} (${sortAscending ? "asc" : "desc"})`;
         });
     });
-
-    fetchApplications();
-    setInterval(fetchApplications, 2000); // Fetch applications data every 2 seconds
 });

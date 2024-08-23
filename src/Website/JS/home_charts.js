@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let memoryChart;
     let gpuUsageChart;
     let gpuMemoryChart;
-    let config;
 
     const ctxCpu = document.getElementById('cpuChart').getContext('2d');
     const ctxMemory = document.getElementById('memoryChart').getContext('2d');
@@ -12,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function initializeCharts() {
         const chartOptions = {
-            animation: config.animations, // Use the animation setting from config
+            animation: config.animations,
             responsive: true,
             scales: {
                 y: {
@@ -81,76 +80,82 @@ document.addEventListener("DOMContentLoaded", function () {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        // Customize the max value for GPU memory based on the fetched data
                     }
                 }
             }
         });
     }
 
-    function updateData() {
-        fetch('/system_info')
-            .then(response => response.json())
-            .then(data => {
-                const now = new Date();
-                const timestamp = now.toLocaleTimeString();
+    function resetCharts() {
+        cpuChart.data.labels = [];
+        cpuChart.data.datasets[0].data = [];
 
-                // Update GPU Memory Chart y-axis max based on the fetched data
-                gpuMemoryChart.options.scales.y.max = parseFloat(data.gpu_info.gpu0.memory_total);
+        memoryChart.data.labels = [];
+        memoryChart.data.datasets[0].data = [];
 
-                // Add timestamp as a label
-                cpuChart.data.labels.push(timestamp);
-                memoryChart.data.labels.push(timestamp);
-                gpuUsageChart.data.labels.push(timestamp);
-                gpuMemoryChart.data.labels.push(timestamp);
+        gpuUsageChart.data.labels = [];
+        gpuUsageChart.data.datasets[0].data = [];
 
-                // Shift chart when it hits maxdatapoints
-                if (cpuChart.data.labels.length > config.max_data_points) {
-                    cpuChart.data.labels.shift();
-                    memoryChart.data.labels.shift();
-                    gpuUsageChart.data.labels.shift();
-                    gpuMemoryChart.data.labels.shift();
-                    cpuChart.data.datasets[0].data.shift();
-                    memoryChart.data.datasets[0].data.shift();
-                    gpuUsageChart.data.datasets[0].data.shift();
-                    gpuMemoryChart.data.datasets[0].data.shift();
-                }
+        gpuMemoryChart.data.labels = [];
+        gpuMemoryChart.data.datasets[0].data = [];
 
-                document.getElementById('cpu_usage').textContent = `CPU: ${data.cpu_usage}`;
-                document.getElementById('memory_usage').textContent = `Memory: ${data.memory_usage.toFixed(1)}%`;
-                document.getElementById('total_memory').textContent = `${data.total_memory.toFixed(1)} GB`;
-                document.getElementById('used_memory').textContent = `${data.used_memory.toFixed(1)} GB`;
-                document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
-                document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
-                document.getElementById('gpu_name').textContent = `${data.gpu_info.gpu0.name}`;
-                document.getElementById('gpu_temperature').textContent = `${data.gpu_info.gpu0.temperature_gpu}°C`;
-                document.getElementById('computer_name').textContent = `${data.hostname}`;
-                document.getElementById('os').textContent = `${data.platform}`;
-                document.getElementById('os_version').textContent = `${data.platform_version}`;
-
-                cpuChart.data.datasets[0].data.push(data.cpu_usage);
-                memoryChart.data.datasets[0].data.push(data.memory_usage);
-                gpuUsageChart.data.datasets[0].data.push(data.gpu_info.gpu0.utilization_gpu);
-                gpuMemoryChart.data.datasets[0].data.push(data.gpu_info.gpu0.memory_used);
-
-                cpuChart.update();
-                memoryChart.update();
-                gpuUsageChart.update();
-                gpuMemoryChart.update();
-            })
-            .catch(error => {
-                console.error('ERROR:', error);
-            });
+        cpuChart.update();
+        memoryChart.update();
+        gpuUsageChart.update();
+        gpuMemoryChart.update();
     }
 
-    // Fetch the configuration
+    function onMessageCallback(data) {
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString();
+
+        gpuMemoryChart.options.scales.y.max = parseFloat(data.gpu_info.gpu0.memory_total);
+
+        cpuChart.data.labels.push(timestamp);
+        memoryChart.data.labels.push(timestamp);
+        gpuUsageChart.data.labels.push(timestamp);
+        gpuMemoryChart.data.labels.push(timestamp);
+
+        if (cpuChart.data.labels.length > config.max_data_points) {
+            cpuChart.data.labels.shift();
+            memoryChart.data.labels.shift();
+            gpuUsageChart.data.labels.shift();
+            gpuMemoryChart.data.labels.shift();
+            cpuChart.data.datasets[0].data.shift();
+            memoryChart.data.datasets[0].data.shift();
+            gpuUsageChart.data.datasets[0].data.shift();
+            gpuMemoryChart.data.datasets[0].data.shift();
+        }
+
+        document.getElementById('cpu_usage').textContent = `CPU: ${data.cpu_usage}`;
+        document.getElementById('memory_usage').textContent = `Memory: ${data.memory_usage.toFixed(1)}%`;
+        document.getElementById('total_memory').textContent = `${data.total_memory.toFixed(1)} GB`;
+        document.getElementById('used_memory').textContent = `${data.used_memory.toFixed(1)} GB`;
+        document.getElementById('gpu_usage').textContent = `GPU Usage: ${data.gpu_info.gpu0.utilization_gpu}%`;
+        document.getElementById('gpu_memory').textContent = `GPU Memory: ${data.gpu_info.gpu0.memory_used}MB / ${data.gpu_info.gpu0.memory_total}MB`;
+        document.getElementById('gpu_name').textContent = `${data.gpu_info.gpu0.name}`;
+        document.getElementById('gpu_temperature').textContent = `${data.gpu_info.gpu0.temperature_gpu}°C`;
+        document.getElementById('computer_name').textContent = `${data.hostname}`;
+        document.getElementById('os').textContent = `${data.platform}`;
+        document.getElementById('os_version').textContent = `${data.platform_version}`;
+
+        cpuChart.data.datasets[0].data.push(data.cpu_usage);
+        memoryChart.data.datasets[0].data.push(data.memory_usage);
+        gpuUsageChart.data.datasets[0].data.push(data.gpu_info.gpu0.utilization_gpu);
+        gpuMemoryChart.data.datasets[0].data.push(data.gpu_info.gpu0.memory_used);
+
+        cpuChart.update();
+        memoryChart.update();
+        gpuUsageChart.update();
+        gpuMemoryChart.update();
+    }
+
     fetch('../webconfig.json')
         .then(response => response.json())
         .then(data => {
             config = data;
             initializeCharts();
-            updateData();
-            setInterval(updateData, config.update_interval_seconds * 1000); // Use interval in milliseconds
+            fetchComputersAndConnect(onMessageCallback); // Fetch computers and then connect WebSocket
         })
         .catch(error => {
             console.error('ERROR:', error);

@@ -1,21 +1,63 @@
 document.addEventListener("DOMContentLoaded", function () {
     let diskCharts = {};
     let diskSpaceCharts = {};
-    let config;
+
+    function createCanvasElement(index, label) {
+        const canvas = document.createElement('canvas');
+        canvas.id = `${label}Chart${index}`;
+        return canvas;
+    }
 
     function initializeCharts(diskInfos) {
+        if (!diskInfos || !Array.isArray(diskInfos)) {
+            console.error("disk_infos is either missing or not an array. Received data: ", diskInfos);
+            return;
+        }
+
+        const diskContainer = document.getElementById('diskContainer');
+        diskContainer.innerHTML = '';  // Clear the existing disk elements
+
         diskInfos.forEach((disk, index) => {
-            const readCanvas = document.getElementById(`readSpeedChart${index}`);
-            const writeCanvas = document.getElementById(`writeSpeedChart${index}`);
-            const spaceCanvas = document.getElementById(`diskSpaceChart${index}`);
+            const diskElement = document.createElement('div');
+            diskElement.classList.add('disk-info');
+
+            const readCanvas = createCanvasElement(index, 'readSpeed');
+            const writeCanvas = createCanvasElement(index, 'writeSpeed');
+            const spaceCanvas = createCanvasElement(index, 'diskSpace');
+
+            diskElement.innerHTML = `
+                <div class="disk-graphs">
+                    <div>
+                        <h2>Device: ${disk.device}</h2>
+                        <h3>Mountpoint: ${disk.mountpoint}</h3>
+                        <h3>Type: ${disk.fstype}</h3>
+                    </div>
+                    <div>
+                        ${readCanvas.outerHTML}
+                    </div>
+                    <div>
+                        ${writeCanvas.outerHTML}
+                    </div>
+                    <div>
+                        <div class="diskspacechart">
+                            ${spaceCanvas.outerHTML}
+                            <p>Used Space: <span id="used_disk_gb${index}">${(disk.used_space / 1024).toFixed(2)} GB</span></p>
+                            <p>Free Space: <span id="free_disk_gb${index}">${(disk.free_space / 1024).toFixed(2)} GB</span></p>
+                            <p>Total Space: <span id="total_disk_gb${index}">${(disk.total_space / 1024).toFixed(2)} GB</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            diskContainer.appendChild(diskElement);
 
             adjustCanvasResolution(readCanvas);
             adjustCanvasResolution(writeCanvas);
             adjustCanvasResolution(spaceCanvas);
 
-            const readCtx = readCanvas.getContext('2d');
-            const writeCtx = writeCanvas.getContext('2d');
-            const spaceCtx = spaceCanvas.getContext('2d');
+            const readCtx = document.getElementById(`readSpeedChart${index}`).getContext('2d');
+            const writeCtx = document.getElementById(`writeSpeedChart${index}`).getContext('2d');
+            const spaceCtx = document.getElementById(`diskSpaceChart${index}`).getContext('2d');
 
             diskCharts[disk.device] = {
                 readSpeed: new Chart(readCtx, {
@@ -79,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function adjustCanvasResolution(canvas) {
+        if (!canvas) return;
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width * window.devicePixelRatio;
         canvas.height = rect.height * window.devicePixelRatio;
@@ -86,94 +129,58 @@ document.addEventListener("DOMContentLoaded", function () {
         canvas.style.height = `${rect.height}px`;
     }
 
-    function updateData() {
-        fetch('/system_info')
-            .then(response => response.json())
-            .then(data => {
-                const now = new Date();
-                const timestamp = now.toLocaleTimeString();
+    function onMessageCallback(data) {
+        if (!Array.isArray(data.disk_infos)) {
+            console.error("disk_infos is either missing or not an array.");
+            return;
+        }
 
-                data.disk_infos.forEach((disk, index) => {
-                    const charts = diskCharts[disk.device];
-                    const spaceChart = diskSpaceCharts[disk.device];
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString();
 
-                    if (charts && spaceChart) {
-                        charts.readSpeed.data.labels.push(timestamp);
-                        charts.writeSpeed.data.labels.push(timestamp);
+        data.disk_infos.forEach((disk, index) => {
+            if (!diskCharts[disk.device] || !diskSpaceCharts[disk.device]) {
+                console.log(`Initializing charts for disk device ${disk.device}`);
+                initializeCharts(data.disk_infos);
+            }
 
-                        if (charts.readSpeed.data.labels.length > config.max_data_points) {
-                            charts.readSpeed.data.labels.shift();
-                            charts.writeSpeed.data.labels.shift();
-                            charts.readSpeed.data.datasets[0].data.shift();
-                            charts.writeSpeed.data.datasets[0].data.shift();
-                        }
+            const charts = diskCharts[disk.device];
+            const spaceChart = diskSpaceCharts[disk.device];
 
-                        charts.readSpeed.data.datasets[0].data.push(disk.read_speed);
-                        charts.writeSpeed.data.datasets[0].data.push(disk.write_speed);
+            if (charts && spaceChart) {
+                charts.readSpeed.data.labels.push(timestamp);
+                charts.writeSpeed.data.labels.push(timestamp);
 
-                        spaceChart.data.datasets[0].data = [disk.used_space / 1024, disk.free_space / 1024]; // Convert MB to GB
+                if (charts.readSpeed.data.labels.length > config.max_data_points) {
+                    charts.readSpeed.data.labels.shift();
+                    charts.writeSpeed.data.labels.shift();
+                    charts.readSpeed.data.datasets[0].data.shift();
+                    charts.writeSpeed.data.datasets[0].data.shift();
+                }
 
-                        charts.readSpeed.update();
-                        charts.writeSpeed.update();
-                        spaceChart.update();
+                charts.readSpeed.data.datasets[0].data.push(disk.read_speed);
+                charts.writeSpeed.data.datasets[0].data.push(disk.write_speed);
 
-                        document.getElementById(`used_disk_gb${index}`).textContent = `${(disk.used_space / 1024).toFixed(2)} GB`;
-                        document.getElementById(`free_disk_gb${index}`).textContent = `${(disk.free_space / 1024).toFixed(2)} GB`;
-                        document.getElementById(`total_disk_gb${index}`).textContent = `${(disk.total_space / 1024).toFixed(2)} GB`;
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('ERROR:', error);
-            });
+                spaceChart.data.datasets[0].data = [disk.used_space / 1024, disk.free_space / 1024]; // Convert MB to GB
+
+                charts.readSpeed.update();
+                charts.writeSpeed.update();
+                spaceChart.update();
+
+                document.getElementById(`used_disk_gb${index}`).textContent = `${(disk.used_space / 1024).toFixed(2)} GB`;
+                document.getElementById(`free_disk_gb${index}`).textContent = `${(disk.free_space / 1024).toFixed(2)} GB`;
+                document.getElementById(`total_disk_gb${index}`).textContent = `${(disk.total_space / 1024).toFixed(2)} GB`;
+            } else {
+                console.error(`No charts found for disk device ${disk.device}.`);
+            }
+        });
     }
 
     fetch('../webconfig.json')
         .then(response => response.json())
         .then(data => {
             config = data;
-
-            fetch('/system_info')
-                .then(response => response.json())
-                .then(data => {
-                    const diskContainer = document.getElementById('diskContainer');
-
-                    data.disk_infos.forEach((disk, index) => {
-                        const diskElement = `
-                            <div class="disk-info">
-                                <div class="disk-graphs">
-                                    <div>
-                                        <h2>Device: ${disk.device}</h2>
-                                        <h3>Mountpoint: ${disk.mountpoint}</h3>
-                                        <h3>Type: ${disk.fstype}</h3>
-                                    </div>
-                                    <div>
-                                        <canvas id="readSpeedChart${index}"></canvas>
-                                    </div>
-                                    <div>
-                                        <canvas id="writeSpeedChart${index}"></canvas>
-                                    </div>
-                                    <div>
-                                        <div class="diskspacechart">
-                                            <canvas id="diskSpaceChart${index}"></canvas>
-                                            <p>Used Space: <span id="used_disk_gb${index}">${(disk.used_space / 1024).toFixed(2)} GB</span></p>
-                                            <p>Free Space: <span id="free_disk_gb${index}">${(disk.free_space / 1024).toFixed(2)} GB</span></p>
-                                            <p>Total Space: <span id="total_disk_gb${index}">${(disk.total_space / 1024).toFixed(2)} GB</span></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        diskContainer.insertAdjacentHTML('beforeend', diskElement);
-                    });
-
-                    initializeCharts(data.disk_infos);
-                    updateData();
-                    setInterval(updateData, config.update_interval_seconds * 1000); // Use interval in milliseconds
-                })
-                .catch(error => {
-                    console.error('ERROR:', error);
-                });
+            fetchComputersAndConnect(onMessageCallback); // Fetch computers and then connect WebSocket
         })
         .catch(error => {
             console.error('Error fetching configuration:', error);

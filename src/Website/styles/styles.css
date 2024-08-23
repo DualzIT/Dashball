@@ -69,7 +69,7 @@ nav, ul {
     padding: 0;
     list-style-type: none;
     display: flex;
-    justify-content: space-between;
+    
     align-items: center;
 }
 
@@ -131,7 +131,8 @@ button:hover {
     width: 80px;
     height: 34px;
     margin: 0 10px;
-    margin-right: 40%;
+    margin-right: 30%;
+    margin-left: 5%;
 }
 
 .switch input {
@@ -192,21 +193,21 @@ input:checked + .slider:before {
 .cpu-charts-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 70px;
+    justify-content: space-between;
 }
 
-.cpu-linegraph {
-    flex: 1 1 calc(20% - 20px); /* 4 items per row */
-    margin: 10px;
+.cpu-chart-item {
+    flex: 1 1 calc(25% - 10px);
+    margin: 5px;
     box-sizing: border-box;
-    max-width: calc(25% - 20px);
+    max-width: calc(25% - 10px);
 }
 
-.cpu-linegraph canvas {
-    width: 100% !important;
-    height: auto !important;
+.linegraph {
+    margin-bottom: 20px;
 }
+
+
 
 .cpu-info {
     width: 60%;
@@ -409,6 +410,117 @@ body.dark-mode th.sort-desc::before {
     border-top-color: rgb(255, 255, 255);
     border-bottom: none;
 }
+.managecomputers{
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 16%;
+}
+#computer-navbar {
+    background-color: #f1f1f1;
+    padding: 10px;
+    left: 10%;
+    position: relative;
+}
+body.dark-mode #computer-navbar {
+background-color: #121212;
+}
+#computer-tabs {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+
+}
+
+#computer-tabs li {
+    padding: 10px;
+    cursor: pointer;
+    margin-right: 5px;
+    border-radius: 5px;
+    margin-left: 5px;
+}
+#computer-tabs li.active{
+    background-color: #f5b865;
+}
+
+#add-computer-button {
+    margin-left: -70px;
+    cursor: pointer;
+    background-color: #f5b865;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    max-width: 80%;
+}
+
+.close-button {
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+.loading-overlay {
+    position: fixed;
+    top: 180px; /* exclude navbar */
+    left: 0;
+    width: 100%;
+    height: calc(100% - 180px); /* exclude navbar */
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    flex-direction: column;
+}
+
+.spinner {
+    width: 64px;
+    height: 64px;
+    border: 8px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#loadingMessage {
+    margin-top: 20px;
+    color: white;
+    font-size: 18px;
+    text-align: center;
+}
+
+
+
 @media screen and (max-width: 1000px) {
     table{
         width: 100%;

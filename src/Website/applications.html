@@ -7,12 +7,39 @@
     <script src="JS/applications_charts.js" defer></script>
     <script src="JS/scripts/darkmode.js" defer></script>
     <script src="JS/scripts/Load_navbar.js"></script>
+    <script src="JS/scripts/computer.js" defer></script>
     <title>Dashball</title>
 </head>
-
 <body>
-    <h1 class="titel">Dashball</h1>
-    <img class="logo" src="img/Dualz_logo.png" alt="Logo">
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <div id="loadingMessage">Loading data, please wait...</div>
+    </div>
+    <div id="computer-navbar">
+        <ul id="computer-tabs">
+          <!-- computer tabs are listed here-->
+        </ul>
+        <ul>
+            <li>
+                <input class="managecomputers"  id="add-computer-button" type="image" src="img/settings.png" />
+             </li>
+        </ul>
+    </div>
+
+
+   <div id="computer-overlay" class="overlay">
+    <div class="overlay-content">
+        <span class="close-button">&times;</span>
+        <h2>Manage Computers</h2>
+        <ul id="computer-list">
+        
+        </ul>
+        <input type="text" id="new-computer-name" placeholder="Computer Name">
+        <input type="text" id="new-computer-ip" placeholder="IP Address">
+        <input type="text" id="new-computer-port" placeholder="Port">
+        <button id="save-computer-button">Save Computer</button>
+    </div>
+</div>
     <div id="navbar-container"></div>
        
         <table id="applicationsTable">

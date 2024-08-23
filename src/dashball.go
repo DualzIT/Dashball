@@ -7,13 +7,14 @@ import (
     "math"
     "net/http"
     "os"
-    "os/exec"
+    "os/exec"     
     "path/filepath"
-    "runtime"
+    "runtime"    
     "strings"
     "sync"
     "time"
 
+    "github.com/gorilla/websocket"
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/disk"
     "github.com/shirou/gopsutil/host"
@@ -35,10 +36,27 @@ type HistoricalData struct {
     } `json:"historical_data"`
 }
 
+type Computer struct {
+    Name string `json:"name"`
+    IP   string `json:"ip"`
+    Port int    `json:"port"`
+}
+
+type ComputersConfig struct {
+    Computers []Computer `json:"computers"`
+}
+
 var (
     historicalData      HistoricalData           // Declare a global variable to store historical data
     previousDiskStats   map[string]disk.IOCountersStat // Store previous disk stats for calculating speeds
     mutex               sync.Mutex                     // Ensure thread safety
+    upgrader            = websocket.Upgrader{
+        ReadBufferSize:  1024,
+        WriteBufferSize: 1024,
+        CheckOrigin: func(r *http.Request) bool {
+            return true
+        },
+    }
 )
 
 func removeHistoricalDataFile() {
@@ -61,6 +79,26 @@ func loadHistoricalDataFromFile() error {
     }
 
     return nil
+}
+
+func filterSystemInfo(data map[string]interface{}) map[string]interface{} {
+    // Filter cpu_frequencies: Remove the 'family' field
+    if cpuFrequencies, ok := data["cpu_frequencies"].([]map[string]interface{}); ok {
+        for i := range cpuFrequencies {
+            delete(cpuFrequencies[i], "family")
+        }
+    }
+
+    // Filter running_apps: Remove 'swap' from memory_info
+    if runningApps, ok := data["running_apps"].([]map[string]interface{}); ok {
+        for _, app := range runningApps {
+            if memoryInfo, ok := app["memory_info"].(*process.MemoryInfoStat); ok {
+                memoryInfo.Swap = 0
+            }
+        }
+    }
+
+    return data
 }
 
 func saveHistoricalData(w http.ResponseWriter, r *http.Request) {
@@ -104,7 +142,7 @@ func main() {
 
     err = json.NewDecoder(configFile).Decode(&config)
     if err != nil {
-        fmt.Println("Can't open config file:", err)
+        fmt.Println("Can't decode config file:", err)
         return
     }
 
@@ -117,6 +155,9 @@ func main() {
     mux.HandleFunc("/save_historical_data", saveHistoricalData)
     mux.HandleFunc("/history", serveHistoricalData)
     mux.HandleFunc("/system_info", systemInfoHandler)
+    mux.HandleFunc("/system_info_all", systemInfoHandlerAll)
+    mux.HandleFunc("/ws", handleWebSocket) // WebSocket handler
+    mux.HandleFunc("/ws_history", handleWebSocketHistory) // WebSocket handler for history
 
     websiteDir := filepath.Join(".", "Website")
     fs := http.FileServer(http.Dir(websiteDir))
@@ -161,18 +202,87 @@ func saveHistoricalDataPeriodically(config Config) {
 }
 
 func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
+    data, err := fetchSystemInfo()
+    if err != nil {
+        http.Error(w, "Failed to fetch system info", http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(data)
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println("Failed to upgrade WebSocket:", err)
+        return
+    }
+    defer conn.Close()
+
+    log.Println("WebSocket connection established")
+
+    ticker := time.NewTicker(1 * time.Second)
+    defer ticker.Stop()
+
+    for {
+        select {
+        case <-ticker.C:
+            data, err := fetchSystemInfo()
+            if err != nil {
+                log.Println("Failed to fetch system info:", err)
+                continue
+            }
+
+            err = conn.WriteJSON(data)
+            if err != nil {
+                log.Println("Error sending data over WebSocket:", err)
+                return
+            }
+        }
+    }
+}
+
+func handleWebSocketHistory(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Println("Failed to upgrade WebSocket for history:", err)
+        return
+    }
+    defer conn.Close()
+
+    log.Println("WebSocket connection for history established")
+
+    ticker := time.NewTicker(1 * time.Second)
+    defer ticker.Stop()
+
+    for {
+        select {
+        case <-ticker.C:
+            mutex.Lock()
+            data := historicalData
+            mutex.Unlock()
+
+            err = conn.WriteJSON(data)
+            if err != nil {
+                log.Println("Error sending historical data over WebSocket:", err)
+                return
+            }
+        }
+    }
+}
+
+func fetchSystemInfo() (map[string]interface{}, error) {
     configFile, err := os.Open("json/config.json")
     if err != nil {
-        http.Error(w, "Can't open config file", http.StatusInternalServerError)
-        return
+        return nil, err
     }
     defer configFile.Close()
 
     var config Config
     err = json.NewDecoder(configFile).Decode(&config)
     if err != nil {
-        http.Error(w, "Can't decode config file", http.StatusInternalServerError)
-        return
+        return nil, err
     }
 
     cpuUsagePerCore, _ := cpu.Percent(0, true)
@@ -186,7 +296,6 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
         filteredFreq := map[string]interface{}{
             "cpu":        freq.CPU,
             "vendorId":   freq.VendorID,
-            "family":     freq.Family,
             "model":      freq.Model,
             "stepping":   freq.Stepping,
             "physicalId": freq.PhysicalID,
@@ -207,8 +316,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     partitions, err := disk.Partitions(true)
     if err != nil {
         log.Printf("Failed to get disk partitions: %v", err)
-        http.Error(w, "Failed to get disk partitions", http.StatusInternalServerError)
-        return
+        return nil, err
     }
 
     var diskInfos []map[string]interface{}
@@ -281,8 +389,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
     processes, err := process.Processes()
     if err != nil {
-        http.Error(w, "Failed to get processes", http.StatusInternalServerError)
-        return
+        return nil, err
     }
 
     processMap := make(map[string]map[string]interface{})
@@ -362,8 +469,34 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
         "running_apps": apps,
     }
 
+    // Apply filtering before returning the data
+    return filterSystemInfo(data), nil
+}
+
+func systemInfoHandlerAll(w http.ResponseWriter, r *http.Request) {
+    computersConfig, err := loadComputersConfig()
+    if err != nil {
+        http.Error(w, "Can't load computers config file", http.StatusInternalServerError)
+        return
+    }
+
+    allSystemInfo := make(map[string]interface{})
+
+    for _, computer := range computersConfig.Computers {
+        remoteInfo, err := fetchRemoteSystemInfo(computer.IP, computer.Port)
+        if err != nil {
+            log.Printf("Failed to fetch system info for %s: %v", computer.Name, err)
+            continue
+        }
+
+        // Apply filtering to the remote system info
+        filteredInfo := filterSystemInfo(remoteInfo)
+
+        allSystemInfo[fmt.Sprintf("system_info_%s", computer.Name)] = filteredInfo
+    }
+
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(data)
+    json.NewEncoder(w).Encode(allSystemInfo)
 }
 
 func saveHistoricalDataToFile() error {
@@ -453,4 +586,37 @@ func getNvidiaGPUInfo() (map[string]interface{}, error) {
         }
     }
     return gpuInfo, nil
+}
+
+func loadComputersConfig() (ComputersConfig, error) {
+    var computersConfig ComputersConfig
+    configFile, err := os.Open("Website/computers.json")
+    if err != nil {
+        return computersConfig, err
+    }
+    defer configFile.Close()
+
+    err = json.NewDecoder(configFile).Decode(&computersConfig)
+    if err != nil {
+        return computersConfig, err
+    }
+
+    return computersConfig, nil
+}
+
+func fetchRemoteSystemInfo(ip string, port int) (map[string]interface{}, error) {
+    url := fmt.Sprintf("http://%s:%d/system_info", ip, port)
+    resp, err := http.Get(url)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    var data map[string]interface{}
+    err = json.NewDecoder(resp.Body).Decode(&data)
+    if err != nil {
+        return nil, err
+    }
+
+    return data, nil
 }
