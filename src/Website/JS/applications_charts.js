@@ -35,14 +35,21 @@ document.addEventListener("DOMContentLoaded", function() {
             const appName = removeExeExtension(app.name);
             const iconPath = getIconPath(appName);
 
+            function truncateAppName(name, maxLength) {
+                return name.length > maxLength ? name.substring(0, maxLength) : name;
+            }
+            
             row.innerHTML = `
-                <td class="processname"><img src="${iconPath}" alt="${appName}" class="app-icon" onerror="this.onerror=null;this.src='icons/default.png';"> ${appName}</td>
+                <td class="processname">
+                    <img src="${iconPath}" alt="${appName}" class="app-icon" onerror="this.onerror=null;this.src='icons/default.png';">
+                    ${truncateAppName(appName, 25)}
+                </td>
                 <td>${app.pid}</td>
                 <td>${app.cpu_percent.toFixed(2)}</td>
                 <td>${(app.memory_info.rss / (1024 * 1024)).toFixed(0)}</td>
                 <td>${(app.read_bytes / (1024 * 1024)).toFixed(0)}</td>
                 <td>${(app.write_bytes / (1024 * 1024)).toFixed(0)}</td>
-            `;
+            `;            
 
             tbody.appendChild(row);
         });
