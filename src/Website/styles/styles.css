@@ -196,6 +196,19 @@ input:checked + .slider:before {
     justify-content: space-between;
 }
 
+.gpu-chart-item {
+    flex: 1 1 calc(25% - 10px);
+    margin: 5px;
+    box-sizing: border-box;
+    max-width: calc(25% - 10px);
+}
+.gpu-charts-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 5%;
+}
+
 .cpu-chart-item {
     flex: 1 1 calc(25% - 10px);
     margin: 5px;
