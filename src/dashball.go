@@ -396,17 +396,13 @@ func fetchSystemInfo() (map[string]interface{}, error) {
     for _, p := range processes {
         name, err := p.Name()
         if err != nil {
-            name = "Unknown"
+            continue 
         }
-
-        exe, err := p.Exe()
-        if err != nil {
-            exe = ""
-        }
-
+        exe, _ := p.Exe()
+     
         cpuPercent, err := p.CPUPercent()
-        if err != nil {
-            cpuPercent = 0.0
+        if err != nil || cpuPercent == 0.0 {
+            continue // Sla inactieve processen over
         }
 
         memInfo, err := p.MemoryInfo()
@@ -422,7 +418,8 @@ func fetchSystemInfo() (map[string]interface{}, error) {
         pid := p.Pid
 
         if app, exists := processMap[name]; exists {
-            app["cpu_percent"] = app["cpu_percent"].(float64) + cpuPercent
+            count := app["process_count"].(int) + 1
+            app["cpu_percent"] = (app["cpu_percent"].(float64)*float64(count-1) + cpuPercent) / float64(count)
             app["memory_info"].(*process.MemoryInfoStat).RSS += memInfo.RSS
             app["read_bytes"] = app["read_bytes"].(uint64) + ioCounters.ReadBytes
             app["write_bytes"] = app["write_bytes"].(uint64) + ioCounters.WriteBytes
@@ -435,6 +432,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
                 "read_bytes":  ioCounters.ReadBytes,
                 "write_bytes": ioCounters.WriteBytes,
                 "pid":         pid,
+                "process_count": 1,
             }
         }
     }
