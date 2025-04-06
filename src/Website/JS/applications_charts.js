@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
         setInterval(fetchApplications, interval);
     }
 
-    fetch('../webconfig.json')
+    fetch('webconfig.json')
         .then(response => response.json())
         .then(() => {
             fetchApplications();

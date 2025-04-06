@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
         gpuMemoryChart.update();
     }
 
-    fetch('../webconfig.json')
+    fetch('webconfig.json')
         .then(response => response.json())
         .then(data => {
             config = data;

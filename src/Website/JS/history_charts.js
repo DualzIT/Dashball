@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let config;
     let pointsToShow;
 
-    fetch('../webconfig.json')
+    fetch('webconfig.json')
         .then(response => response.json())
         .then(data => {
             config = data;
