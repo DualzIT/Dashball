@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
         charts.forEach(chart => chart.update());
     }
 
-  fetch('webconfig.json')
+  fetch('config.json')
     .then(response => response.json())
     .then(data => {
         config = data;

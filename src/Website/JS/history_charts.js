@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let allMemoryHistory = [];
     let cpuChart, memoryChart;
 
-    fetch('webconfig.json')
+    fetch('config.json')
         .then(response => response.json())
         .then(data => {
             config = data;

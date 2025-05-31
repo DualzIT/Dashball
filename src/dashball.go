@@ -125,7 +125,7 @@ func serveHistoricalData(w http.ResponseWriter, r *http.Request) {
 func main() {
     removeHistoricalDataFile()
 
-    configFile, err := os.Open("json/config.json")
+    configFile, err := os.Open("Website/config.json")
     if err != nil {
         fmt.Println("Can't open config file:", err)
         return
@@ -206,7 +206,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func fetchSystemInfo() (map[string]interface{}, error) {
-    configFile, err := os.Open("json/config.json")
+    configFile, err := os.Open("Website/config.json")
     if err != nil {
         return nil, err
     }
