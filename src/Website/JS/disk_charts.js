@@ -177,12 +177,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     fetch('webconfig.json')
-        .then(response => response.json())
-        .then(data => {
-            config = data;
-            fetchComputersAndConnect(onMessageCallback); // Fetch computers and then connect WebSocket
-        })
-        .catch(error => {
-            console.error('Error fetching configuration:', error);
-        });
+    .then(response => response.json())
+    .then(data => {
+        config = data;
+        initializeCharts();
+
+        setInterval(() => {
+            fetch('/system_info')
+                .then(response => response.json())
+                .then(onMessageCallback)
+                .catch(error => console.error('ERROR:', error));
+        }, config.update_interval_seconds * 1000); 
+    })
+    .catch(error => {
+        console.error('ERROR:', error);
+    });
 });

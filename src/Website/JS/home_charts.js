@@ -86,25 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function resetCharts() {
-        cpuChart.data.labels = [];
-        cpuChart.data.datasets[0].data = [];
-
-        memoryChart.data.labels = [];
-        memoryChart.data.datasets[0].data = [];
-
-        gpuUsageChart.data.labels = [];
-        gpuUsageChart.data.datasets[0].data = [];
-
-        gpuMemoryChart.data.labels = [];
-        gpuMemoryChart.data.datasets[0].data = [];
-
-        cpuChart.update();
-        memoryChart.update();
-        gpuUsageChart.update();
-        gpuMemoryChart.update();
-    }
-
     function onMessageCallback(data) {
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
@@ -150,14 +131,20 @@ document.addEventListener("DOMContentLoaded", function () {
         gpuMemoryChart.update();
     }
 
-    fetch('webconfig.json')
-        .then(response => response.json())
-        .then(data => {
-            config = data;
-            initializeCharts();
-            fetchComputersAndConnect(onMessageCallback); // Fetch computers and then connect WebSocket
-        })
-        .catch(error => {
-            console.error('ERROR:', error);
-        });
+fetch('webconfig.json')
+    .then(response => response.json())
+    .then(data => {
+        config = data;
+        initializeCharts();
+
+        setInterval(() => {
+            fetch('/system_info')
+                .then(response => response.json())
+                .then(onMessageCallback)
+                .catch(error => console.error('ERROR:', error));
+        }, config.update_interval_seconds * 1000); 
+    })
+    .catch(error => {
+        console.error('ERROR:', error);
+    });
 });
