@@ -14,3 +14,4 @@ func getNvidiaGPUInfo() (map[string]interface{}, error) {
     cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
     output, err := cmd.Output()
     return parseNvidiaSmiOutput(output, err)
+}
