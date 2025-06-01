@@ -2,17 +2,15 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Dashball"
-#define MyAppVersion "beta 0.2"
+#define MyAppVersion "2.2"
 #define MyAppPublisher "Dualz IT"
-#define MyAppURL "dualzit.nl"
+#define MyAppURL "dashball.dualzit.nl"
 #define MyAppExeName "dashball.exe"
 #define MyAppAssocName "Dashball"
 #define MyAppAssocExt ".exe"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
 [Setup]
-; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
-; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{5F2EDDAC-5FC6-48D9-A8C1-988A753B2019}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
@@ -24,7 +22,7 @@ DefaultDirName={autopf}\{#MyAppName}
 ArchitecturesInstallIn64BitMode=x64 
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-LicenseFile=D:\a\Dashball\Dashball\LICENSE
+LicenseFile=..\..\..\LICENSE
 OutputBaseFilename=Dashball
 Compression=lzma
 SolidCompression=yes
@@ -34,13 +32,13 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "D:\a\Dashball\Dashball\src\install\windows\dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Dashball\Dashball\src\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "D:\a\Dashball\Dashball\go.mod"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Dashball\Dashball\go.sum"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Dashball\Dashball\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Dashball\Dashball\README.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\a\Dashball\Dashball\src\Webserver\config.json"; DestDir: "{app}\Webserver; Flags: ignoreversion
+Source: "dashball.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\Website\*"; DestDir: "{app}\Website"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\..\go.mod"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\go.sum"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\..\README.md"; DestDir: "{app}"; Flags: ignoreversion
+
 
 [CustomMessages]
 AutoStartWithWindows=Let Dashball start up automatically
@@ -64,22 +62,54 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 [Code]
 var
-  PortInputPage: TInputQueryWizardPage;
+  ConfigPage: TInputQueryWizardPage;
 
 procedure InitializeWizard;
 begin
-  PortInputPage := CreateInputQueryPage(wpWelcome,
-    'Port Configuration', 'Which port needs the website to be?',
-    'Choose a port for the website and click on next.');
-  PortInputPage.Add('Port:', False);
-  PortInputPage.Values[0] := '80';
+  ConfigPage := CreateInputQueryPage(wpWelcome,
+    'Dashball Configuration',
+    'Set up web server settings',
+    'Please enter the desired configuration values for Dashball:');
+
+  ConfigPage.Add('Port (e.g. 8080):', False);
+  ConfigPage.Add('Enable animations (true/false):', False);
+  ConfigPage.Add('Update interval (seconds):', False);
+  ConfigPage.Add('Default points to show:', False);
+  
+
+  // Default values
+  ConfigPage.Values[0] := '8080';
+  ConfigPage.Values[1] := 'true';
+  ConfigPage.Values[2] := '1';
+  ConfigPage.Values[3] := '10';
+  
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  Port, Animations, Interval, DefaultPoints, MaxPoints: string;
+  ConfigJSON: string;
 begin
   if CurStep = ssPostInstall then
   begin
-    SaveStringToFile(ExpandConstant('{app}\config.json'), Format('{ "port": %s, "update_interval_seconds": 1 }', [PortInputPage.Values[0]]), False);
-     MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
+    Port := ConfigPage.Values[0];
+    Animations := ConfigPage.Values[1];
+    Interval := ConfigPage.Values[2];
+    DefaultPoints := ConfigPage.Values[3];
+   
+
+    ConfigJSON :=
+      '{' + #13#10 +
+      '  "port": ' + Port + ',' + #13#10 +
+      '  "animations": ' + LowerCase(Animations) + ',' + #13#10 +
+      '  "update_interval_seconds": ' + Interval + ',' + #13#10 +
+      '  "default_points_to_show": ' + DefaultPoints + ',' + #13#10 +
+      '  "max_data_points": 10' + ',' + #13#10 +
+      '  "save_history_seconds": 10' + #13#10 +
+      '}';
+
+    SaveStringToFile(ExpandConstant('{app}\website\config.json'), ConfigJSON, False);
+
+    MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
   end;
 end;
