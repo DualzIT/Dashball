@@ -46,21 +46,21 @@ type ComputersConfig struct {
 }
 
 var (
-    historicalData      HistoricalData           // Declare a global variable to store historical data
-    previousDiskStats   map[string]disk.IOCountersStat // Store previous disk stats for calculating speeds
-    mutex               sync.Mutex                     // Ensure thread safety
-   
+    historicalData      HistoricalData
+    previousDiskStats   map[string]disk.IOCountersStat
+    mutex               sync.Mutex
+    historicalDataPath  string
 )
 
 func removeHistoricalDataFile() {
-    err := os.Remove("json/historical_data.json")
+    err := os.Remove(historicalDataPath)
     if err != nil && !os.IsNotExist(err) {
         log.Printf("Failed to remove historical data file: %v\n", err)
     }
 }
 
 func loadHistoricalDataFromFile() error {
-    file, err := os.Open("json/historical_data.json")
+    file, err := os.Open(historicalDataPath)
     if err != nil {
         return err
     }
@@ -123,9 +123,11 @@ func serveHistoricalData(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+    historicalDataPath = filepath.Join(os.TempDir(), "historical_data.json")
+
     removeHistoricalDataFile()
 
-    configFile, err := os.Open("json/config.json")
+    configFile, err := os.Open("Website/config.json")
     if err != nil {
         fmt.Println("Can't open config file:", err)
         return
@@ -206,7 +208,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func fetchSystemInfo() (map[string]interface{}, error) {
-    configFile, err := os.Open("json/config.json")
+    configFile, err := os.Open("Website/config.json")
     if err != nil {
         return nil, err
     }
@@ -321,6 +323,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
     cpuTemperature := "N/A"
 
     processes, err := process.Processes()
+    err = nil
     if err != nil {
         return nil, err
     }
@@ -335,7 +338,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
      
         cpuPercent, err := p.CPUPercent()
         if err != nil || cpuPercent == 0.0 {
-            continue // Sla inactieve processen over
+            continue 
         }
 
         memInfo, err := p.MemoryInfo()
@@ -431,7 +434,7 @@ func systemInfoHandlerAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveHistoricalDataToFile() error {
-    file, err := os.Create("json/historical_data.json")
+    file, err := os.Create(historicalDataPath)
     if err != nil {
         return err
     }

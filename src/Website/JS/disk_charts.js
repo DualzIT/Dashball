@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    fetch('webconfig.json')
+    fetch('config.json')
     .then(response => response.json())
     .then(data => {
         config = data;
