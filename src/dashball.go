@@ -7,14 +7,12 @@ import (
     "log"
     "math"
     "net/http"
-    "os"
-    "os/exec"     
+    "os"   
     "path/filepath"
     "runtime"    
     "strings"
     "sync"
     "time"
-    "syscall"
 
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/disk"
@@ -457,10 +455,8 @@ func formatUptime(seconds uint64) string {
     return fmt.Sprintf("%dd %dh %dm", days, hours, minutes)
 }
 
-func getNvidiaGPUInfo() (map[string]interface{}, error) {
-    cmd := exec.Command("nvidia-smi", "--query-gpu=name,uuid,temperature.gpu,utilization.gpu,memory.total,memory.used,memory.free,fan.speed,clocks.gr,clocks.mem,utilization.encoder,utilization.decoder", "--format=csv,noheader,nounits")
-    cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true} // Windows only
-    output, err := cmd.Output()
+
+func parseNvidiaSmiOutput(output []byte, err error) (map[string]interface{}, error) {
     if err != nil {
         return map[string]interface{}{
             "gpu0": map[string]interface{}{
