@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
         charts.forEach(chart => chart.update());
     }
 
-  fetch('config.json')
+  fetch('dashball.cfg')
     .then(response => response.json())
     .then(data => {
         config = data;

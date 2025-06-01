@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    fetch('config.json')
+    fetch('dashball.cfg')
     .then(response => response.json())
     .then(data => {
         config = data;

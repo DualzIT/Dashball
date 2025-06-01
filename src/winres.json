@@ -1,0 +1,7 @@
+{
+  "productVersion": "0.2.0",
+  "fileVersion": "0.2.0",
+  "requestExecutionLevel": "asInvoker",
+  "subsystem": "windows",
+  "IconPath": "favicon.ico"
+}

@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let allMemoryHistory = [];
     let cpuChart, memoryChart;
 
-    fetch('config.json')
+    fetch('dashball.cfg')
         .then(response => response.json())
         .then(data => {
             config = data;

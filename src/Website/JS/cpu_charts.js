@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCpuCharts(data);
     }
 
-   fetch('config.json')
+   fetch('dashball.cfg')
     .then(response => response.json())
     .then(data => {
         config = data;
