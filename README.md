@@ -23,7 +23,7 @@ Windows will give some security warnings that you need to ignore
 ## .sh installer (Only for linux) 
 
 ```
-curl -s -L dualzit.nl/install_dashball.sh | sudo bash
+curl -s -L https://dashball.dualzit.nl/install_dashball.sh | sudo bash
 ```
 Default the website is at localhost:8080
 
