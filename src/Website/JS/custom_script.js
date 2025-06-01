@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Fetch the configuration
     async function fetchConfig() {
-        const response = await fetch('../webconfig.json');
+        const response = await fetch('config.json');
         config = await response.json();
     }
 

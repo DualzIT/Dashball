@@ -14,7 +14,6 @@ import (
     "sync"
     "time"
 
-    "github.com/gorilla/websocket"
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/disk"
     "github.com/shirou/gopsutil/host"
@@ -47,27 +46,21 @@ type ComputersConfig struct {
 }
 
 var (
-    historicalData      HistoricalData           // Declare a global variable to store historical data
-    previousDiskStats   map[string]disk.IOCountersStat // Store previous disk stats for calculating speeds
-    mutex               sync.Mutex                     // Ensure thread safety
-    upgrader            = websocket.Upgrader{
-        ReadBufferSize:  1024,
-        WriteBufferSize: 1024,
-        CheckOrigin: func(r *http.Request) bool {
-            return true
-        },
-    }
+    historicalData      HistoricalData
+    previousDiskStats   map[string]disk.IOCountersStat
+    mutex               sync.Mutex
+    historicalDataPath  string
 )
 
 func removeHistoricalDataFile() {
-    err := os.Remove("json/historical_data.json")
+    err := os.Remove(historicalDataPath)
     if err != nil && !os.IsNotExist(err) {
         log.Printf("Failed to remove historical data file: %v\n", err)
     }
 }
 
 func loadHistoricalDataFromFile() error {
-    file, err := os.Open("json/historical_data.json")
+    file, err := os.Open(historicalDataPath)
     if err != nil {
         return err
     }
@@ -130,9 +123,11 @@ func serveHistoricalData(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+    historicalDataPath = filepath.Join(os.TempDir(), "historical_data.json")
+
     removeHistoricalDataFile()
 
-    configFile, err := os.Open("json/config.json")
+    configFile, err := os.Open("Website/config.json")
     if err != nil {
         fmt.Println("Can't open config file:", err)
         return
@@ -156,8 +151,7 @@ func main() {
     mux.HandleFunc("/history", serveHistoricalData)
     mux.HandleFunc("/system_info", systemInfoHandler)
     mux.HandleFunc("/system_info_all", systemInfoHandlerAll)
-    mux.HandleFunc("/ws", handleWebSocket) // WebSocket handler
-    mux.HandleFunc("/ws_history", handleWebSocketHistory) // WebSocket handler for history
+   
 
     websiteDir := filepath.Join(".", "Website")
     fs := http.FileServer(http.Dir(websiteDir))
@@ -212,68 +206,9 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(data)
 }
 
-func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        log.Println("Failed to upgrade WebSocket:", err)
-        return
-    }
-    defer conn.Close()
-
-    log.Println("WebSocket connection established")
-
-    ticker := time.NewTicker(1 * time.Second)
-    defer ticker.Stop()
-
-    for {
-        select {
-        case <-ticker.C:
-            data, err := fetchSystemInfo()
-            if err != nil {
-                log.Println("Failed to fetch system info:", err)
-                continue
-            }
-
-            err = conn.WriteJSON(data)
-            if err != nil {
-                log.Println("Error sending data over WebSocket:", err)
-                return
-            }
-        }
-    }
-}
-
-func handleWebSocketHistory(w http.ResponseWriter, r *http.Request) {
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        log.Println("Failed to upgrade WebSocket for history:", err)
-        return
-    }
-    defer conn.Close()
-
-    log.Println("WebSocket connection for history established")
-
-    ticker := time.NewTicker(1 * time.Second)
-    defer ticker.Stop()
-
-    for {
-        select {
-        case <-ticker.C:
-            mutex.Lock()
-            data := historicalData
-            mutex.Unlock()
-
-            err = conn.WriteJSON(data)
-            if err != nil {
-                log.Println("Error sending historical data over WebSocket:", err)
-                return
-            }
-        }
-    }
-}
 
 func fetchSystemInfo() (map[string]interface{}, error) {
-    configFile, err := os.Open("json/config.json")
+    configFile, err := os.Open("Website/config.json")
     if err != nil {
         return nil, err
     }
@@ -388,6 +323,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
     cpuTemperature := "N/A"
 
     processes, err := process.Processes()
+    err = nil
     if err != nil {
         return nil, err
     }
@@ -402,7 +338,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
      
         cpuPercent, err := p.CPUPercent()
         if err != nil || cpuPercent == 0.0 {
-            continue // Sla inactieve processen over
+            continue 
         }
 
         memInfo, err := p.MemoryInfo()
@@ -498,7 +434,7 @@ func systemInfoHandlerAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveHistoricalDataToFile() error {
-    file, err := os.Create("json/historical_data.json")
+    file, err := os.Create(historicalDataPath)
     if err != nil {
         return err
     }
