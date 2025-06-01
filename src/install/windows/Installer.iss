@@ -108,7 +108,7 @@ begin
       '  "save_history_seconds": 10' + #13#10 +
       '}';
 
-    SaveStringToFile(ExpandConstant('{app}\website\config.json'), ConfigJSON, False);
+    SaveStringToFile(ExpandConstant('{app}\website\dashball.cfg'), ConfigJSON, False);
 
     MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
   end;

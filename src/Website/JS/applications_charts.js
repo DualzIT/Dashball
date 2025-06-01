@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
         setInterval(fetchApplications, interval);
     }
 
-    fetch('config.json')
+    fetch('dashball.cfg')
         .then(response => response.json())
         .then(() => {
             fetchApplications();

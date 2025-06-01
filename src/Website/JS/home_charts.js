@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
         gpuMemoryChart.update();
     }
 
-fetch('config.json')
+fetch('dashball.cfg')
     .then(response => response.json())
     .then(data => {
         config = data;

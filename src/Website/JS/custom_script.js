@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Fetch the configuration
     async function fetchConfig() {
-        const response = await fetch('config.json');
+        const response = await fetch('dashball.cfg');
         config = await response.json();
     }
 

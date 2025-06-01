@@ -1,4 +1,5 @@
 package main
+//go:generate go run github.com/tc-hib/go-winres simply
 
 import (
     "encoding/json"
@@ -13,6 +14,7 @@ import (
     "strings"
     "sync"
     "time"
+    "syscall"
 
     "github.com/shirou/gopsutil/cpu"
     "github.com/shirou/gopsutil/disk"
@@ -127,7 +129,7 @@ func main() {
 
     removeHistoricalDataFile()
 
-    configFile, err := os.Open("Website/config.json")
+    configFile, err := os.Open("Website/dashball.cfg")
     if err != nil {
         fmt.Println("Can't open config file:", err)
         return
@@ -208,7 +210,7 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func fetchSystemInfo() (map[string]interface{}, error) {
-    configFile, err := os.Open("Website/config.json")
+    configFile, err := os.Open("Website/dashball.cfg")
     if err != nil {
         return nil, err
     }
@@ -457,6 +459,7 @@ func formatUptime(seconds uint64) string {
 
 func getNvidiaGPUInfo() (map[string]interface{}, error) {
     cmd := exec.Command("nvidia-smi", "--query-gpu=name,uuid,temperature.gpu,utilization.gpu,memory.total,memory.used,memory.free,fan.speed,clocks.gr,clocks.mem,utilization.encoder,utilization.decoder", "--format=csv,noheader,nounits")
+    cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true} // Windows only
     output, err := cmd.Output()
     if err != nil {
         return map[string]interface{}{
