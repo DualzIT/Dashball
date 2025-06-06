@@ -9,8 +9,9 @@ import (
     "net/http"
     "os"   
     "path/filepath"
-    "runtime"    
+    "runtime"
     "strings"
+    "strconv"
     "sync"
     "time"
 
@@ -317,6 +318,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
 
     hostInfo, _ := host.Info()
     gpuInfo, _ := getNvidiaGPUInfo()
+    gpuProcessUsage := getProcessGPUUsage()
     uptime, _ := host.Uptime()
     uptimeStr := formatUptime(uptime)
     threadCount := runtime.NumGoroutine()
@@ -352,6 +354,10 @@ func fetchSystemInfo() (map[string]interface{}, error) {
         }
 
         pid := p.Pid
+        gpuPercent := 0
+        if val, ok := gpuProcessUsage[int(pid)]; ok {
+            gpuPercent = val
+        }
 
         if app, exists := processMap[name]; exists {
             count := app["process_count"].(int) + 1
@@ -359,11 +365,13 @@ func fetchSystemInfo() (map[string]interface{}, error) {
             app["memory_info"].(*process.MemoryInfoStat).RSS += memInfo.RSS
             app["read_bytes"] = app["read_bytes"].(uint64) + ioCounters.ReadBytes
             app["write_bytes"] = app["write_bytes"].(uint64) + ioCounters.WriteBytes
+            app["gpu_percent"] = (app["gpu_percent"].(int)*(count-1) + gpuPercent) / count
         } else {
             processMap[name] = map[string]interface{}{
                 "name":        name,
                 "exe":         exe,
                 "cpu_percent": cpuPercent,
+                "gpu_percent": gpuPercent,
                 "memory_info": memInfo,
                 "read_bytes":  ioCounters.ReadBytes,
                 "write_bytes": ioCounters.WriteBytes,
@@ -519,6 +527,34 @@ func parseNvidiaSmiOutput(output []byte, err error) (map[string]interface{}, err
         }
     }
     return gpuInfo, nil
+}
+
+func parseNvidiaSmiPmonOutput(output []byte, err error) map[int]int {
+    if err != nil {
+        return map[int]int{}
+    }
+    usage := make(map[int]int)
+    lines := strings.Split(string(output), "\n")
+    for _, line := range lines {
+        line = strings.TrimSpace(line)
+        if line == "" || strings.HasPrefix(line, "#") {
+            continue
+        }
+        fields := strings.Fields(line)
+        if len(fields) < 5 {
+            continue
+        }
+        pid, err := strconv.Atoi(fields[1])
+        if err != nil {
+            continue
+        }
+        sm, err := strconv.Atoi(fields[3])
+        if err != nil {
+            continue
+        }
+        usage[pid] = sm
+    }
+    return usage
 }
 
 func loadComputersConfig() (ComputersConfig, error) {
