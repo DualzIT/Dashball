@@ -40,11 +40,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     ${truncateAppName(appName, 25)}
                 </td>
                 <td>${app.pid}</td>
-                <td>${app.cpu_percent.toFixed(2)}</td>
-                <td>${app.gpu_percent}</td>
-                <td>${(app.memory_info.rss / (1024 * 1024)).toFixed(0)}</td>
-                <td>${(app.read_bytes / (1024 * 1024)).toFixed(0)}</td>
-                <td>${(app.write_bytes / (1024 * 1024)).toFixed(0)}</td>
+                <td>${app.cpu_percent.toFixed(2)}%</td>
+                <td>${app.gpu_percent}%</td>
+                <td>${(app.memory_info.rss / (1024 * 1024)).toFixed(0)} MB</td>
+                <td>${(app.read_bytes / (1024 * 1024)).toFixed(0)} MB</td>
+                <td>${(app.write_bytes / (1024 * 1024)).toFixed(0)} MB</td>
             `;
             tbody.appendChild(row);
         });
