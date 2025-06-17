@@ -15,3 +15,10 @@ func getNvidiaGPUInfo() (map[string]interface{}, error) {
     output, err := cmd.Output()
     return parseNvidiaSmiOutput(output, err)
 }
+
+func getProcessGPUUsage() map[int]int {
+    cmd := exec.Command("nvidia-smi", "pmon", "-c", "1")
+    cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+    output, err := cmd.Output()
+    return parseNvidiaSmiPmonOutput(output, err)
+}
