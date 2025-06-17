@@ -319,6 +319,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
     hostInfo, _ := host.Info()
     gpuInfo, _ := getNvidiaGPUInfo()
     gpuProcessUsage := getProcessGPUUsage()
+    gpuProcessMemory := getProcessGPUMemoryUsage()
     uptime, _ := host.Uptime()
     uptimeStr := formatUptime(uptime)
     threadCount := runtime.NumGoroutine()
@@ -358,7 +359,10 @@ func fetchSystemInfo() (map[string]interface{}, error) {
         if val, ok := gpuProcessUsage[int(pid)]; ok {
             gpuPercent = val
         }
-
+gpuMem := 0
+if val, ok := gpuProcessMemory[int(pid)]; ok {
+    gpuMem = val
+}
         if app, exists := processMap[name]; exists {
             count := app["process_count"].(int) + 1
             app["cpu_percent"] = (app["cpu_percent"].(float64)*float64(count-1) + cpuPercent) / float64(count)
@@ -366,16 +370,19 @@ func fetchSystemInfo() (map[string]interface{}, error) {
             app["read_bytes"] = app["read_bytes"].(uint64) + ioCounters.ReadBytes
             app["write_bytes"] = app["write_bytes"].(uint64) + ioCounters.WriteBytes
             app["gpu_percent"] = (app["gpu_percent"].(int)*(count-1) + gpuPercent) / count
+            app["gpu_memory_mb"] = app["gpu_memory_mb"].(int) + gpuMem
+
         } else {
             processMap[name] = map[string]interface{}{
                 "name":        name,
                 "exe":         exe,
                 "cpu_percent": cpuPercent,
                 "gpu_percent": gpuPercent,
+                "gpu_memory_mb": gpuMem,
                 "memory_info": memInfo,
                 "read_bytes":  ioCounters.ReadBytes,
                 "write_bytes": ioCounters.WriteBytes,
-                "pid":         pid,
+                "pid":         pid,          
                 "process_count": 1,
             }
         }

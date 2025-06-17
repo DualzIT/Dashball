@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <td>${app.pid}</td>
                 <td>${app.cpu_percent.toFixed(2)}%</td>
                 <td>${app.gpu_percent}%</td>
+                <td>${app.gpu_memory_mb} MB</td>
                 <td>${(app.memory_info.rss / (1024 * 1024)).toFixed(0)} MB</td>
                 <td>${(app.read_bytes / (1024 * 1024)).toFixed(0)} MB</td>
                 <td>${(app.write_bytes / (1024 * 1024)).toFixed(0)} MB</td>
