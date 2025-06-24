@@ -33,12 +33,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
+                    // Theme toggle visibility
+                    const themeToggle = document.querySelector('.switch');
+                    if (cfg.show_theme_toggle === false || cfg.show_theme_toggle === 'false') {
+                        if (themeToggle) themeToggle.style.display = 'none';
+                    } else {
+                        if (themeToggle) themeToggle.style.display = '';
+                    }
+
                     // Set theme based on cfg.theme if no localStorage value
                     const darkModeToggle = document.getElementById('dark-mode-toggle');
                     let storedMode = localStorage.getItem('darkMode');
                     if (storedMode === null) {
-                        // Use theme from config, default to dark if not set
-                        storedMode = (cfg.theme === 'light' || cfg.theme === 'light') ? 'false' : 'true';
+                        storedMode = (cfg.theme === 'white' || cfg.theme === 'light') ? 'false' : 'true';
                         localStorage.setItem('darkMode', storedMode);
                     }
                     const isDarkMode = storedMode === 'true';
