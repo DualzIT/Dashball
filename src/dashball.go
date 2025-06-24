@@ -224,9 +224,7 @@ func fetchSystemInfo() (map[string]interface{}, error) {
     cpuUsagePerCore, _ := cpu.Percent(0, true)
     cpuUsageAvg, _ := cpu.Percent(0, false)
     cpuUsageAvgRounded := math.Round(cpuUsageAvg[0]*10) / 10
-
     cpuFrequencies, _ := cpu.Info()
-
     var filteredCpuFrequencies []map[string]interface{}
     for _, freq := range cpuFrequencies {
         filteredFreq := map[string]interface{}{
@@ -318,80 +316,11 @@ func fetchSystemInfo() (map[string]interface{}, error) {
 
     hostInfo, _ := host.Info()
     gpuInfo, _ := getNvidiaGPUInfo()
-    gpuProcessUsage := getProcessGPUUsage()
-    gpuProcessMemory := getProcessGPUMemoryUsage()
     uptime, _ := host.Uptime()
     uptimeStr := formatUptime(uptime)
     threadCount := runtime.NumGoroutine()
     cpuTemperature := "N/A"
 
-    processes, err := process.Processes()
-    err = nil
-    if err != nil {
-        return nil, err
-    }
-
-    processMap := make(map[string]map[string]interface{})
-    for _, p := range processes {
-        name, err := p.Name()
-        if err != nil {
-            continue 
-        }
-        exe, _ := p.Exe()
-     
-        cpuPercent, err := p.CPUPercent()
-        if err != nil || cpuPercent == 0.0 {
-            continue 
-        }
-
-        memInfo, err := p.MemoryInfo()
-        if err != nil {
-            memInfo = &process.MemoryInfoStat{}
-        }
-
-        ioCounters, err := p.IOCounters()
-        if err != nil {
-            ioCounters = &process.IOCountersStat{}
-        }
-
-        pid := p.Pid
-        gpuPercent := 0
-        if val, ok := gpuProcessUsage[int(pid)]; ok {
-            gpuPercent = val
-        }
-gpuMem := 0
-if val, ok := gpuProcessMemory[int(pid)]; ok {
-    gpuMem = val
-}
-        if app, exists := processMap[name]; exists {
-            count := app["process_count"].(int) + 1
-            app["cpu_percent"] = (app["cpu_percent"].(float64)*float64(count-1) + cpuPercent) / float64(count)
-            app["memory_info"].(*process.MemoryInfoStat).RSS += memInfo.RSS
-            app["read_bytes"] = app["read_bytes"].(uint64) + ioCounters.ReadBytes
-            app["write_bytes"] = app["write_bytes"].(uint64) + ioCounters.WriteBytes
-            app["gpu_percent"] = (app["gpu_percent"].(int)*(count-1) + gpuPercent) / count
-            app["gpu_memory_mb"] = app["gpu_memory_mb"].(int) + gpuMem
-
-        } else {
-            processMap[name] = map[string]interface{}{
-                "name":        name,
-                "exe":         exe,
-                "cpu_percent": cpuPercent,
-                "gpu_percent": gpuPercent,
-                "gpu_memory_mb": gpuMem,
-                "memory_info": memInfo,
-                "read_bytes":  ioCounters.ReadBytes,
-                "write_bytes": ioCounters.WriteBytes,
-                "pid":         pid,          
-                "process_count": 1,
-            }
-        }
-    }
-
-    var apps []map[string]interface{}
-    for _, app := range processMap {
-        apps = append(apps, app)
-    }
 
     data := map[string]interface{}{
         "cpu_usage_per_core":      cpuUsagePerCore,
@@ -415,7 +344,86 @@ if val, ok := gpuProcessMemory[int(pid)]; ok {
             "uptime":       uptimeStr,
             "threads":      threadCount,
         },
-        "running_apps": apps,
+    }
+    configFile2, err := os.Open("Website/dashball.cfg")
+    var runningApps []map[string]interface{} 
+    showApps := false
+    if err == nil {
+        defer configFile2.Close()
+        var cfg struct {
+            NavbarPages map[string]bool `json:"navbar_pages"`
+        }
+        if err := json.NewDecoder(configFile2).Decode(&cfg); err == nil {
+            showApps = cfg.NavbarPages["applications.html"]
+        }
+    }
+    if showApps {
+        gpuProcessUsage := getProcessGPUUsage()
+        gpuProcessMemory := getProcessGPUMemoryUsage()
+        processes, err := process.Processes()
+        if err == nil {
+            processMap := make(map[string]map[string]interface{})
+            for _, p := range processes {
+                name, err := p.Name()
+                if err != nil {
+                    continue
+                }
+                exe, _ := p.Exe()
+                cpuPercent, err := p.CPUPercent()
+                if err != nil || cpuPercent == 0.0 {
+                    continue
+                }
+                memInfo, err := p.MemoryInfo()
+                if err != nil {
+                    memInfo = &process.MemoryInfoStat{}
+                }
+                ioCounters, err := p.IOCounters()
+                if err != nil {
+                    ioCounters = &process.IOCountersStat{}
+                }
+                pid := p.Pid
+                gpuPercent := 0
+                gpuMem := 0
+                if val, ok := gpuProcessUsage[int(pid)]; ok {
+                    gpuPercent = val
+                }
+                if val, ok := gpuProcessMemory[int(pid)]; ok {
+                    gpuMem = val
+                }
+                if app, exists := processMap[name]; exists {
+                    count := app["process_count"].(int) + 1
+                    app["cpu_percent"] = (app["cpu_percent"].(float64)*float64(count-1) + cpuPercent) / float64(count)
+                    app["memory_info"].(*process.MemoryInfoStat).RSS += memInfo.RSS
+                    app["read_bytes"] = app["read_bytes"].(uint64) + ioCounters.ReadBytes
+                    app["write_bytes"] = app["write_bytes"].(uint64) + ioCounters.WriteBytes
+                    app["gpu_percent"] = (app["gpu_percent"].(int)*(count-1) + gpuPercent) / count
+                    app["gpu_memory_mb"] = app["gpu_memory_mb"].(int) + gpuMem
+                } else {
+                    processMap[name] = map[string]interface{}{
+                        "name":        name,
+                        "exe":         exe,
+                        "cpu_percent": cpuPercent,
+                        "gpu_percent": gpuPercent,
+                        "gpu_memory_mb": gpuMem,
+                        "memory_info": memInfo,
+                        "read_bytes":  ioCounters.ReadBytes,
+                        "write_bytes": ioCounters.WriteBytes,
+                        "pid":         pid,
+                        "process_count": 1,
+                    }
+                }
+            }
+            for _, app := range processMap {
+                runningApps = append(runningApps, app)
+            }
+        }
+        if len(runningApps) > 0 {
+            data["running_apps"] = runningApps
+        }
+    } else {
+        if _, ok := data["running_apps"]; ok {
+            delete(data, "running_apps")
+        }
     }
 
     // Apply filtering before returning the data

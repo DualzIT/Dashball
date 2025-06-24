@@ -5,14 +5,14 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             navbarContainer.innerHTML = data;
 
-            // Pagina's laden uit dashball.cfg
+       
             fetch('dashball.cfg')
                 .then(response => response.json())
                 .then(cfg => {
                     const pages = cfg.navbar_pages || {};
                     const navLinks = document.getElementById('nav-links');
                     navLinks.innerHTML = '';
-                    // Optionele mapping van bestandsnaam naar label
+                
                     const labels = {
                         'index.html': 'Home',
                         'history.html': 'History',
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
-                    // Set active class based on current page
+             
                     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
                     const menuItems = navLinks.querySelectorAll('a');
                     menuItems.forEach(item => {
