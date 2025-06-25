@@ -99,14 +99,25 @@ begin
    
 
     ConfigJSON :=
-      '{' + #13#10 +
-      '  "port": ' + Port + ',' + #13#10 +
-      '  "animations": ' + LowerCase(Animations) + ',' + #13#10 +
-      '  "update_interval_seconds": ' + Interval + ',' + #13#10 +
-      '  "default_points_to_show": ' + DefaultPoints + ',' + #13#10 +
-      '  "max_data_points": 10' + ',' + #13#10 +
-      '  "save_history_seconds": 10' + #13#10 +
-      '}';
+  '{' + #13#10 +
+  '  "port": ' + Port + ',' + #13#10 +
+  '  "animations": ' + LowerCase(Animations) + ',' + #13#10 +
+  '  "update_interval_seconds": ' + Interval + ',' + #13#10 +
+  '  "default_points_to_show": ' + DefaultPoints + ',' + #13#10 +
+  '  "max_data_points": 10,' + #13#10 +
+  '  "save_history_seconds": 10,' + #13#10 +
+  '  "theme": "dark",' + #13#10 +
+  '  "show_theme_toggle": true,' + #13#10 +
+  '  "navbar_pages": {' + #13#10 +
+  '    "index.html": true,' + #13#10 +
+  '    "history.html": true,' + #13#10 +
+  '    "gpu.html": true,' + #13#10 +
+  '    "cpu.html": true,' + #13#10 +
+  '    "disk.html": true,' + #13#10 +
+  '    "applications.html": true,' + #13#10 +
+  '    "custom.html": true' + #13#10 +
+  '  }' + #13#10 +
+  '}';
 
     SaveStringToFile(ExpandConstant('{app}\website\dashball.cfg'), ConfigJSON, False);
 
