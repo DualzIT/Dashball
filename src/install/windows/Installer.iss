@@ -121,6 +121,5 @@ begin
 
     SaveStringToFile(ExpandConstant('{app}\website\dashball.cfg'), ConfigJSON, False);
 
-    MsgBox('Installation completed successfully! Dashball will now run in the background and start up automatically.', mbInformation, MB_OK);
   end;
 end;
