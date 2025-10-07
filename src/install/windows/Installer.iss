@@ -44,7 +44,7 @@ Source: "..\..\..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 AutoStartWithWindows=Let Dashball start up automatically
 
 [Tasks]
-Name: "autostart"; Description: "{cm:AutoStartWithWindows}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "autostart"; Description: "{cm:AutoStartWithWindows}"; GroupDescription: "{cm:AdditionalIcons}"; 
 
 [Registry]
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
